@@ -21,11 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/drawer.h>
-
-#include <QOpenGLFunctions>
-#include <QColor>
 
 #include <iostream>
 
@@ -150,7 +147,7 @@ void DisplayListDrawer::end_list()
 	data_col_.shrink_to_fit();
 }
 
-//void DisplayListDrawer::call_list(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
+//void DisplayListDrawer::call_list(const Matrix4f& projection, const Matrix4f& modelview, QOpenGLFunctions_3_3_Core* ogl33)
 //{
 
 //	//classic rendering
@@ -160,15 +157,15 @@ void DisplayListDrawer::end_list()
 
 //		for (auto& pp : begins_point_)
 //		{
-//			ogl33->glPointSize(pp.width);
-//			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+//			glPointSize(pp.width);
+//			glDrawArrays(pp.mode, pp.begin, pp.nb);
 //		}
 
 //		for (auto& pp : begins_line_)
-//			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+//			glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 //		for (auto& pp : begins_face_)
-//			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+//			glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 //		param_cpv_->release();
 //	}
@@ -182,7 +179,7 @@ void DisplayListDrawer::end_list()
 //		{
 //			ShaderPointSpriteColor* shader_ps_ = static_cast<ShaderPointSpriteColor*>(param_ps_->get_shader());
 //			shader_ps_->set_size(pp.width);
-//			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+//			glDrawArrays(pp.mode, pp.begin, pp.nb);
 //		}
 //		param_ps_->release();
 //	}
@@ -196,15 +193,15 @@ void DisplayListDrawer::end_list()
 //		{
 //			if (pp.aa)
 //			{
-//				ogl33->glEnable(GL_BLEND);
-//				ogl33->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//				glEnable(GL_BLEND);
+//				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 //			}
 //			ShaderRoundPointColor* shader_rp_ = static_cast<ShaderRoundPointColor*>(param_rp_->get_shader());
 //			shader_rp_->set_size(pp.width);
-//			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+//			glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 //			if (pp.aa)
-//				ogl33->glDisable(GL_BLEND);
+//				glDisable(GL_BLEND);
 //		}
 //		param_rp_->release();
 //	}
@@ -222,14 +219,14 @@ void DisplayListDrawer::end_list()
 
 //			if (pp.aa)
 //			{
-//				ogl33->glEnable(GL_BLEND);
-//				ogl33->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//				glEnable(GL_BLEND);
+//				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 //			}
 
-//			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+//			glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 //			if (pp.aa)
-//				ogl33->glDisable(GL_BLEND);
+//				glDisable(GL_BLEND);
 //		}
 
 //		param_bl_->release();
@@ -258,9 +255,9 @@ DisplayListDrawer::Renderer::~Renderer()
 	param_ps_.reset();
 }
 
-void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview)
+void DisplayListDrawer::Renderer::draw(const Matrix4f& projection, const Matrix4f& modelview)
 {
-	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+
 
 	//classic rendering
 	if (! drawer_data_->begins_point_.empty() || ! drawer_data_->begins_line_.empty() || ! drawer_data_->begins_face_.empty())
@@ -269,15 +266,15 @@ void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatr
 
 		for (const auto& pp : drawer_data_->begins_point_)
 		{
-			ogl33->glPointSize(pp.width);
-			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+			glPointSize(pp.width);
+			glDrawArrays(pp.mode, pp.begin, pp.nb);
 		}
 
 		for (const auto& pp : drawer_data_->begins_line_)
-			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+			glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 		for (const auto& pp : drawer_data_->begins_face_)
-			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+			glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 		param_cpv_->release();
 	}
@@ -293,7 +290,7 @@ void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatr
 			ShaderPointSpriteColor* shader_ps_ = static_cast<ShaderPointSpriteColor*>(param_ps_->get_shader());
 			shader_ps_->set_size(pp.width);
 
-			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+			glDrawArrays(pp.mode, pp.begin, pp.nb);
 		}
 
 		param_ps_->release();
@@ -312,14 +309,14 @@ void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatr
 
 			if (pp.aa)
 			{
-				ogl33->glEnable(GL_BLEND);
-				ogl33->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			}
 
-			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+			glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 			if (pp.aa)
-				ogl33->glDisable(GL_BLEND);
+				glDisable(GL_BLEND);
 		}
 
 		param_rp_->release();
@@ -335,18 +332,18 @@ void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatr
 			// get direct access to the shader to modify parameters while keeping the original param binded
 			ShaderBoldLineColor* shader_bl_ = static_cast<ShaderBoldLineColor*>(param_bl_->get_shader());
 			shader_bl_->set_width(pp.width);
-			shader_bl_->set_color(QColor(255, 255, 0));
+			shader_bl_->set_color(Color(255, 255, 0));
 
 			if (pp.aa)
 			{
-				ogl33->glEnable(GL_BLEND);
-				ogl33->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			}
 
-			ogl33->glDrawArrays(pp.mode, pp.begin, pp.nb);
+			glDrawArrays(pp.mode, pp.begin, pp.nb);
 
 			if (pp.aa)
-				ogl33->glDisable(GL_BLEND);
+				glDisable(GL_BLEND);
 		}
 
 		param_bl_->release();

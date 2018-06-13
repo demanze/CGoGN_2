@@ -26,8 +26,6 @@
 
 #include <cgogn/rendering/shaders/shader_vector_per_vertex.h>
 
-#include <QColor>
-
 namespace cgogn
 {
 
@@ -86,31 +84,36 @@ const char* ShaderVectorPerVertex::fragment_shader_source_ =
 
 ShaderVectorPerVertex::ShaderVectorPerVertex()
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-	prg_.bindAttributeLocation("vertex_normal", ATTRIB_NORMAL);
-	prg_.link();
+	addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+	addShader(GL_GEOMETRY_SHADER, geometry_shader_source_);
+	addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+	bindAttributeLocation("vertex_pos", ATTRIB_POS);
+	bindAttributeLocation("vertex_normal", ATTRIB_NORMAL);
+
+	link();
+
+	bind(); 
 
 	get_matrices_uniforms();
 
-	unif_color_ = prg_.uniformLocation("color");
-	unif_length_ = prg_.uniformLocation("length");
+	unif_color_ = "color";
+	unif_length_ = "length";
 
 	//default param
-	set_color(QColor(255, 255, 255));
+	set_color(Color(255, 255, 255));
 	set_length(1.0);
+
+	release(); 
 }
 
-void ShaderVectorPerVertex::set_color(const QColor& rgb)
+void ShaderVectorPerVertex::set_color(const Vector4f& rgb)
 {
-	prg_.setUniformValue(unif_color_, rgb);
+	unif_color_.set(rgb);
 }
 
 void ShaderVectorPerVertex::set_length(float32 l)
 {
-	prg_.setUniformValue(unif_length_, l);
+	unif_length_.set(l);
 }
 
 } // namespace rendering

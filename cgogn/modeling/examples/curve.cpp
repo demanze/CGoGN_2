@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "cgogn/rendering/opengl/all.h"
+
 #include <QApplication>
 #include <QMatrix4x4>
 #include <QKeyEvent>
@@ -302,8 +304,8 @@ void Viewer::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	drawer_rend_->draw(proj, view);
-	frame_drawer_rend_->draw(proj, view);
+	drawer_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
+	frame_drawer_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
 }
 
 void Viewer::init()

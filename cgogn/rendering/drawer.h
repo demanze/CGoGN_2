@@ -24,6 +24,7 @@
 #ifndef CGOGN_RENDERING_DRAWER_H_
 #define CGOGN_RENDERING_DRAWER_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 
 #include <cgogn/rendering/shaders/shader_color_per_vertex.h>
@@ -32,8 +33,6 @@
 #include <cgogn/rendering/shaders/shader_round_point.h>
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
 #include <cgogn/rendering/shaders/vbo.h>
-
-#include <QOpenGLFunctions_3_3_Core>
 
 namespace cgogn
 {
@@ -125,7 +124,7 @@ public:
 		 * @param projection projection matrix
 		 * @param modelview modelview matrix
 		 */
-		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+		void draw(const Matrix4f& projection, const Matrix4f& modelview);
 	};
 
 	using Self = DisplayListDrawer;

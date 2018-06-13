@@ -25,7 +25,6 @@
 
 #include <cgogn/rendering/text_drawer.h>
 
-#include <QOpenGLFunctions>
 #include <iostream>
 #include<QColor>
 
@@ -59,7 +58,7 @@ TextDrawer::~TextDrawer()
 {}
 
 
-TextDrawer& TextDrawer::operator << (const QColor& col)
+TextDrawer& TextDrawer::operator << (const Vector4f& col)
 {
 	current_color_ = col;
 	return *this;
@@ -106,7 +105,7 @@ TextDrawer& TextDrawer::operator << (TextDrawer::End)
 	for (const auto& s : strings_)
 	{
 		Vec4f p{ (*it)[0], (*it)[1], (*it)[2], 0 };
-		Vec4f cs{ float32(jt->redF()), float32(jt->greenF()), float32(jt->blueF()), *kt++ };
+		Vec4f cs{ float32(jt->x()), float32(jt->y()), float32(jt->z()), *kt++ };
 		it++;
 		jt++;
 		for (auto c : s)
@@ -172,9 +171,6 @@ void TextDrawer::scale_text(float sc)
 	vbo_colsz_->release_pointer();
 }
 
-
-
-
 TextDrawer::Renderer::Renderer(TextDrawer* tr) :
 	param_text_(nullptr),
 	text_drawer_data_(tr)
@@ -189,12 +185,12 @@ TextDrawer::Renderer::~Renderer()
 {}
 
 
-void TextDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview)
+void TextDrawer::Renderer::draw(const Matrix4f& projection, const Matrix4f& modelview)
 {
-	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+
 
 	param_text_->bind(projection, modelview);
-	ogl33->glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, text_drawer_data_->vbo_pos_->size());
+	glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, text_drawer_data_->vbo_pos_->size());
 	param_text_->release();
 }
 

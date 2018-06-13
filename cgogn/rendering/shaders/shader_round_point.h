@@ -24,12 +24,10 @@
 #ifndef CGOGN_RENDERING_SHADERS_ROUND_POINT_H_
 #define CGOGN_RENDERING_SHADERS_ROUND_POINT_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-
-#include <QOpenGLFunctions>
-#include <QColor>
 
 namespace cgogn
 {
@@ -39,10 +37,10 @@ namespace rendering
 
 // forward
 template <bool CPV>
-class ShaderParamRoundPoint: public ShaderParam
+class ShaderParamRoundPoint: public ogl::ShaderParam
 {};
 
-class CGOGN_RENDERING_API ShaderRoundPointGen : public ShaderProgram
+class CGOGN_RENDERING_API ShaderRoundPointGen : public ogl::ShaderProgram
 {
 	template <bool CPV> friend class ShaderParamRoundPoint;
 
@@ -57,10 +55,10 @@ protected:
 	static const char* fragment_shader_source2_;
 
 	// uniform ids
-	GLint unif_color_;
-	GLint unif_size_;
-	GLint unif_plane_clip_;
-	GLint unif_plane_clip2_;
+	ogl::Uniform unif_color_;
+	ogl::Uniform unif_size_;
+	ogl::Uniform unif_plane_clip_;
+	ogl::Uniform unif_plane_clip2_;
 
 
 public:
@@ -78,7 +76,7 @@ public:
 	 * @brief set current color
 	 * @param rgb
 	 */
-	void set_color(const QColor& rgb);
+	void set_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set the width of lines (call before each draw)
@@ -90,13 +88,13 @@ public:
 	 * @brief set_plane_clip
 	 * @param plane
 	 */
-	void set_plane_clip(const QVector4D& plane);
+	void set_plane_clip(const Vector4f& plane);
 
 	/**
 	 * @brief set_plane_clip2
 	 * @param plane
 	 */
-	void set_plane_clip2(const QVector4D& plane);
+	void set_plane_clip2(const Vector4f& plane);
 
 
 protected:
@@ -126,13 +124,13 @@ ShaderRoundPointTpl<CPV>* ShaderRoundPointTpl<CPV>::instance_ = nullptr;
 
 // COLOR UNIFORM PARAM
 template <>
-class ShaderParamRoundPoint<false> : public ShaderParam
+class ShaderParamRoundPoint<false> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderRoundPointGen* sh = static_cast<ShaderRoundPointGen*>(this->shader_);
+		ShaderRoundPointGen* sh = static_cast<ShaderRoundPointGen*>(this->program);
 		sh->set_color(color_);
 		sh->set_size(size_);
 		sh->set_plane_clip(plane_clip_);
@@ -143,43 +141,38 @@ public:
 
 	using ShaderType = ShaderRoundPointTpl<false>;
 
-	QColor color_;
+	Vector4f color_;
 	float32 size_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	Vector4f plane_clip_;
+	Vector4f plane_clip2_;
 
 	ShaderParamRoundPoint(ShaderRoundPointTpl<false>* sh) :
-		ShaderParam(sh),
-		color_(0, 0, 255),
+		ogl::ShaderParam(sh),
+		color_(Color(0, 0, 255)),
 		size_(1.0),
-		plane_clip_(0,0,0,0),
-		plane_clip2_(0,0,0,0)
+		plane_clip_(Vector4f(0,0,0,0)),
+		plane_clip2_(Vector4f(0,0,0,0))
 	{}
 
 	void set_position_vbo(VBO* vbo_pos, uint32 stride = 0, uint32 first = 0)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
-		vbo_pos->release();
+		vao_->attribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos, GL_FLOAT, stride * vbo_pos->vector_dimension() * 4, (void*)(first * vbo_pos->vector_dimension() * 4));
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 
 // COLOR PER VERTEX PARAM
 template <>
-class ShaderParamRoundPoint<true> : public ShaderParam
+class ShaderParamRoundPoint<true> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderRoundPointGen* sh = static_cast<ShaderRoundPointGen*>(this->shader_);
+		ShaderRoundPointGen* sh = static_cast<ShaderRoundPointGen*>(this->program);
 		sh->set_size(size_);
 		sh->set_plane_clip(plane_clip_);
 		sh->set_plane_clip2(plane_clip2_);
@@ -190,11 +183,11 @@ public:
 	using ShaderType = ShaderRoundPointTpl<true>;
 
 	float32 size_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	Vector4f plane_clip_;
+	Vector4f plane_clip2_;
 
 	ShaderParamRoundPoint(ShaderRoundPointTpl<true>* sh) :
-		ShaderParam(sh),
+		ogl::ShaderParam(sh),
 		size_(1.0),
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
@@ -202,47 +195,30 @@ public:
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color, uint32 stride = 0, uint32 first = 0)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
-		vbo_pos->release();
-		// color vbo
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_color->vector_dimension() * 4, void_ptr(first * vbo_color->vector_dimension() * 4));
-		vbo_color->release();
+		vao_->attribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos, GL_FLOAT, stride * vbo_pos->vector_dimension() * 4, (void*)(first * vbo_pos->vector_dimension() * 4));
+		vao_->attribPointer(ShaderRoundPointGen::ATTRIB_COLOR, vbo_color, GL_FLOAT, stride * vbo_color->vector_dimension() * 4, (void*)(first * vbo_color->vector_dimension() * 4));
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_position_vbo(VBO* vbo_pos, uint32 stride = 0, uint32 first = 0)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
-		vbo_pos->release();
+		vao_->attribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos, GL_FLOAT, stride * vbo_pos->vector_dimension() * 4, (void*)(first * vbo_pos->vector_dimension() * 4));
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_color_vbo(VBO* vbo_color, uint32 stride = 0, uint32 first = 0)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_color->vector_dimension() * 4, void_ptr(first * vbo_color->vector_dimension() * 4));
-		vbo_color->release();
+		vao_->attribPointer(ShaderRoundPointGen::ATTRIB_COLOR, vbo_color, GL_FLOAT, stride * vbo_color->vector_dimension() * 4, (void*)(first * vbo_color->vector_dimension() * 4));
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 

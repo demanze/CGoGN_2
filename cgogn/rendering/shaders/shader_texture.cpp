@@ -23,7 +23,6 @@
 
 
 #include <cgogn/rendering/shaders/shader_texture.h>
-#include <QOpenGLFunctions>
 #include <iostream>
 
 namespace cgogn
@@ -59,17 +58,26 @@ const char* ShaderTexture::fragment_shader_source_ =
 
 ShaderTexture::ShaderTexture()
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-	prg_.bindAttributeLocation("vertex_tc", ATTRIB_TC);
-	prg_.link();
+	addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+	addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+
+	bindAttributeLocation("vertex_pos", ATTRIB_POS);
+	bindAttributeLocation("vertex_tc", ATTRIB_TC);
+
+	link();
+
+	bind(); 
 	get_matrices_uniforms();
-	prg_.setUniformValue("texture_unit", 0);
+
+	ogl::Uniform unif_texture_unit_; 
+	unif_texture_unit_ = "texture_unit";
+	unif_texture_unit_.set(0); 
+
+	release(); 
 }
 
 ShaderParamTexture::ShaderParamTexture(ShaderTexture* sh) :
-	ShaderParam(sh),
+	ogl::ShaderParam(sh),
 	texture_(nullptr)
 {}
 
@@ -77,32 +85,19 @@ void ShaderParamTexture::set_uniforms()
 {
 	if (texture_)
 	{
-		QOpenGLContext::currentContext()->functions()->glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE0);
 		texture_->bind();
 	}
 }
 
 void ShaderParamTexture::set_vbo(VBO* vbo_pos, VBO* vbo_tc)
 {
-	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-
-	shader_->bind();
+	program->bind();
 	vao_->bind();
-
-	// position vbo
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ShaderTexture::ATTRIB_POS);
-	ogl->glVertexAttribPointer(ShaderTexture::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_pos->release();
-
-	// color  vbo
-	vbo_tc->bind();
-	ogl->glEnableVertexAttribArray(ShaderTexture::ATTRIB_TC);
-	ogl->glVertexAttribPointer(ShaderTexture::ATTRIB_TC, vbo_tc->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_tc->release();
-
+	vao_->attribPointer(ShaderTexture::ATTRIB_POS, vbo_pos, GL_FLOAT);
+	vao_->attribPointer(ShaderTexture::ATTRIB_TC, vbo_tc, GL_FLOAT);
 	vao_->release();
-	shader_->release();
+	program->release();
 }
 
 } // namespace rendering

@@ -63,22 +63,26 @@ ShaderTranspQuad* ShaderTranspQuad::instance_ = nullptr;
 
 ShaderTranspQuad::ShaderTranspQuad()
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.link();
+	addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+	addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+	link();
 
-	unif_rgba_texture_sampler_ =  prg_.uniformLocation("rgba_texture");
-	unif_depth_texture_sampler_ = prg_.uniformLocation("depth_texture");
+	bind(); 
+
+	unif_rgba_texture_sampler_ = "rgba_texture";
+	unif_depth_texture_sampler_ = "depth_texture";
+
+	release(); 
 }
 
-void ShaderTranspQuad::set_rgba_sampler(GLuint rgba_samp)
+void ShaderTranspQuad::set_rgba_sampler(GLint rgba_samp)
 {
-	prg_.setUniformValue(unif_rgba_texture_sampler_, rgba_samp);
+	unif_rgba_texture_sampler_.set(rgba_samp);
 }
 
-void ShaderTranspQuad::set_depth_sampler(GLuint depth_samp)
+void ShaderTranspQuad::set_depth_sampler(GLint depth_samp)
 {
-	prg_.setUniformValue(unif_depth_texture_sampler_, depth_samp);
+	unif_depth_texture_sampler_.set(depth_samp);
 }
 
 std::unique_ptr< ShaderTranspQuad::Param> ShaderTranspQuad::generate_param()
@@ -94,13 +98,12 @@ std::unique_ptr< ShaderTranspQuad::Param> ShaderTranspQuad::generate_param()
 
 
 ShaderParamTranspQuad::ShaderParamTranspQuad(ShaderTranspQuad* sh) :
-	ShaderParam(sh)
+	ogl::ShaderParam(sh)
 {}
-
 
 void ShaderParamTranspQuad::set_uniforms()
 {
-	ShaderTranspQuad* sh = static_cast<ShaderTranspQuad*>(this->shader_);
+	ShaderTranspQuad* sh = static_cast<ShaderTranspQuad*>(this->program);
 	sh->set_rgba_sampler(rgba_texture_sampler_);
 	sh->set_depth_sampler(depth_texture_sampler_);
 }

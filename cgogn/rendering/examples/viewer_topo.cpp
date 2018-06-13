@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "cgogn/rendering/opengl/all.h"
+
 #include <QApplication>
 #include <QMatrix4x4>
 #include <QKeyEvent>
@@ -127,7 +129,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	vbo_pos_.reset();
 	topo_drawer_.reset();
 	topo_drawer_rend_.reset();
-	cgogn::rendering::ShaderProgram::clean_all();
+	cgogn::rendering::ogl::ShaderProgram::clean_all();
 }
 
 Viewer::Viewer() :
@@ -175,7 +177,7 @@ void Viewer::draw()
 	{
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 1.0f);
-		param_flat_->bind(proj,view);
+		param_flat_->bind(proj.data(),view.data());
 		render_->draw(cgogn::rendering::TRIANGLES);
 		param_flat_->release();
 		glDisable(GL_POLYGON_OFFSET_FILL);
@@ -183,7 +185,7 @@ void Viewer::draw()
 
 	if (topo_drawing_)
 	{
-		topo_drawer_rend_->draw(proj,view);
+		topo_drawer_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
 	}
 }
 
@@ -199,9 +201,9 @@ void Viewer::init()
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
-	param_flat_->front_color_ = QColor(0,150,0);
-	param_flat_->back_color_ = QColor(0,0,150);
-	param_flat_->ambiant_color_ = QColor(5,5,5);
+	param_flat_->front_color_ = Color(0,150,0);
+	param_flat_->back_color_ = Color(0,0,150);
+	param_flat_->ambiant_color_ = Color(5,5,5);
 
 	topo_drawer_ = cgogn::make_unique<cgogn::rendering::TopoDrawer>();
 	topo_drawer_rend_ = topo_drawer_->generate_renderer();

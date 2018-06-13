@@ -24,6 +24,7 @@
 #ifndef CGOGN_RENDERING_TOPO_DRAWER_H_
 #define CGOGN_RENDERING_TOPO_DRAWER_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 
 #include <cgogn/rendering/shaders/shader_simple_color.h>
@@ -34,9 +35,6 @@
 #include <cgogn/geometry/algos/centroid.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/functions/distance.h>
-
-#include <QOpenGLFunctions_3_3_Core>
-#include <QColor>
 
 namespace cgogn
 {
@@ -70,9 +68,9 @@ protected:
 	std::unique_ptr<VBO> vbo_relations_;
 	std::unique_ptr<VBO> vbo_color_darts_;
 
-	QColor dart_color_;
-	QColor phi2_color_;
-	QColor phi3_color_;
+	Vector4f dart_color_;
+	Vector4f phi2_color_;
+	Vector4f phi3_color_;
 
 	float32 shrink_v_;
 	float32 shrink_f_;
@@ -111,13 +109,13 @@ public:
 		 * @param modelview model-view matrix
 		 * @param with_blending
 		 */
-		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending = true);
+		void draw(const Matrix4f& projection, const Matrix4f& modelview, bool with_blending = true);
 
-		void set_clipping_plane(const QVector4D& p);
+		void set_clipping_plane(const Vector4f& p);
 
-		void set_clipping_plane2(const QVector4D& p);
+		void set_clipping_plane2(const Vector4f& p);
 
-		void set_thick_clipping_plane(const QVector4D& p, float32 th);
+		void set_thick_clipping_plane(const Vector4f& p, float32 th);
 	};
 
 	using Self = TopoDrawer;
@@ -173,7 +171,7 @@ public:
 	 * @param d the dart
 	 * @param rgb the color
 	 */
-	void update_color(Dart d, const QColor& rgb);
+	void update_color(Dart d, const Vector4f& rgb);
 
 	/**
 	 * @brief pick the closest dart to a given ray
@@ -276,9 +274,9 @@ auto TopoDrawer::update(const MAP& m, const VERTEX_ATTR& position)
 	darts_col.resize(darts_pos_.size());
 	for (auto& c: darts_col)
 	{
-		c[0] = float32(dart_color_.redF());
-		c[1] = float32(dart_color_.greenF());
-		c[2] = float32(dart_color_.blueF());
+		c[0] = float32(dart_color_.x());
+		c[1] = float32(dart_color_.y());
+		c[2] = float32(dart_color_.z());
 	}
 
 	uint32 nbvec = std::uint32_t(darts_pos_.size());
@@ -395,9 +393,9 @@ auto TopoDrawer::update(const MAP& m, const VERTEX_ATTR& position)
 	darts_col.resize(darts_pos_.size());
 	for (auto& c: darts_col)
 	{
-		c[0] = float32(dart_color_.redF());
-		c[1] = float32(dart_color_.greenF());
-		c[2] = float32(dart_color_.blueF());
+		c[0] = float32(dart_color_.x());
+		c[1] = float32(dart_color_.y());
+		c[2] = float32(dart_color_.z());
 	}
 
 	uint32 nbvec = uint32(darts_pos_.size());

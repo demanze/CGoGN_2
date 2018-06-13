@@ -24,13 +24,10 @@
 #ifndef CGOGN_RENDERING_SHADER_TRANSP_PHONG_H_
 #define CGOGN_RENDERING_SHADER_TRANSP_PHONG_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-
-#include <QOpenGLFunctions>
-#include <QColor>
-#include <QOpenGLFramebufferObject>
 
 namespace cgogn
 {
@@ -41,7 +38,7 @@ namespace rendering
 // forward
 class ShaderPhongTransp;
 
-class CGOGN_RENDERING_API ShaderParamPhongTransp : public ShaderParam
+class CGOGN_RENDERING_API ShaderParamPhongTransp : public ogl::ShaderParam
 {
 protected:
 
@@ -50,12 +47,12 @@ protected:
 public:
 	using ShaderType = ShaderPhongTransp;
 
-	QColor front_color_;
-	QColor back_color_;
-	QColor ambiant_color_;
-	QColor specular_color_;
+	Vector4f front_color_;
+	Vector4f back_color_;
+	Vector4f ambiant_color_;
+	Vector4f specular_color_;;
 	GLfloat specular_coef_;
-	QVector3D light_pos_;
+	Vector3f light_pos_;
 	bool bf_culling_;
 
 	ShaderParamPhongTransp(ShaderPhongTransp* sh);
@@ -71,7 +68,7 @@ public:
 
 
 
-class CGOGN_RENDERING_API ShaderPhongTransp : public ShaderProgram
+class CGOGN_RENDERING_API ShaderPhongTransp : public ogl::ShaderProgram
 {
 	friend class ShaderParamPhongTransp;
 
@@ -81,16 +78,16 @@ protected:
 	static const char* fragment_shader_source_;
 
 	// uniform ids
-	GLint unif_front_color_;
-	GLint unif_back_color_;
-	GLint unif_ambiant_color_;
-	GLint unif_specular_color_;
-	GLint unif_specular_coef_;
-	GLint unif_light_position_;
-	GLint unif_bf_culling_;
-	GLint unif_layer_;
-	GLint unif_depth_texture_sampler_;
-	GLint unif_rgba_texture_sampler_;
+	ogl::Uniform unif_front_color_;
+	ogl::Uniform unif_back_color_;
+	ogl::Uniform unif_ambiant_color_;
+	ogl::Uniform unif_specular_color_;
+	ogl::Uniform unif_specular_coef_;
+	ogl::Uniform unif_light_position_;
+	ogl::Uniform unif_bf_culling_;
+	ogl::Uniform unif_layer_;
+	ogl::Uniform unif_depth_texture_sampler_;
+	ogl::Uniform unif_rgba_texture_sampler_;
 
 public:
 
@@ -106,25 +103,25 @@ public:
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_front_color(const QColor& rgb);
+	void set_front_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_back_color(const QColor& rgb);
+	void set_back_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set current ambiant color
 	 * @param rgb
 	 */
-	void set_ambiant_color(const QColor& rgb);
+	void set_ambiant_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set current specular color
 	 * @param rgb
 	 */
-	void set_specular_color(const QColor& rgb);
+	void set_specular_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set current specular coefficient
@@ -136,15 +133,15 @@ public:
 	 * @brief set light position relative to screen
 	 * @param l light position
 	 */
-	void set_light_position(const QVector3D& l);
+	void set_light_position(const Vector3f& l);
 
 	void set_bf_culling(bool cull);
 
 	void set_layer(int layer);
 
-	void set_rgba_sampler(GLuint rgba_samp);
+	void set_rgba_sampler(GLint rgba_samp);
 
-	void set_depth_sampler(GLuint depth_samp);
+	void set_depth_sampler(GLint depth_samp);
 
 	using Param = ShaderParamPhongTransp;
 

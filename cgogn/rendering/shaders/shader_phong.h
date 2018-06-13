@@ -24,13 +24,10 @@
 #ifndef CGOGN_RENDERING_SHADERS_PHONG_H_
 #define CGOGN_RENDERING_SHADERS_PHONG_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-
-#include <QColor>
-#include <QVector3D>
-#include <QOpenGLFunctions>
 
 namespace cgogn
 {
@@ -40,10 +37,10 @@ namespace rendering
 
 // forward
 template <bool CPV>
-class ShaderParamPhong: public ShaderParam
+class ShaderParamPhong: public ogl::ShaderParam
 {};
 
-class CGOGN_RENDERING_API ShaderPhongGen : public ShaderProgram
+class CGOGN_RENDERING_API ShaderPhongGen : public ogl::ShaderProgram
 {
 	template <bool CPV> friend class ShaderParamPhong;
 
@@ -56,13 +53,13 @@ protected:
 	static const char* fragment_shader_source_2_;
 
 	// uniform ids
-	GLint unif_front_color_;
-	GLint unif_back_color_;
-	GLint unif_ambiant_color_;
-	GLint unif_spec_color_;
-	GLint unif_spec_coef_;
-	GLint unif_double_side_;
-	GLint unif_light_position_;
+	ogl::Uniform unif_front_color_;
+	ogl::Uniform unif_back_color_;
+	ogl::Uniform unif_ambiant_color_;
+	ogl::Uniform unif_spec_color_;
+	ogl::Uniform unif_spec_coef_;
+	ogl::Uniform unif_double_side_;
+	ogl::Uniform unif_light_position_;
 
 public:
 
@@ -80,25 +77,25 @@ public:
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_front_color(const QColor& rgb);
+	void set_front_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_back_color(const QColor& rgb);
+	void set_back_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set current ambiant color
 	 * @param rgb
 	 */
-	void set_ambiant_color(const QColor& rgb);
+	void set_ambiant_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set current specular color
 	 * @param rgb
 	 */
-	void set_specular_color(const QColor& rgb);
+	void set_specular_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set current specular coefficient
@@ -116,14 +113,14 @@ public:
 	 * @brief set_light_position
 	 * @param l
 	 */
-	void set_light_position(const QVector3D& l);
+	void set_light_position(const Vector3f& l);
 
 	/**
 	 * @brief set light position relative to world
 	 * @param l light position
 	 * @param view_matrix
 	 */
-	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
+	void set_local_light_position(const Vector3f& l, const Matrix4f& view_matrix);
 
 protected:
 
@@ -151,13 +148,13 @@ ShaderPhongTpl<CPV>* ShaderPhongTpl<CPV>::instance_ = nullptr;
 
 // COLOR UNIFORM PARAM
 template <>
-class ShaderParamPhong<false> : public ShaderParam
+class ShaderParamPhong<false> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderPhongGen* sh = static_cast<ShaderPhongGen*>(this->shader_);
+		ShaderPhongGen* sh = static_cast<ShaderPhongGen*>(this->program);
 		sh->set_front_color(front_color_);
 		sh->set_back_color(back_color_);
 		sh->set_ambiant_color(ambiant_color_);
@@ -170,80 +167,63 @@ protected:
 public:
 	using ShaderType = ShaderPhongTpl<false>;
 
-	QVector3D light_position_;
-	QColor front_color_;
-	QColor back_color_;
-	QColor ambiant_color_;
-	QColor specular_color_;
+	Vector3f light_position_;
+	Vector4f front_color_;
+	Vector4f back_color_;
+	Vector4f ambiant_color_;
+	Vector4f specular_color_;
 	float32 specular_coef_;
 	bool double_side_;
 
 	ShaderParamPhong(ShaderPhongTpl<false>* sh) :
-		ShaderParam(sh),
+		ogl::ShaderParam(sh),
 		light_position_(10.0f, 100.0f, 1000.0f),
-		front_color_(250, 0, 0),
-		back_color_(0, 250, 5),
-		ambiant_color_(5, 5, 5),
-		specular_color_(100, 100, 100),
+		front_color_(Color(250, 0, 0)),
+		back_color_(Color(0, 250, 5)),
+		ambiant_color_(Color(5, 5, 5)),
+		specular_color_(Color(100, 100, 100)),
 		specular_coef_(50.0f),
 		double_side_(true)
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_norm)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		// normal vbo
-		vbo_norm->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_norm->release();
+		vao_->attribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
+		vao_->attribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_normal_vbo(VBO* vbo_norm)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_norm->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_norm->release();
+		vao_->attribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 
 // COLOR PER VERTEX PARAM
 template <>
-class ShaderParamPhong<true> : public ShaderParam
+class ShaderParamPhong<true> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderPhongGen* sh = static_cast<ShaderPhongGen*>(this->shader_);
+		ShaderPhongGen* sh = static_cast<ShaderPhongGen*>(this->program);
 		sh->set_ambiant_color(ambiant_color_);
 		sh->set_specular_color(specular_color_);
 		sh->set_specular_coef(specular_coef_);
@@ -254,82 +234,57 @@ protected:
 public:
 	using ShaderType = ShaderPhongTpl<true>;
 
-	QVector3D light_position_;
-	QColor ambiant_color_;
-	QColor specular_color_;
+	Vector3f light_position_;
+	Vector4f ambiant_color_;
+	Vector4f specular_color_;
 	float32 specular_coef_;
 	bool double_side_;
 
 	ShaderParamPhong(ShaderPhongTpl<true>* sh) :
-		ShaderParam(sh),
+		ogl::ShaderParam(sh),
 		light_position_(10.0f, 100.0f, 1000.0f),
-		ambiant_color_(5, 5, 5),
-		specular_color_(100, 100, 100),
+		ambiant_color_(Color(5, 5, 5)),
+		specular_color_(Color(100, 100, 100)),
 		specular_coef_(50.0f),
 		double_side_(true)
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		// normal vbo
-		vbo_norm->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_norm->release();
-		// color  vbo
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
+		vao_->attribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
+		vao_->attribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm, GL_FLOAT);
+		vao_->attribPointer(ShaderPhongGen::ATTRIB_COLOR, vbo_color, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_position_vbo(VBO* vbo_pos)
-	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+	{	
+		program->bind();
 		vao_->bind();
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_normal_vbo(VBO* vbo_norm)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_norm->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_norm->release();
+		vao_->attribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_color_vbo(VBO* vbo_color)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
+		vao_->attribPointer(ShaderPhongGen::ATTRIB_COLOR, vbo_color, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 

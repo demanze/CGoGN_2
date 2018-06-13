@@ -25,6 +25,7 @@
 #ifndef CGOGN_RENDERING_MAP_RENDER_H_
 #define CGOGN_RENDERING_MAP_RENDER_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 
 #include <cgogn/core/cmap/map_base.h> // impossible to include directly attribute.h !
@@ -33,9 +34,6 @@
 
 #include <cgogn/rendering/drawer.h>
 #include <cgogn/rendering/shaders/vbo.h>
-
-#include <QOpenGLBuffer>
-#include <QOpenGLFunctions>
 
 namespace cgogn
 {
@@ -60,7 +58,7 @@ protected:
 	std::vector<std::array<uint32,3>> indices_tri_;
 	std::vector<uint32> indices_points_;
 
-	std::array<std::unique_ptr<QOpenGLBuffer>, SIZE_BUFFER>	indices_buffers_;
+	std::array<std::unique_ptr<ogl::Buffer>, SIZE_BUFFER>	indices_buffers_;
 	std::array<bool, SIZE_BUFFER>							indices_buffers_uptodate_;
 	std::array<uint32, SIZE_BUFFER>							nb_indices_;
 	uint8													boundary_dimension_;
@@ -356,7 +354,7 @@ public:
  * @param view modelview matrix
  */
 template <typename MAP, typename VERTEX_ATTR>
-void transform_position(const MAP& map, const VERTEX_ATTR& pos_in, VERTEX_ATTR& pos_out, const QMatrix4x4& view)
+void transform_position(const MAP& map, const VERTEX_ATTR& pos_in, VERTEX_ATTR& pos_out, const Matrix4f& view)
 {
 	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 

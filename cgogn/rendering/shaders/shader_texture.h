@@ -24,6 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADERS_TEXTURE_H_
 #define CGOGN_RENDERING_SHADERS_TEXTURE_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/dll.h>
@@ -39,7 +40,7 @@ namespace rendering
 
 class ShaderTexture;
 
-class CGOGN_RENDERING_API ShaderParamTexture : public ShaderParam
+class CGOGN_RENDERING_API ShaderParamTexture : public ogl::ShaderParam
 {
 protected:
 
@@ -56,7 +57,7 @@ public:
 	void set_vbo(VBO* vbo_pos, VBO* vbo_tc);
 };
 
-class CGOGN_RENDERING_API ShaderTexture : public ShaderProgram
+class CGOGN_RENDERING_API ShaderTexture : public ogl::ShaderProgram
 {
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;

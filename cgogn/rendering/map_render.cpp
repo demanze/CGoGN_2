@@ -34,8 +34,8 @@ MapRender::MapRender() : boundary_dimension_(1)
 {
 	for (uint32 i = 0u; i < SIZE_BUFFER; ++i)
 	{
-		indices_buffers_[i] = make_unique<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer);
-		indices_buffers_[i]->setUsagePattern(QOpenGLBuffer::StaticDraw);
+		indices_buffers_[i] = make_unique<ogl::Buffer>(GL_ELEMENT_ARRAY_BUFFER);
+		indices_buffers_[i]->setUsagePattern(GL_STATIC_DRAW);
 		indices_buffers_uptodate_[i] = false;
 	}
 }
@@ -48,28 +48,28 @@ void MapRender::draw(DrawingType prim)
 	if (nb_indices_[prim] == 0)
 		return;
 
-	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
+	
 
 	indices_buffers_[prim]->bind();
 	switch (prim)
 	{
 		case POINTS:
-			ogl->glDrawElements(GL_POINTS, nb_indices_[POINTS], GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_POINTS, nb_indices_[POINTS], GL_UNSIGNED_INT, 0);
 			break;
 		case LINES:
-			ogl->glDrawElements(GL_LINES, nb_indices_[LINES], GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_LINES, nb_indices_[LINES], GL_UNSIGNED_INT, 0);
 			break;
 		case TRIANGLES:
-			ogl->glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
 			break;
 		case BOUNDARY:
 			switch (boundary_dimension_)
 			{
 				case 1:
-					ogl->glDrawElements(GL_LINES, nb_indices_[BOUNDARY], GL_UNSIGNED_INT, 0);
+					glDrawElements(GL_LINES, nb_indices_[BOUNDARY], GL_UNSIGNED_INT, 0);
 					break;
 				case 2:
-					ogl->glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
+					glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
 					break;
 			}
 			break;

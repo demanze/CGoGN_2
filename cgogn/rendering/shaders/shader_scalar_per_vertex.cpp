@@ -168,54 +168,59 @@ const char* ShaderScalarPerVertex::fragment_shader_source_ =
 
 ShaderScalarPerVertex::ShaderScalarPerVertex()
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-	prg_.bindAttributeLocation("vertex_scalar", ATTRIB_SCALAR);
-	prg_.link();
+	addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+	addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+	bindAttributeLocation("vertex_pos", ATTRIB_POS);
+	bindAttributeLocation("vertex_scalar", ATTRIB_SCALAR);
+	link();
+
+	bind(); 
+
 	get_matrices_uniforms();
-	unif_color_map_ = prg_.uniformLocation("color_map");
-	unif_expansion_ = prg_.uniformLocation("expansion");
-	unif_min_value_ = prg_.uniformLocation("min_value");
-	unif_max_value_ = prg_.uniformLocation("max_value");
-	unif_show_iso_lines_ = prg_.uniformLocation("show_iso_lines");
-	unif_nb_iso_levels_ = prg_.uniformLocation("nb_iso_levels");
+	unif_color_map_ = "color_map";
+	unif_expansion_ = "expansion";
+	unif_min_value_ = "min_value";
+	unif_max_value_ = "max_value";
+	unif_show_iso_lines_ = "show_iso_lines";
+	unif_nb_iso_levels_ = "nb_iso_levels";
+
+	release(); 
 }
 
 void ShaderScalarPerVertex::set_color_map(ColorMap cm)
 {
-	if (unif_color_map_ >= 0)
-		prg_.setUniformValue(unif_color_map_, cm);
+	if (unif_color_map_.found())
+		unif_color_map_.set(cm);
 }
 
 void ShaderScalarPerVertex::set_expansion(int32 expansion)
 {
-	if (unif_expansion_ >= 0)
-		prg_.setUniformValue(unif_expansion_, expansion);
+	if (unif_expansion_.found())
+		unif_expansion_.set(expansion);
 }
 
 void ShaderScalarPerVertex::set_min_value(float32 value)
 {
-	if (unif_min_value_ >= 0)
-		prg_.setUniformValue(unif_min_value_, value);
+	if (unif_min_value_.found())
+		unif_min_value_.set(value);
 }
 
 void ShaderScalarPerVertex::set_max_value(float32 value)
 {
-	if (unif_max_value_ >= 0)
-		prg_.setUniformValue(unif_max_value_, value);
+	if (unif_max_value_.found())
+		unif_max_value_.set(value);
 }
 
 void ShaderScalarPerVertex::set_show_iso_lines(bool b)
 {
-	if (unif_show_iso_lines_ >= 0)
-		prg_.setUniformValue(unif_show_iso_lines_, b);
+	if (unif_show_iso_lines_.found())
+		unif_show_iso_lines_.set(b);
 }
 
 void ShaderScalarPerVertex::set_nb_iso_levels(int32 nb)
 {
-	if (unif_nb_iso_levels_ >= 0)
-		prg_.setUniformValue(unif_nb_iso_levels_, nb);
+	if (unif_nb_iso_levels_.found())
+		unif_nb_iso_levels_.set(nb);
 }
 
 std::unique_ptr<ShaderScalarPerVertex::Param> ShaderScalarPerVertex::generate_param()

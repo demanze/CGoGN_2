@@ -24,10 +24,7 @@
 
 #include <cgogn/rendering/wall_paper.h>
 
-#include <QOpenGLFunctions>
-#include <QColor>
 #include <iostream>
-
 
 namespace cgogn
 {
@@ -69,26 +66,26 @@ WallPaper::WallPaper(const QImage& img):
 	init(img);
 }
 
-WallPaper::WallPaper(const QColor& col) :
+WallPaper::WallPaper(const Vector4f& col) :
 	vbo_pos_(nullptr),
 	vbo_tc_(nullptr),
 	texture_(nullptr)
 {
 	QImage img(1, 1, QImage::Format_RGB32);
-	img.setPixel(0, 0, col.rgba());
+	img.setPixel(0, 0, RGBA(col));
 	init(img);
 }
 
-WallPaper::WallPaper(const QColor& col_tl, const QColor& col_tr, const QColor& col_bl, const QColor& col_br) :
+WallPaper::WallPaper(const Vector4f& col_tl, const Vector4f& col_tr, const Vector4f& col_bl, const Vector4f& col_br) :
 	vbo_pos_(nullptr),
 	vbo_tc_(nullptr),
 	texture_(nullptr)
 {
 	QImage img(2, 2, QImage::Format_RGB32);
-	img.setPixel(0, 1, col_bl.rgba());
-	img.setPixel(1, 1, col_br.rgba());
-	img.setPixel(1, 0, col_tr.rgba());
-	img.setPixel(0, 0, col_tl.rgba());
+	img.setPixel(0, 1, RGBA(col_bl));
+	img.setPixel(1, 1, RGBA(col_br));
+	img.setPixel(1, 0, RGBA(col_tr));
+	img.setPixel(0, 0, RGBA(col_tl));
 	init(img);
 	texture_->setWrapMode(QOpenGLTexture::ClampToEdge);
 }
@@ -99,11 +96,11 @@ WallPaper::~WallPaper()
 }
 
 
-void WallPaper::change_color(const QColor& col)
+void WallPaper::change_color(const Vector4f& col)
 {
 	if ((texture_->width()==1)&&(texture_->height()==1))
 	{
-		float32 color[3] = {float32(col.red()), float32(col.green()), float32(col.blue())};
+		float32 color[3] = {float32(col.x()), float32(col.y()), float32(col.z())};
 		texture_->setData(QOpenGLTexture::RGB, QOpenGLTexture::Float32, color);
 	}
 	else
@@ -112,15 +109,15 @@ void WallPaper::change_color(const QColor& col)
 	}
 }
 
-void WallPaper::change_colors(const QColor& col_tl, const QColor& col_tr, const QColor& col_bl, const QColor& col_br)
+void WallPaper::change_colors(const Vector4f& col_tl, const Vector4f& col_tr, const Vector4f& col_bl, const Vector4f& col_br)
 {
 	if ((texture_->width()==2)&&(texture_->height()==2))
 	{
 		float32 colors[12] =
-		{float32(col_tl.red()), float32(col_tl.green()), float32(col_tl.blue()),
-		 float32(col_tr.red()), float32(col_tr.green()), float32(col_tr.blue()),
-		 float32(col_bl.red()), float32(col_bl.green()), float32(col_bl.blue()),
-		 float32(col_br.red()), float32(col_br.green()), float32(col_br.blue())
+		{float32(col_tl.x()), float32(col_tl.y()), float32(col_tl.z()),
+		 float32(col_tr.x()), float32(col_tr.y()), float32(col_tr.z()),
+		 float32(col_bl.x()), float32(col_bl.y()), float32(col_bl.z()),
+		 float32(col_br.x()), float32(col_br.y()), float32(col_br.z())
 		 };
 
 		texture_->setData(QOpenGLTexture::RGB, QOpenGLTexture::Float32, colors);
@@ -225,11 +222,9 @@ WallPaper::Renderer::~Renderer()
 
 void WallPaper::Renderer::draw()
 {
-	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
-
-	QMatrix4x4 id;
-	param_texture_->bind(id, id);
-	ogl33->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	Matrix4f id = Matrix4f::Identity(); 
+	param_texture_->bind(Matrix4f(id.data()), Matrix4f(id.data()));
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	param_texture_->release();
 }
 

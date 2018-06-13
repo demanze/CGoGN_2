@@ -24,12 +24,10 @@
 #ifndef CGOGN_RENDERING_SHADERS_BOLDLINE_H_
 #define CGOGN_RENDERING_SHADERS_BOLDLINE_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-
-#include <QColor>
-#include <QOpenGLFunctions>
 
 namespace cgogn
 {
@@ -39,10 +37,10 @@ namespace rendering
 
 // forward
 template <bool CPV>
-class ShaderParamBoldLine : public ShaderParam
+class ShaderParamBoldLine : public ogl::ShaderParam
 {};
 
-class CGOGN_RENDERING_API ShaderBoldLineGen : public ShaderProgram
+class CGOGN_RENDERING_API ShaderBoldLineGen : public ogl::ShaderProgram
 {
 	template <bool CPV> friend class ShaderParamBoldLine;
 
@@ -57,10 +55,10 @@ protected:
 	static const char* fragment_shader_source2_;
 
 	// uniform ids
-	GLint unif_color_;
-	GLint unif_width_;
-	GLint unif_plane_clip_;
-	GLint unif_plane_clip2_;
+	ogl::Uniform unif_color_;
+	ogl::Uniform unif_width_;
+	ogl::Uniform unif_plane_clip_;
+	ogl::Uniform unif_plane_clip2_;
 
 public:
 
@@ -77,7 +75,7 @@ public:
 	 * @brief set current color
 	 * @param rgb
 	 */
-	void set_color(const QColor& rgb);
+	void set_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set the width of lines (call before each draw)
@@ -89,13 +87,13 @@ public:
 	 * @brief set_plane_clip
 	 * @param plane
 	 */
-	void set_plane_clip(const QVector4D& plane);
+	void set_plane_clip(const Vector4f& plane);
 
 	/**
 	 * @brief set_plane_clip2
 	 * @param plane
 	 */
-	void set_plane_clip2(const QVector4D& plane);
+	void set_plane_clip2(const Vector4f& plane);
 
 
 protected:
@@ -123,13 +121,13 @@ ShaderBoldLineTpl<CPV>* ShaderBoldLineTpl<CPV>::instance_ = nullptr;
 
 // COLOR UNIFORM VERSION
 template <>
-class ShaderParamBoldLine<false> : public ShaderParam
+class ShaderParamBoldLine<false> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderBoldLineGen* sh = static_cast<ShaderBoldLineGen*>(this->shader_);
+		ShaderBoldLineGen* sh = static_cast<ShaderBoldLineGen*>(this->program);
 		sh->set_color(color_);
 		sh->set_width(width_);
 		sh->set_plane_clip(plane_clip_);
@@ -139,43 +137,38 @@ protected:
 public:
 	using ShaderType = ShaderBoldLineTpl<false>;
 
-	QColor color_;
+	Vector4f color_;
 	float32 width_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	Vector4f plane_clip_;
+	Vector4f plane_clip2_;
 
 	ShaderParamBoldLine(ShaderBoldLineTpl<false>* sh) :
-		ShaderParam(sh),
-		color_(255, 255, 255),
+		ogl::ShaderParam(sh),
+		color_(Color(255, 255, 255)),
 		width_(2.0f),
-		plane_clip_(0,0,0,0),
-		plane_clip2_(0,0,0,0)
+		plane_clip_(Vector4f(0,0,0,0)),
+		plane_clip2_(Vector4f(0,0,0,0))
 	{}
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 
 // COLOR PER VERTEX VERSION
 template <>
-class ShaderParamBoldLine<true> : public ShaderParam
+class ShaderParamBoldLine<true> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderBoldLineGen* sh = static_cast<ShaderBoldLineGen*>(this->shader_);
+		ShaderBoldLineGen* sh = static_cast<ShaderBoldLineGen*>(this->program);
 		sh->set_width(width_);
 		sh->set_plane_clip(plane_clip_);
 		sh->set_plane_clip2(plane_clip2_);
@@ -188,11 +181,11 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderParamBoldLine);
 
 	float32 width_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	Vector4f plane_clip_;
+	Vector4f plane_clip2_;
 
 	ShaderParamBoldLine(ShaderBoldLineTpl<true>* sh) :
-		ShaderParam(sh),
+		ogl::ShaderParam(sh),
 		width_(2.0f),
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
@@ -200,47 +193,30 @@ public:
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		// color vbo
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
+		vao_->attribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
+		vao_->attribPointer(ShaderBoldLineGen::ATTRIB_COLOR, vbo_color, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_color_vbo(VBO* vbo_color)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
+		vao_->attribPointer(ShaderBoldLineGen::ATTRIB_COLOR, vbo_color, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 

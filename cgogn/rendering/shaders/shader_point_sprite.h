@@ -24,13 +24,10 @@
 #ifndef CGOGN_RENDERING_SHADER_POINT_SPRITE_H_
 #define CGOGN_RENDERING_SHADER_POINT_SPRITE_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-
-#include <QOpenGLFunctions>
-#include <QColor>
-#include <QVector3D>
 
 #include <type_traits>
 
@@ -42,10 +39,10 @@ namespace rendering
 
 // forward
 template <bool CPV, bool SPV>
-class ShaderParamPointSprite : public ShaderParam
+class ShaderParamPointSprite : public ogl::ShaderParam
 {};
 
-class CGOGN_RENDERING_API ShaderPointSpriteGen : public ShaderProgram
+class CGOGN_RENDERING_API ShaderPointSpriteGen : public ogl::ShaderProgram
 {
 	template <bool CPV, bool SPV> friend class ShaderParamPointSprite;
 
@@ -56,12 +53,12 @@ protected:
 	static const char* fragment_shader_source_;
 
 	// uniform ids
-	GLint unif_color_;
-	GLint unif_size_;
-	GLint unif_ambiant_;
-	GLint unif_light_pos_;
-	GLint unif_plane_clip_;
-	GLint unif_plane_clip2_;
+	ogl::Uniform unif_color_;
+	ogl::Uniform unif_size_;
+	ogl::Uniform unif_ambiant_;
+	ogl::Uniform unif_light_pos_;
+	ogl::Uniform unif_plane_clip_;
+	ogl::Uniform unif_plane_clip2_;
 
 public:
 
@@ -75,26 +72,26 @@ public:
 		ATTRIB_SIZE
 	};
 
-	void set_color(const QColor& rgb);
+	void set_color(const Vector4f& rgb);
 
 	/**
 	* @brief set ambiant color
 	* @param rgb
 	*/
-	void set_ambiant(const QColor& rgb);
+	void set_ambiant(const Vector4f& rgb);
 
 	/**
 	* @brief set light position relative to screen
 	* @param l
 	*/
-	void set_light_position(const QVector3D& l);
+	void set_light_position(const Vector3f& l);
 
 	/**
 	* @brief set light position relative to world
 	* @param l
 	* @param view_matrix
 	*/
-	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
+	void set_local_light_position(const Vector3f& l, const Matrix4f& view_matrix);
 
 	/**
 	* @brief set the size of sphere (call before each draw)
@@ -106,13 +103,13 @@ public:
 	 * @brief set_plane_clip
 	 * @param plane
 	 */
-	void set_plane_clip(const QVector4D& plane);
+	void set_plane_clip(const Vector4f& plane);
 
 	/**
 	 * @brief set_plane_clip2
 	 * @param plane
 	 */
-	void set_plane_clip2(const QVector4D& plane);
+	void set_plane_clip2(const Vector4f& plane);
 
 
 protected:
@@ -140,13 +137,13 @@ ShaderPointSpriteTpl<CPV,SPV>* ShaderPointSpriteTpl<CPV, SPV>::instance_ = nullp
 
 
 template <>
-class ShaderParamPointSprite<false, false> : public ShaderParam
+class ShaderParamPointSprite<false, false> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderPointSpriteGen* sh = static_cast<ShaderPointSpriteGen*>(this->shader_);
+		ShaderPointSpriteGen* sh = static_cast<ShaderPointSpriteGen*>(this->program);
 		sh->set_color(color_);
 		sh->set_size(size_);
 		sh->set_ambiant(ambiant_color_);
@@ -159,46 +156,41 @@ public:
 
 	using ShaderType = ShaderPointSpriteTpl<false, false>;
 
-	QColor color_;
-	QColor ambiant_color_;
-	QVector3D light_pos_;
+	Vector4f color_;
+	Vector4f ambiant_color_;
+	Vector3f light_pos_;
 	float32 size_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
-
+	Vector4f plane_clip_;
+	Vector4f plane_clip2_;
 
 	ShaderParamPointSprite(ShaderPointSpriteTpl<false,false>* sh) :
-		ShaderParam(sh),
-		color_(0, 0, 255),
-		ambiant_color_(5, 5, 5),
-		light_pos_(10, 100, 1000),
+		ogl::ShaderParam(sh),
+		color_(Color(0, 0, 255)),
+		ambiant_color_(Color(5, 5, 5)),
+		light_pos_(Vector3f(10, 100, 1000)),
 		size_(1.0),
-		plane_clip_(0,0,0,0),
-		plane_clip2_(0,0,0,0)
+		plane_clip_(Vector4f(0,0,0,0)),
+		plane_clip2_(Vector4f(0,0,0,0))
 	{}
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 
 template <>
-class ShaderParamPointSprite<false, true> : public ShaderParam
+class ShaderParamPointSprite<false, true> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderPointSpriteGen* sh = static_cast<ShaderPointSpriteGen*>(this->shader_);
+		ShaderPointSpriteGen* sh = static_cast<ShaderPointSpriteGen*>(this->program);
 		sh->set_color(color_);
 		sh->set_ambiant(ambiant_color_);
 		sh->set_light_position(light_pos_);
@@ -210,76 +202,59 @@ public:
 
 	using ShaderType = ShaderPointSpriteTpl<false, true>;
 
-	QColor color_;
-	QColor ambiant_color_;
-	QVector3D light_pos_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	Vector4f color_;
+	Vector4f ambiant_color_;
+	Vector3f light_pos_;
+	Vector4f plane_clip_;
+	Vector4f plane_clip2_;
 
 
 	ShaderParamPointSprite(ShaderPointSpriteTpl<false, true>* sh) :
-		ShaderParam(sh),
-		color_(0, 0, 255),
-		ambiant_color_(5, 5, 5),
-		light_pos_(10, 100, 1000),
-		plane_clip_(0,0,0,0),
-		plane_clip2_(0,0,0,0)
+		ogl::ShaderParam(sh),
+		color_(Color(0, 0, 255)),
+		ambiant_color_(Color(5, 5, 5)),
+		light_pos_(Vector3f(10, 100, 1000)),
+		plane_clip_(Vector4f(0,0,0,0)),
+		plane_clip2_(Vector4f(0,0,0,0))
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_size)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		
+		program->bind();
 		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		// size vbo
-		vbo_size->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_SIZE);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_size->release();
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_size_vbo(VBO* vbo_size)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
-		vao_->bind();
-		vbo_size->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_SIZE);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_size->release();
+		program->bind();
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 
 template <>
-class ShaderParamPointSprite<true, false> : public ShaderParam
+class ShaderParamPointSprite<true, false> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderPointSpriteGen* sh = static_cast<ShaderPointSpriteGen*>(this->shader_);
+		ShaderPointSpriteGen* sh = static_cast<ShaderPointSpriteGen*>(this->program);
 		sh->set_ambiant(ambiant_color_);
 		sh->set_light_position(light_pos_);
 		sh->set_size(size_);
@@ -291,76 +266,59 @@ public:
 
 	using ShaderType = ShaderPointSpriteTpl<true, false>;
 
-	QColor ambiant_color_;
-	QVector3D light_pos_;
+	Vector4f ambiant_color_;
+	Vector3f light_pos_;
 	float32 size_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	Vector4f plane_clip_;
+	Vector4f plane_clip2_;
 
 
 	ShaderParamPointSprite(ShaderPointSpriteTpl<true, false>* sh) :
-		ShaderParam(sh),
-		ambiant_color_(5, 5, 5),
-		light_pos_(10, 100, 1000),
+		ogl::ShaderParam(sh),
+		ambiant_color_(Color(5, 5, 5)),
+		light_pos_(Vector3f(10, 100, 1000)),
 		size_(1.0),
-		plane_clip_(0,0,0,0),
-		plane_clip2_(0,0,0,0)
+		plane_clip_(Vector4f(0,0,0,0)),
+		plane_clip2_(Vector4f(0,0,0,0))
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		// color vbo
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_color_vbo(VBO* vbo_color)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 
 template <>
-class ShaderParamPointSprite<true, true> : public ShaderParam
+class ShaderParamPointSprite<true, true> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderPointSpriteGen* sh = static_cast<ShaderPointSpriteGen*>(this->shader_);
+		ShaderPointSpriteGen* sh = static_cast<ShaderPointSpriteGen*>(this->program);
 		sh->set_ambiant(ambiant_color_);
 		sh->set_light_position(light_pos_);
 		sh->set_plane_clip(plane_clip_);
@@ -371,81 +329,56 @@ public:
 
 	using ShaderType = ShaderPointSpriteTpl<true, true>;
 
-	QColor ambiant_color_;
-	QVector3D light_pos_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	Vector4f ambiant_color_;
+	Vector3f light_pos_;
+	Vector4f plane_clip_;
+	Vector4f plane_clip2_;
 
 
 	ShaderParamPointSprite(ShaderPointSpriteTpl<true, true>* sh) :
-		ShaderParam(sh),
-		ambiant_color_(5, 5, 5),
-		light_pos_(10, 100, 1000),
+		ogl::ShaderParam(sh),
+		ambiant_color_(Color(5, 5, 5)),
+		light_pos_(Vector3f(10, 100, 1000)),
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color, VBO* vbo_size)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		// color vbo
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
-		// size vbo
-		vbo_size->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_SIZE);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_size->release();
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color, GL_FLOAT);
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_color_vbo(VBO* vbo_color)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_size_vbo(VBO* vbo_size)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_size->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_SIZE);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_size->release();
+		vao_->attribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 

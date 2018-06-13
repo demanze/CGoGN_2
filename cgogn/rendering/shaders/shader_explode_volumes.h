@@ -24,14 +24,10 @@
 #ifndef CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_H_
 #define CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-
-#include <QVector3D>
-#include <QVector4D>
-#include <QColor>
-#include <QOpenGLFunctions>
 
 namespace cgogn
 {
@@ -44,7 +40,7 @@ template <bool CPV>
 class ShaderParamExplodeVolumes
 {};
 
-class CGOGN_RENDERING_API ShaderExplodeVolumesGen : public ShaderProgram
+class CGOGN_RENDERING_API ShaderExplodeVolumesGen : public ogl::ShaderProgram
 {
 	template <bool CPV> friend class ShaderParamExplodeVolumes;
 
@@ -59,11 +55,11 @@ protected:
 	static const char* fragment_shader_source2_;
 
 	// uniform ids
-	GLint unif_expl_v_;
-	GLint unif_light_position_;
-	GLint unif_plane_clip_;
-	GLint unif_plane_clip2_;
-	GLint unif_color_;
+	ogl::Uniform unif_expl_v_;
+	ogl::Uniform unif_light_position_;
+	ogl::Uniform unif_plane_clip_;
+	ogl::Uniform unif_plane_clip2_;
+	ogl::Uniform unif_color_;
 
 public:
 
@@ -77,10 +73,10 @@ public:
 	};
 
 	void set_explode_volume(float32 x);
-	void set_light_position(const QVector3D& l);
-	void set_plane_clip(const QVector4D& plane);
-	void set_plane_clip2(const QVector4D& plane);
-	void set_color(const QColor& rgb);
+	void set_light_position(const Vector3f& l);
+	void set_plane_clip(const Vector4f& plane);
+	void set_plane_clip2(const Vector4f& plane);
+	void set_color(const Vector4f& rgb);
 
 protected:
 
@@ -107,13 +103,13 @@ ShaderExplodeVolumesTpl<CPV>* ShaderExplodeVolumesTpl<CPV>::instance_ = nullptr;
 
 // COLOR UNIFORM PARAM
 template <>
-class ShaderParamExplodeVolumes<false> : public ShaderParam
+class ShaderParamExplodeVolumes<false> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderExplodeVolumesGen* sh = static_cast<ShaderExplodeVolumesGen*>(this->shader_);
+		ShaderExplodeVolumesGen* sh = static_cast<ShaderExplodeVolumesGen*>(this->program);
 		sh->set_color(color_);
 		sh->set_explode_volume(explode_factor_);
 		sh->set_light_position(light_position_);
@@ -125,44 +121,40 @@ public:
 
 	using ShaderType = ShaderExplodeVolumesTpl<false>;
 
-	QColor color_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
-	QVector3D light_position_;
+	Vector4f color_;
+	Vector4f plane_clip_;
+	Vector4f plane_clip2_;
+	Vector3f light_position_;
 	float32 explode_factor_;
 
 	ShaderParamExplodeVolumes(ShaderExplodeVolumesTpl<false>* sh) :
-		ShaderParam(sh),
-		color_(255, 0, 0),
-		plane_clip_(0, 0, 0, 0),
-		plane_clip2_(0, 0, 0, 0),
-		light_position_(10.0f, 100.0f, 1000.0f),
+		ogl::ShaderParam(sh),
+		color_(Color(255, 0, 0)),
+		plane_clip_(Vector4f(0, 0, 0, 0)),
+		plane_clip2_(Vector4f(0, 0, 0, 0)),
+		light_position_(Vector3f(10.0f, 100.0f, 1000.0f)),
 		explode_factor_(0.8f)
 	{}
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 
 // COLOR PER VERTEX PARAM
 template <>
-class ShaderParamExplodeVolumes<true> : public ShaderParam
+class ShaderParamExplodeVolumes<true> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderExplodeVolumesGen* sh = static_cast<ShaderExplodeVolumesGen*>(this->shader_);
+		ShaderExplodeVolumesGen* sh = static_cast<ShaderExplodeVolumesGen*>(this->program);
 		sh->set_explode_volume(explode_factor_);
 		sh->set_light_position(light_position_);
 		sh->set_plane_clip(plane_clip_);
@@ -173,13 +165,13 @@ public:
 
 	using ShaderType = ShaderExplodeVolumesTpl<true>;
 
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
-	QVector3D light_position_;
+	Vector4f plane_clip_;
+	Vector4f plane_clip2_;
+	Vector3f light_position_;
 	float32 explode_factor_;
 
 	ShaderParamExplodeVolumes(ShaderExplodeVolumesTpl<true>* sh) :
-		ShaderParam(sh),
+		ogl::ShaderParam(sh),
 		plane_clip_(0, 0, 0, 0),
 		plane_clip2_(0, 0, 0, 0),
 		light_position_(10.0f, 100.0f, 1000.0f),
@@ -188,47 +180,30 @@ public:
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		// color vbo
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
+		vao_->attribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
+		vao_->attribPointer(ShaderExplodeVolumesGen::ATTRIB_COLOR, vbo_color, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_color_vbo(VBO* vbo_color)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
+		vao_->attribPointer(ShaderExplodeVolumesGen::ATTRIB_COLOR, vbo_color, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 

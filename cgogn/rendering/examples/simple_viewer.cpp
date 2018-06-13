@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "cgogn/rendering/opengl/all.h"
+
 #include <QApplication>
 #include <QMatrix4x4>
 #include <QKeyEvent>
@@ -36,6 +38,7 @@
 #include <cgogn/geometry/algos/bounding_box.h>
 #include <cgogn/geometry/algos/normal.h>
 
+
 #include <cgogn/rendering/map_render.h>
 #include <cgogn/rendering/shaders/shader_simple_color.h>
 #include <cgogn/rendering/shaders/shader_flat.h>
@@ -45,11 +48,14 @@
 #include <cgogn/rendering/shaders/shader_bold_line.h>
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
 
+
 #include <cgogn/rendering/shaders/shader_round_point.h>
 
 #include <cgogn/geometry/algos/ear_triangulation.h>
 
 #include <cgogn/rendering/drawer.h>
+
+#include <cgogn/rendering/shaders/shader_postprocessing_1.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -74,6 +80,7 @@ public:
 
 	virtual void draw();
 	virtual void init();
+	virtual void resizeGL(int w, int h);
 
 	virtual void keyPressEvent(QKeyEvent *);
 	void import(const std::string& surface_mesh);
@@ -111,6 +118,19 @@ private:
 	bool edge_rendering_;
 	bool normal_rendering_;
 	bool bb_rendering_;
+
+	int width_;
+	int height_;
+
+	std::unique_ptr<cgogn::rendering::ogl::VAO> empty_vao;
+	std::unique_ptr<cgogn::rendering::shaders2::PostProcessing1::Param> param_pp1_;
+
+	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_color;
+	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_depth;
+	std::unique_ptr<cgogn::rendering::ogl::Framebuffer> fbo;
+
+	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_color2;
+	std::unique_ptr<cgogn::rendering::ogl::Framebuffer> fbo2;
 };
 
 
@@ -163,7 +183,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	vbo_sphere_sz_.reset();
 	drawer_.reset();
 	drawer_rend_.reset();
-	cgogn::rendering::ShaderProgram::clean_all();
+	cgogn::rendering::ogl::ShaderProgram::clean_all();
 
 }
 
@@ -222,6 +242,13 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 
 void Viewer::draw()
 {
+	glewInit();
+
+	fbo->bind();
+
+	glClearColor(0.1f, 0.1f, 0.3f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	QMatrix4x4 proj;
 	QMatrix4x4 view;
 	camera()->getProjectionMatrix(proj);
@@ -231,14 +258,14 @@ void Viewer::draw()
 	glPolygonOffset(1.0f, 2.0f);
 	if (flat_rendering_)
 	{
-		param_flat_->bind(proj,view);
+		param_flat_->bind(proj.data(), view.data());
 		render_->draw(cgogn::rendering::TRIANGLES);
 		param_flat_->release();
 	}
 
 	if (phong_rendering_)
 	{
-		param_phong_->bind(proj,view);
+		param_phong_->bind(proj.data(),view.data());
 		render_->draw(cgogn::rendering::TRIANGLES);
 		param_phong_->release();
 	}
@@ -246,14 +273,14 @@ void Viewer::draw()
 
 	if (vertices_rendering_)
 	{
-		param_point_sprite_->bind(proj,view);
+		param_point_sprite_->bind(proj.data(), view.data());;
 		render_->draw(cgogn::rendering::POINTS);
 		param_point_sprite_->release();
 	}
 
 	if (edge_rendering_)
 	{
-		param_edge_->bind(proj,view);
+		param_edge_->bind(proj.data(), view.data());;
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		render_->draw(cgogn::rendering::LINES);
@@ -263,17 +290,49 @@ void Viewer::draw()
 
 	if (normal_rendering_)
 	{
-		param_normal_->bind(proj,view);
+		param_normal_->bind(proj.data(), view.data());;
 		render_->draw(cgogn::rendering::POINTS);
 		param_normal_->release();
 	}
 
 	if (bb_rendering_)
-		drawer_rend_->draw(proj,view);
+		drawer_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
+
+	fbo->release(); 
+
+	//Pass 2
+	fbo2->bind();
+
+	texture_color->bindAt(0);
+
+	param_pp1_->bind();
+	empty_vao->bind();
+	param_pp1_->set_rgba_sampler(texture_color->slot());
+	param_pp1_->set_blur_dimension(0);
+	param_pp1_->set_pixel_size(1.0f / float(width_));
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	empty_vao->release();
+	param_pp1_->release();
+
+	fbo2->release();
+
+	//Pass 3
+	texture_color2->bindAt(0);
+
+	param_pp1_->bind();
+	empty_vao->bind();
+	param_pp1_->set_rgba_sampler(texture_color2->slot());
+	param_pp1_->set_blur_dimension(1);
+	param_pp1_->set_pixel_size(1.0f / float(height_));
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	empty_vao->release();
+	param_pp1_->release();
 }
 
 void Viewer::init()
 {
+	glewInit();
+
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
 	// create and fill VBO for positions
@@ -310,20 +369,23 @@ void Viewer::init()
 	param_point_sprite_->set_all_vbos(vbo_pos_.get(), vbo_color_.get(), vbo_sphere_sz_.get());
 	// set uniforms data
 
+	empty_vao = cgogn::make_unique<cgogn::rendering::ogl::VAO>();
+	param_pp1_ = cgogn::rendering::shaders2::PostProcessing1::generate_param();
+
 	param_edge_ = cgogn::rendering::ShaderBoldLine::generate_param();
 	param_edge_->set_position_vbo(vbo_pos_.get());
-	param_edge_->color_ = QColor(255,255,0);
+	param_edge_->color_ = Color(255,255,0);
 	param_edge_->width_= 2.5f;
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
-	param_flat_->front_color_ = QColor(0,200,0);
-	param_flat_->back_color_ = QColor(0,0,200);
-	param_flat_->ambiant_color_ = QColor(5,5,5);
+	param_flat_->front_color_ = Color(0,200,0);
+	param_flat_->back_color_ = Color(0,0,200);
+	param_flat_->ambiant_color_ = Color(5,5,5);
 
 	param_normal_ = cgogn::rendering::ShaderVectorPerVertex::generate_param();
 	param_normal_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get());
-	param_normal_->color_ = QColor(200,0,200);
+	param_normal_->color_ = Color(200,0,200);
 	param_normal_->length_ = bb_.diag_size()/50;
 
 	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();
@@ -359,6 +421,46 @@ void Viewer::init()
 	drawer_->end_list();
 }
 
+void Viewer::resizeGL(int w, int h)
+{
+	glewInit();
+
+	width_ = w;
+	height_ = h;
+	
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &cgogn::rendering::ogl::Framebuffer::qtDefaultFramebuffer);
+
+	texture_color = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
+	texture_color->bind();
+	texture_color->setImage2D_simple(w, h, GL_RGBA, GL_RGBA, GL_FLOAT);
+	texture_color->release();
+
+	texture_depth = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
+	texture_depth->bind();
+	texture_depth->setImage2D_simple(w, h, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
+	texture_depth->release();
+
+	fbo = cgogn::make_unique<cgogn::rendering::ogl::Framebuffer>();
+	fbo->bind();
+	fbo->attach(texture_depth, GL_DEPTH_ATTACHMENT);
+	fbo->attach(texture_color, GL_COLOR_ATTACHMENT0);
+	fbo->check();
+	fbo->release();
+
+	texture_color2 = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
+	texture_color2->bind();
+	texture_color2->setImage2D_simple(w, h, GL_RGBA, GL_RGBA, GL_FLOAT);
+	texture_color2->release();
+
+	fbo2 = cgogn::make_unique<cgogn::rendering::ogl::Framebuffer>();
+	fbo2->bind();
+	fbo2->attach(texture_color2, GL_COLOR_ATTACHMENT0);
+	fbo2->check();
+	fbo2->release();
+
+	QOGLViewer::resizeGL(w, h);
+}
+
 int main(int argc, char** argv)
 {
 	std::string surface_mesh;
@@ -372,7 +474,7 @@ int main(int argc, char** argv)
 		surface_mesh = std::string(argv[1]);
 
 	QApplication application(argc, argv);
-	qoglviewer::init_ogl_context();
+	qoglviewer::init_ogl_context(); 
 
 	// Instantiate the viewer.
 	Viewer viewer;

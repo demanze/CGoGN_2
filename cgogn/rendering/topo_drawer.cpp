@@ -24,9 +24,7 @@
 
 #include <cgogn/rendering/topo_drawer.h>
 
-#include <QOpenGLFunctions>
 #include <iostream>
-#include<QColor>
 
 namespace cgogn
 {
@@ -35,9 +33,9 @@ namespace rendering
 {
 
 TopoDrawer::TopoDrawer() :
-	dart_color_(255, 255, 255),
-	phi2_color_(255, 0, 0),
-	phi3_color_(255, 255, 0),
+	dart_color_(Color(255, 255, 255)),
+	phi2_color_(Color(255, 0, 0)),
+	phi3_color_(Color(255, 255, 0)),
 	shrink_v_(0.6f),
 	shrink_f_(0.85f),
 	shrink_e_(0.95f)
@@ -69,15 +67,15 @@ TopoDrawer::Renderer::Renderer(TopoDrawer* tr) :
 TopoDrawer::Renderer::~Renderer()
 {}
 
-void TopoDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending)
+void TopoDrawer::Renderer::draw(const Matrix4f& projection, const Matrix4f& modelview, bool with_blending)
 {
-	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+
 
 	float32 lw = 2.0f;
 	if(with_blending)
 	{
-		ogl33->glEnable(GL_BLEND);
-		ogl33->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		lw = 3.0f;
 	}
 
@@ -86,36 +84,36 @@ void TopoDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& 
 	param_rp_->size_ = 2.0f * lw;
 
 	param_rp_->bind(projection, modelview);
-	ogl33->glDrawArrays(GL_POINTS, 0, topo_drawer_data_->vbo_darts_->size()/2);
+	glDrawArrays(GL_POINTS, 0, topo_drawer_data_->vbo_darts_->size()/2);
 	param_rp_->release();
 
 	param_bl_->bind(projection, modelview);
-	ogl33->glDrawArrays(GL_LINES, 0, topo_drawer_data_->vbo_darts_->size());
+	glDrawArrays(GL_LINES, 0, topo_drawer_data_->vbo_darts_->size());
 	param_bl_->release();
 
 	param_bl2_->color_ = topo_drawer_data_->phi2_color_;
 	param_bl2_->bind(projection, modelview);
-	ogl33->glDrawArrays(GL_LINES, 0, topo_drawer_data_->vbo_darts_->size());
+	glDrawArrays(GL_LINES, 0, topo_drawer_data_->vbo_darts_->size());
 	param_bl2_->release();
 
 	if (topo_drawer_data_->vbo_relations_->size() > topo_drawer_data_->vbo_darts_->size())
 	{
 		param_bl2_->color_ = topo_drawer_data_->phi3_color_;
 		param_bl2_->bind(projection, modelview);
-		ogl33->glDrawArrays(GL_LINES, topo_drawer_data_->vbo_darts_->size(), topo_drawer_data_->vbo_darts_->size());
+		glDrawArrays(GL_LINES, topo_drawer_data_->vbo_darts_->size(), topo_drawer_data_->vbo_darts_->size());
 		param_bl2_->release();
 	}
-	ogl33->glDisable(GL_BLEND);
+	glDisable(GL_BLEND);
 }
 
-void TopoDrawer::Renderer::set_clipping_plane(const QVector4D& p)
+void TopoDrawer::Renderer::set_clipping_plane(const Vector4f& p)
 {
 	param_bl_->plane_clip_ = p;
 	param_bl2_->plane_clip_ = p;
 	param_rp_->plane_clip_ = p;
 }
 
-void TopoDrawer::Renderer::set_clipping_plane2(const QVector4D& p)
+void TopoDrawer::Renderer::set_clipping_plane2(const Vector4f& p)
 {
 	param_bl_->plane_clip2_ = p;
 	param_bl2_->plane_clip2_ = p;
@@ -123,19 +121,19 @@ void TopoDrawer::Renderer::set_clipping_plane2(const QVector4D& p)
 }
 
 
-void TopoDrawer::Renderer::set_thick_clipping_plane(const QVector4D& p, float32 th)
+void TopoDrawer::Renderer::set_thick_clipping_plane(const Vector4f& p, float32 th)
 {
-	QVector4D p1 = p;
+	Vector4f p1 = p;
 	p1[3] -= th/2.0f;
 	set_clipping_plane(p1);
 
-	QVector4D p2 = -p;
+	Vector4f p2 = -p;
 	p2[3] -= th/2.0f;
 	set_clipping_plane2(p2);
 }
 
 
-void TopoDrawer::update_color(Dart d, const QColor& rgb)
+void TopoDrawer::update_color(Dart d, const Vector4f& rgb)
 {
 	auto it = std::find(darts_id_.begin(), darts_id_.end(), d);
 	if (it != darts_id_.end())
@@ -143,8 +141,8 @@ void TopoDrawer::update_color(Dart d, const QColor& rgb)
 		std::size_t x = it - darts_id_.begin();
 
 		vbo_color_darts_->bind();
-		float32 rgbf[6] = {float32(rgb.redF()),float32(rgb.greenF()),float32(rgb.blueF()),
-						  float32(rgb.redF()),float32(rgb.greenF()),float32(rgb.blueF())};
+		float32 rgbf[6] = {float32(rgb.x()),float32(rgb.y()),float32(rgb.z()),
+						  float32(rgb.x()),float32(rgb.y()),float32(rgb.z())};
 		vbo_color_darts_->copy_data(uint32(x)*24u, 24u, rgbf);
 		vbo_color_darts_->release();
 	}

@@ -24,11 +24,10 @@
 #ifndef CGOGN_RENDERING_SHADERS_SCALARPERVERTEX_H_
 #define CGOGN_RENDERING_SHADERS_SCALARPERVERTEX_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-
-#include <QOpenGLFunctions>
 
 namespace cgogn
 {
@@ -39,7 +38,7 @@ namespace rendering
 // forward
 class ShaderParamScalarPerVertex;
 
-class CGOGN_RENDERING_API ShaderScalarPerVertex : public ShaderProgram
+class CGOGN_RENDERING_API ShaderScalarPerVertex : public ogl::ShaderProgram
 {
 	friend class ShaderParamScalarPerVertex;
 
@@ -49,12 +48,12 @@ protected:
 	static const char* fragment_shader_source_;
 
 	// uniform ids
-	GLint unif_color_map_;
-	GLint unif_expansion_;
-	GLint unif_min_value_;
-	GLint unif_max_value_;
-	GLint unif_show_iso_lines_;
-	GLint unif_nb_iso_levels_;
+	ogl::Uniform unif_color_map_;
+	ogl::Uniform unif_expansion_;
+	ogl::Uniform unif_min_value_;
+	ogl::Uniform unif_max_value_;
+	ogl::Uniform unif_show_iso_lines_;
+	ogl::Uniform unif_nb_iso_levels_;
 
 public:
 
@@ -120,13 +119,13 @@ protected:
 	static ShaderScalarPerVertex* instance_;
 };
 
-class CGOGN_RENDERING_API ShaderParamScalarPerVertex : public ShaderParam
+class CGOGN_RENDERING_API ShaderParamScalarPerVertex : public ogl::ShaderParam
 {
 protected:
 
 	inline void set_uniforms() override
 	{
-		ShaderScalarPerVertex* sh = static_cast<ShaderScalarPerVertex*>(this->shader_);
+		ShaderScalarPerVertex* sh = static_cast<ShaderScalarPerVertex*>(this->program);
 		sh->set_color_map(color_map_);
 		sh->set_expansion(expansion_);
 		sh->set_min_value(min_value_);
@@ -163,47 +162,30 @@ public:
 	 */
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_scalar)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderScalarPerVertex::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderScalarPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		// scalar vbo
-		vbo_scalar->bind();
-		ogl->glEnableVertexAttribArray(ShaderScalarPerVertex::ATTRIB_SCALAR);
-		ogl->glVertexAttribPointer(ShaderScalarPerVertex::ATTRIB_SCALAR, vbo_scalar->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_scalar->release();
+		vao_->attribPointer(ShaderScalarPerVertex::ATTRIB_POS, vbo_pos, GL_FLOAT);
+		vao_->attribPointer(ShaderScalarPerVertex::ATTRIB_SCALAR, vbo_scalar, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderScalarPerVertex::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderScalarPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderScalarPerVertex::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 
 	void set_scalar_vbo(VBO* vbo_scalar)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		program->bind();
 		vao_->bind();
-		vbo_scalar->bind();
-		ogl->glEnableVertexAttribArray(ShaderScalarPerVertex::ATTRIB_SCALAR);
-		ogl->glVertexAttribPointer(ShaderScalarPerVertex::ATTRIB_SCALAR, vbo_scalar->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_scalar->release();
+		vao_->attribPointer(ShaderScalarPerVertex::ATTRIB_SCALAR, vbo_scalar, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		program->release();
 	}
 };
 

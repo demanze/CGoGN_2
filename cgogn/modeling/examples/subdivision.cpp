@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "cgogn/rendering/opengl/all.h"
+
 #include <QApplication>
 #include <QMatrix4x4>
 #include <QKeyEvent>
@@ -95,13 +97,13 @@ public:
 
 		param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 		param_flat_->set_position_vbo(vbo_pos_.get());
-		param_flat_->front_color_ = QColor(0,200,0);
-		param_flat_->back_color_ = QColor(0,0,200);
-		param_flat_->ambiant_color_ = QColor(5,5,5);
+		param_flat_->front_color_ = Color(0,200,0);
+		param_flat_->back_color_ = Color(0,0,200);
+		param_flat_->ambiant_color_ = Color(5,5,5);
 
 		param_edge_ = cgogn::rendering::ShaderBoldLine::generate_param();
 		param_edge_->set_position_vbo(vbo_pos_.get());
-		param_edge_->color_ = QColor(20,20,20);
+		param_edge_->color_ = Color(20,20,20);
 		param_edge_->width_= 2.5f;
 
 		param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
@@ -120,7 +122,7 @@ public:
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 2.0f);
 
-		param_flat_->bind(proj, view);
+		param_flat_->bind(proj.data(), view.data());
 		render_->draw(cgogn::rendering::TRIANGLES);
 		param_flat_->release();
 
@@ -128,14 +130,14 @@ public:
 
 		if (vertices_rendering_)
 		{
-			param_point_sprite_->bind(proj, view);
+			param_point_sprite_->bind(proj.data(), view.data());
 			render_->draw(cgogn::rendering::POINTS);
 			param_point_sprite_->release();
 		}
 
 		if (edge_rendering_)
 		{
-			param_edge_->bind(proj,view);
+			param_edge_->bind(proj.data(), view.data());;
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			render_->draw(cgogn::rendering::LINES);
@@ -229,7 +231,7 @@ public:
 	{
 		render_.reset();
 		vbo_pos_.reset();
-		cgogn::rendering::ShaderProgram::clean_all();
+		cgogn::rendering::ogl::ShaderProgram::clean_all();
 	}
 
 private:

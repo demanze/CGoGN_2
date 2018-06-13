@@ -24,6 +24,8 @@
 #ifndef CGOGN_RENDERING_SHADERS_TEXT_H_
 #define CGOGN_RENDERING_SHADERS_TEXT_H_
 
+#include <cgogn/rendering/opengl/all.h>
+
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/dll.h>
@@ -39,7 +41,7 @@ namespace rendering
 
 class ShaderText;
 
-class CGOGN_RENDERING_API ShaderParamText : public ShaderParam
+class CGOGN_RENDERING_API ShaderParamText : public ogl::ShaderParam
 {
 protected:
 
@@ -57,11 +59,11 @@ public:
 	void set_vbo(VBO* vbo_pos, VBO* vbo_str, VBO* vbo_colsize);
 };
 
-class CGOGN_RENDERING_API ShaderText : public ShaderProgram
+class CGOGN_RENDERING_API ShaderText : public ogl::ShaderProgram
 {
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;
-	GLint unif_italic_;
+	ogl::Uniform unif_italic_;
 
 public:
 

@@ -101,77 +101,81 @@ ShaderPhongTransp* ShaderPhongTransp::instance_ = nullptr;
 
 ShaderPhongTransp::ShaderPhongTransp()
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-	prg_.link();
+	addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+	addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+	bindAttributeLocation("vertex_pos", ATTRIB_POS);
+	link();
+
+	bind();
 	get_matrices_uniforms();
 
-	unif_front_color_ = prg_.uniformLocation("front_color");
-	unif_back_color_ = prg_.uniformLocation("back_color");
-	unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
-	unif_specular_color_ = prg_.uniformLocation("spec_color");
-	unif_specular_coef_ = prg_.uniformLocation("spec_coef");
+	unif_front_color_ = "front_color";
+	unif_back_color_ = "back_color";
+	unif_ambiant_color_ = "ambiant_color";
+	unif_specular_color_ = "spec_color";
+	unif_specular_coef_ = "spec_coef";
 
-	unif_light_position_ = prg_.uniformLocation("lightPosition");
-	unif_layer_ = prg_.uniformLocation("layer");
-	unif_bf_culling_ = prg_.uniformLocation("cull_back_face");
-	unif_rgba_texture_sampler_ =  prg_.uniformLocation("rgba_texture");
-	unif_depth_texture_sampler_ = prg_.uniformLocation("depth_texture");
+	unif_light_position_ = "lightPosition";
+	unif_layer_ = "layer";
+	unif_bf_culling_ = "cull_back_face";
+	unif_rgba_texture_sampler_ ="rgba_texture";
+	unif_depth_texture_sampler_ = "depth_texture";
+
+	release(); 
 }
 
-void ShaderPhongTransp::set_light_position(const QVector3D& l)
+void ShaderPhongTransp::set_light_position(const Vector3f& l)
 {
-	prg_.setUniformValue(unif_light_position_, l);
+	unif_light_position_.set(l);
 }
 
-void ShaderPhongTransp::set_front_color(const QColor& rgb)
+void ShaderPhongTransp::set_front_color(const Vector4f& rgb)
 {
-	if (unif_front_color_ >= 0)
-		prg_.setUniformValue(unif_front_color_, rgb);
+	if (unif_front_color_.found())
+		unif_front_color_.set(rgb);
 }
 
-void ShaderPhongTransp::set_back_color(const QColor& rgb)
+void ShaderPhongTransp::set_back_color(const Vector4f& rgb)
 {
-	if (unif_back_color_ >= 0)
-		prg_.setUniformValue(unif_back_color_, rgb);
+	if (unif_back_color_.found())
+		unif_back_color_.set(rgb);
 }
 
-void ShaderPhongTransp::set_ambiant_color(const QColor& rgb)
+void ShaderPhongTransp::set_ambiant_color(const Vector4f& rgb)
 {
-	prg_.setUniformValue(unif_ambiant_color_, rgb);
+	unif_ambiant_color_.set(rgb);
 }
 
-void ShaderPhongTransp::set_specular_color(const QColor& rgb)
+void ShaderPhongTransp::set_specular_color(const Vector4f& rgb)
 {
-	prg_.setUniformValue(unif_specular_color_, rgb);
+	unif_specular_color_.set(rgb);
 }
 
 void ShaderPhongTransp::set_specular_coef(GLfloat coef)
 {
-	prg_.setUniformValue(unif_specular_coef_, coef);
+	unif_specular_coef_.set(coef);
 }
 
 
 void ShaderPhongTransp::set_bf_culling(bool cull)
 {
-	prg_.setUniformValue(unif_bf_culling_, cull);
+	unif_bf_culling_.set(cull);
 }
 
 
 void ShaderPhongTransp::set_layer(int layer)
 {
-	prg_.setUniformValue(unif_layer_, layer);
+	unif_layer_.set(layer);
 }
 
-void ShaderPhongTransp::set_rgba_sampler(GLuint rgba_samp)
+void ShaderPhongTransp::set_rgba_sampler(GLint rgba_samp)
 {
-	prg_.setUniformValue(unif_rgba_texture_sampler_, rgba_samp);
+	unif_rgba_texture_sampler_.set(rgba_samp);
 }
 
-void ShaderPhongTransp::set_depth_sampler(GLuint depth_samp)
+void ShaderPhongTransp::set_depth_sampler(GLint depth_samp)
 {
-	prg_.setUniformValue(unif_depth_texture_sampler_, depth_samp);
+	unif_depth_texture_sampler_.set(depth_samp);
 }
 
 
@@ -195,52 +199,41 @@ ShaderPhongTransp* ShaderPhongTransp::get_instance()
 	return instance_;
 }
 
-
-
-
 ShaderParamPhongTransp::ShaderParamPhongTransp(ShaderPhongTransp* sh) :
-	ShaderParam(sh),
-	front_color_(250, 0, 0),
-	back_color_(0, 250, 0),
-	ambiant_color_(5, 5, 5),
-	specular_color_(255, 255, 255),
+	ogl::ShaderParam(sh),
+	front_color_(Color(250, 0, 0)),
+	back_color_(Color(0, 250, 0)),
+	ambiant_color_(Color(5, 5, 5)),
+	specular_color_(Color(255, 255, 255)),
 	specular_coef_(100),
-	light_pos_(10, 100, 1000),
+	light_pos_(Vector3f(10, 100, 1000)),
 	bf_culling_(false)
 {}
 
 void ShaderParamPhongTransp::set_position_vbo(VBO* vbo_pos)
 {
-	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-	shader_->bind();
+	
+	program->bind();
 	vao_->bind();
-	// position vbo
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ShaderPhongTransp::ATTRIB_POS);
-	ogl->glVertexAttribPointer(ShaderPhongTransp::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_pos->release();
+	vao_->attribPointer(ShaderPhongTransp::ATTRIB_POS, vbo_pos, GL_FLOAT);
 	vao_->release();
-	shader_->release();
+	program->release();
 }
 
 void ShaderParamPhongTransp::set_normal_vbo(VBO* vbo_normal)
 {
-	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-	shader_->bind();
+	program->bind();
 	vao_->bind();
-	vbo_normal->bind();
-	ogl->glEnableVertexAttribArray(ShaderPhongTransp::ATTRIB_NORM);
-	ogl->glVertexAttribPointer(ShaderPhongTransp::ATTRIB_NORM, vbo_normal->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_normal->release();
+	vao_->attribPointer(ShaderPhongTransp::ATTRIB_POS, vbo_normal, GL_FLOAT);
 	vao_->release();
-	shader_->release();
+	program->release();
 }
 
 
 
 void ShaderParamPhongTransp::set_uniforms()
 {
-	ShaderPhongTransp* sh = static_cast<ShaderPhongTransp*>(this->shader_);
+	ShaderPhongTransp* sh = static_cast<ShaderPhongTransp*>(this->program);
 	sh->set_front_color(front_color_);
 	sh->set_back_color(back_color_);
 	sh->set_ambiant_color(ambiant_color_);
@@ -252,8 +245,8 @@ void ShaderParamPhongTransp::set_uniforms()
 
 void ShaderParamPhongTransp::set_alpha(int alpha)
 {
-	front_color_.setAlpha(alpha);
-	back_color_.setAlpha(alpha);
+	front_color_.w() = alpha / 255.0f;
+	back_color_.w() = alpha / 255.0f;
 }
 
 } // namespace rendering

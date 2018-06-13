@@ -27,9 +27,6 @@
 
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
 
-#include <QOpenGLFunctions>
-#include <QColor>
-
 namespace cgogn
 {
 
@@ -217,62 +214,67 @@ ShaderPointSpriteGen::ShaderPointSpriteGen(bool color_per_vertex, bool size_per_
 	gs += std::string(geometry_shader_source_);
 	fs += std::string(fragment_shader_source_);
 
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vs.c_str());
-	prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, gs.c_str());
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fs.c_str());
-	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
+	addShader(GL_VERTEX_SHADER, vs.c_str());
+	addShader(GL_GEOMETRY_SHADER, gs.c_str());
+	addShader(GL_FRAGMENT_SHADER, fs.c_str());
+	bindAttributeLocation("vertex_pos", ATTRIB_POS);
 
 	if (color_per_vertex)
-		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
+		bindAttributeLocation("vertex_color", ATTRIB_COLOR);
 
 	if (size_per_vertex)
-		prg_.bindAttributeLocation("vertex_size", ATTRIB_SIZE);
+		bindAttributeLocation("vertex_size", ATTRIB_SIZE);
 
-	prg_.link();
+	link();
+
+	bind(); 
+
 	get_matrices_uniforms();
 
-	unif_color_ = prg_.uniformLocation("color");
-	unif_ambiant_ = prg_.uniformLocation("ambiant");
-	unif_light_pos_ = prg_.uniformLocation("lightPos");
-	unif_size_ = prg_.uniformLocation("point_size");
-	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
-	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
+	unif_color_ = "color";
+	unif_ambiant_ = "ambiant";
+	unif_light_pos_ = "lightPos";
+	unif_size_ = "point_size";
+	unif_plane_clip_ = "plane_clip";
+	unif_plane_clip2_ = "plane_clip2";
 
 
 	if (!color_per_vertex)
-		set_color(QColor(250, 0, 0));
+		set_color(Color(250, 0, 0));
 
-	set_ambiant(QColor(5, 5, 5));
+	set_ambiant(Color(5, 5, 5));
 
 	if (!size_per_vertex)
 		set_size(1.0f);
 
-	set_light_position(QVector3D(10, 10, 1000));
+	set_light_position(Vector3f(10, 10, 1000));
+
+	release(); 
 }
 
-void ShaderPointSpriteGen::set_color(const QColor& rgb)
+void ShaderPointSpriteGen::set_color(const Vector4f& rgb)
 {
-	if (unif_color_ >= 0)
-		prg_.setUniformValue(unif_color_, rgb);
+	if (unif_color_.found())
+		unif_color_.set(rgb);
 }
 
 /**
 * @brief set ambiant color
 * @param rgb
 */
-void ShaderPointSpriteGen::set_ambiant(const QColor& rgb)
+void ShaderPointSpriteGen::set_ambiant(const Vector4f& rgb)
 {
-	if (unif_ambiant_ >= 0)
-		prg_.setUniformValue(unif_ambiant_, rgb);
+	if (unif_ambiant_.found())
+		unif_ambiant_.set(rgb);
 }
 
 /**
 * @brief set light position relative to screen
 * @param l
 */
-void ShaderPointSpriteGen::set_light_position(const QVector3D& l)
+void ShaderPointSpriteGen::set_light_position(const Vector3f& l)
 {
-	prg_.setUniformValue(unif_light_pos_, l);
+	unif_light_pos_.set(l);
 }
 
 /**
@@ -280,10 +282,10 @@ void ShaderPointSpriteGen::set_light_position(const QVector3D& l)
 * @param l
 * @param view_matrix
 */
-void ShaderPointSpriteGen::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
+void ShaderPointSpriteGen::set_local_light_position(const Vector3f& l, const Matrix4f& view_matrix)
 {
-	QVector4D loc4 = view_matrix.map(QVector4D(l, 1.0));
-	prg_.setUniformValue(unif_light_pos_, QVector3D(loc4) / loc4.w());
+	Vector4f loc4 = view_matrix * Vector4f(l.x(), l.y(), l.z(), 1.0);
+	unif_light_pos_.set(Vector3f(loc4.head<3>() / loc4.w()));
 }
 
 /**
@@ -293,18 +295,18 @@ void ShaderPointSpriteGen::set_local_light_position(const QVector3D& l, const QM
 //	template <typename std::enable_if<!SPV>::type* = nullptr>
 void ShaderPointSpriteGen::set_size(float32 w)
 {
-	if (unif_size_ >= 0)
-		prg_.setUniformValue(unif_size_, w);
+	if (unif_size_.found())
+		unif_size_.set(w);
 }
 
-void ShaderPointSpriteGen::set_plane_clip(const QVector4D& plane)
+void ShaderPointSpriteGen::set_plane_clip(const Vector4f& plane)
 {
-	prg_.setUniformValue(unif_plane_clip_, plane);
+	unif_plane_clip_.set(plane);
 }
 
-void ShaderPointSpriteGen::set_plane_clip2(const QVector4D& plane)
+void ShaderPointSpriteGen::set_plane_clip2(const Vector4f& plane)
 {
-	prg_.setUniformValue(unif_plane_clip2_, plane);
+	unif_plane_clip2_.set(plane);
 }
 
 

@@ -3,6 +3,34 @@ project(cgogn_rendering
 )
 
 find_package(Qt5 5.4.0 COMPONENTS Widgets REQUIRED)
+find_package(OpenGL REQUIRED)
+
+set(HEADER_OPENGL
+	opengl/buffer.h
+	opengl/all.h
+	opengl/buffer.h
+	opengl/eglew.h
+	opengl/framebuffer.h
+	opengl/glew.h
+	opengl/glxew.h
+	opengl/shader_param.h
+	opengl/shader_program_.h
+	opengl/shader_uniform.h
+	opengl/texture.h
+	opengl/vao.h
+	opengl/wglew.h
+	)
+
+set(SOURCE_OPENGL
+	opengl/buffer.cpp
+	opengl/framebuffer.cpp
+	opengl/shader_param.cpp
+	opengl/shader_program_.cpp
+	opengl/shader_uniform.cpp
+	opengl/texture.cpp
+	opengl/vao.cpp
+	opengl/glew.c
+	)
 
 if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
 	set(HEADER_TRANSP_SHADER
@@ -44,6 +72,7 @@ set(HEADER_SHADERS
 	shaders/shader_explode_volumes_line.h
 	shaders/shader_texture.h
 	shaders/shader_text.h
+	shaders/shader_postprocessing_1.h
 )
 
 set(HEADER_FILES
@@ -55,8 +84,10 @@ set(HEADER_FILES
 	wall_paper.h
 	frame_manipulator.h
 	text_drawer.h
+	reimp.h
 	${HEADER_SHADERS}
 	${HEADER_TRANSP_SHADER}
+	${HEADER_OPENGL}
 )
 
 set(SOURCE_SHADERS
@@ -74,6 +105,7 @@ set(SOURCE_SHADERS
 	shaders/shader_explode_volumes_line.cpp
 	shaders/shader_texture.cpp
 	shaders/shader_text.cpp
+	shaders/shader_postprocessing_1.cpp
 )
 
 set(SOURCE_FILES
@@ -84,8 +116,10 @@ set(SOURCE_FILES
 	wall_paper.cpp
 	frame_manipulator.cpp
 	text_drawer.cpp
+	reimp.cpp
 	${SOURCE_SHADERS}
 	${SOURCE_TRANSP_SHADER}
+	${SOURCE_OPENGL}
 )
 
 qt5_add_resources(RCC_FILES fonte.qrc)
@@ -93,7 +127,7 @@ qt5_add_resources(RCC_FILES fonte.qrc)
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES} ${RCC_FILES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
-target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_RENDERING_DLL_EXPORT")
+target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_RENDERING_DLL_EXPORT" "-DGLEW_BUILD")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR}>
@@ -103,7 +137,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${Qt5Widgets_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${Qt5Widgets_LIBRARIES} ${OPENGL_LIBRARIES})
 
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}
@@ -117,5 +151,6 @@ cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "includ
 
 # VisualStudio nice source organisation
 source_group("SHADERS" FILES ${HEADER_SHADERS} ${SOURCE_SHADERS})
+source_group("OPENGL" FILES ${HEADER_OPENGL} ${SOURCE_OPENGL})
 source_group("SHADERS_TRANSPARENT" FILES ${HEADER_TRANSP_SHADER} ${SOURCE_TRANSP_SHADER})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

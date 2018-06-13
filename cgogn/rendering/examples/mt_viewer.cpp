@@ -20,6 +20,9 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
+#include "cgogn/rendering/opengl/all.h"
+
 #include <chrono>
 #include <QApplication>
 #include <QMatrix4x4>
@@ -147,7 +150,7 @@ void Viewer::closeEvent(QCloseEvent*)
 		future_.wait();
 	render_.reset();
 	vbo_pos_.reset();
-	cgogn::rendering::ShaderProgram::clean_all();
+	cgogn::rendering::ogl::ShaderProgram::clean_all();
 
 }
 
@@ -264,7 +267,7 @@ void Viewer::draw()
 		cv_update_.notify_all();
 	}
 
-	param_flat_->bind(proj, view);
+	param_flat_->bind(proj.data(), view.data());
 	render_->draw(cgogn::rendering::TRIANGLES);
 	param_flat_->release();
 
@@ -286,9 +289,9 @@ void Viewer::init()
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
-	param_flat_->front_color_ = QColor(0, 200, 0);
-	param_flat_->back_color_ = QColor(0, 0, 200);
-	param_flat_->ambiant_color_ = QColor(5, 5, 5);
+	param_flat_->front_color_ = Color(0, 200, 0);
+	param_flat_->back_color_ = Color(0, 0, 200);
+	param_flat_->ambiant_color_ = Color(5, 5, 5);
 
 }
 

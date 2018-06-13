@@ -23,7 +23,6 @@
 
 
 #include <cgogn/rendering/shaders/shader_text.h>
-#include <QOpenGLFunctions>
 #include <iostream>
 
 namespace cgogn
@@ -76,24 +75,29 @@ const char* ShaderText::fragment_shader_source_ =
 
 ShaderText::ShaderText()
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.bindAttributeLocation("vertex_in", ATTRIB_POS);
-	prg_.bindAttributeLocation("char_in", ATTRIB_CHAR);
-	prg_.bindAttributeLocation("colsz_in", ATTRIB_COLSZ);
+	addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+	addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+	bindAttributeLocation("vertex_in", ATTRIB_POS);
+	bindAttributeLocation("char_in", ATTRIB_CHAR);
+	bindAttributeLocation("colsz_in", ATTRIB_COLSZ);
 
-	prg_.link();
+	link();
+
+	bind(); 
 	get_matrices_uniforms();
-	unif_italic_ = prg_.uniformLocation("italic");
-	bind();
-	prg_.setUniformValue("texture_unit", 0);
+	unif_italic_ = "italic";
+
+	ogl::Uniform unif_texture_unit_; 
+	unif_texture_unit_ = "texture_unit"; 
+	unif_texture_unit_.set(0); 
 	set_italic(0);
+
 	release();
 }
 
 void ShaderText::set_italic(float32 i)
 {
-		prg_.setUniformValue(unif_italic_, QVector4D(-i,-i,i,i));
+	unif_italic_.set(Vector4f(-i,-i,i,i));
 }
 
 std::unique_ptr<ShaderText::Param> ShaderText::generate_param()
@@ -107,7 +111,7 @@ std::unique_ptr<ShaderText::Param> ShaderText::generate_param()
 }
 
 ShaderParamText::ShaderParamText(ShaderText* sh) :
-	ShaderParam(sh),
+	ogl::ShaderParam(sh),
 	texture_(nullptr)
 {}
 
@@ -115,42 +119,24 @@ void ShaderParamText::set_uniforms()
 {
 	if (texture_)
 	{
-		QOpenGLContext::currentContext()->functions()->glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE0);
 		texture_->bind();
 	}
 
-	ShaderText* sh = static_cast<ShaderText*>(this->shader_);
+	ShaderText* sh = static_cast<ShaderText*>(this->program);
 	sh->set_italic(italic_);
 
 }
 
 void ShaderParamText::set_vbo(VBO* vbo_pos, VBO* vbo_char, VBO* vbo_colsize)
 {
-	QOpenGLFunctions_3_3_Core * ogl = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
-
-	shader_->bind();
+	program->bind();
 	vao_->bind();
-
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ShaderText::ATTRIB_POS);
-	ogl->glVertexAttribPointer(ShaderText::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	ogl->glVertexAttribDivisor(ShaderText::ATTRIB_POS,1u);
-	vbo_pos->release();
-
-	vbo_char->bind();
-	ogl->glEnableVertexAttribArray(ShaderText::ATTRIB_CHAR);
-	ogl->glVertexAttribPointer(ShaderText::ATTRIB_CHAR, vbo_char->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	ogl->glVertexAttribDivisor(ShaderText::ATTRIB_CHAR,1u);
-	vbo_char->release();
-
-	vbo_colsize->bind();
-	ogl->glEnableVertexAttribArray(ShaderText::ATTRIB_COLSZ);
-	ogl->glVertexAttribPointer(ShaderText::ATTRIB_COLSZ, vbo_colsize->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	ogl->glVertexAttribDivisor(ShaderText::ATTRIB_COLSZ, 1u);
-	vbo_colsize->release();
-
+	vao_->attribPointer(ShaderText::ATTRIB_POS, vbo_pos, GL_FLOAT, 1u); 
+	vao_->attribPointer(ShaderText::ATTRIB_CHAR, vbo_char, GL_FLOAT, 1u);
+	vao_->attribPointer(ShaderText::ATTRIB_COLSZ, vbo_colsize, GL_FLOAT, 1u);
 	vao_->release();
-	shader_->release();
+	program->release();
 }
 
 } // namespace rendering

@@ -24,7 +24,7 @@
 
 #include <cgogn/rendering/transparency_shaders/shader_transparent_volumes.h>
 
-#include <QOpenGLFunctions>
+
 #include <iostream>
 #include<QColor>
 #include<QImage>
@@ -119,84 +119,87 @@ ShaderTransparentVolumes* ShaderTransparentVolumes::instance_ = nullptr;
 
 ShaderTransparentVolumes::ShaderTransparentVolumes()
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-	prg_.link();
+	addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+	addShader(GL_GEOMETRY_SHADER, geometry_shader_source_);
+	addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+	bindAttributeLocation("vertex_pos", ATTRIB_POS);
+	link();
+
+	bind();
+
 	get_matrices_uniforms();
 
-	unif_expl_v_ = prg_.uniformLocation("explode_vol");
-	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
-	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
-	unif_light_position_ = prg_.uniformLocation("light_position");
-	unif_color_ = prg_.uniformLocation("color");
+	unif_expl_v_ = "explode_vol";
+	unif_plane_clip_ = "plane_clip";
+	unif_plane_clip2_ = "plane_clip2";
+	unif_light_position_ = "light_position";
+	unif_color_ = "color";
 
-	unif_bf_culling_ = prg_.uniformLocation("cull_back_face");
-	unif_lighted_ = prg_.uniformLocation("lighted");
-	unif_layer_ = prg_.uniformLocation("layer");
-	unif_depth_texture_sampler_ = prg_.uniformLocation("depth_texture");
-	unif_rgba_texture_sampler_ = prg_.uniformLocation("rgba_texture");
+	unif_bf_culling_ = "cull_back_face";
+	unif_lighted_ = "lighted";
+	unif_layer_ = "layer";
+	unif_depth_texture_sampler_ = "depth_texture";
+	unif_rgba_texture_sampler_ = "rgba_texture";
 
 	// default param
-	bind();
-	set_light_position(QVector3D(10.0f,100.0f,1000.0f));
+	
+	set_light_position(Vector3f(10.0f,100.0f,1000.0f));
 	set_explode_volume(0.8f);
-	set_color(QColor(255,0,0));
-	set_plane_clip(QVector4D(0,0,0,0));
-	set_plane_clip2(QVector4D(0,0,0,0));
+	set_color(Color(255,0,0));
+	set_plane_clip(Vector4f(0,0,0,0));
+	set_plane_clip2(Vector4f(0,0,0,0));
 	release();
 }
 
 
-void ShaderTransparentVolumes::set_color(const QColor& rgb)
+void ShaderTransparentVolumes::set_color(const Vector4f& rgb)
 {
-		prg_.setUniformValue(unif_color_, rgb);
+	unif_color_.set(rgb);
 }
 
-void ShaderTransparentVolumes::set_light_position(const QVector3D& l)
+void ShaderTransparentVolumes::set_light_position(const Vector3f& l)
 {
-	prg_.setUniformValue(unif_light_position_, l);
+	unif_light_position_.set(l);
 }
 
 void ShaderTransparentVolumes::set_explode_volume(float32 x)
 {
-	prg_.setUniformValue(unif_expl_v_, x);
+	unif_expl_v_.set(x);
 }
 
-void ShaderTransparentVolumes::set_plane_clip(const QVector4D& plane)
+void ShaderTransparentVolumes::set_plane_clip(const Vector4f& plane)
 {
-	prg_.setUniformValue(unif_plane_clip_, plane);
+	unif_plane_clip_.set(plane);
 }
 
-void ShaderTransparentVolumes::set_plane_clip2(const QVector4D& plane)
+void ShaderTransparentVolumes::set_plane_clip2(const Vector4f& plane)
 {
-	prg_.setUniformValue(unif_plane_clip2_, plane);
+	unif_plane_clip2_.set(plane);
 }
 
 void ShaderTransparentVolumes::set_bf_culling(bool cull)
 {
-	prg_.setUniformValue(unif_bf_culling_, cull);
+	unif_bf_culling_.set(cull);
 }
 
 void ShaderTransparentVolumes::set_lighted(bool lighted)
 {
-	prg_.setUniformValue(unif_lighted_, lighted);
+	unif_lighted_.set(lighted);
 }
 
 void ShaderTransparentVolumes::set_layer(int layer)
 {
-	prg_.setUniformValue(unif_layer_, layer);
+	unif_layer_.set(layer);
 }
 
-void ShaderTransparentVolumes::set_rgba_sampler(GLuint rgba_samp)
+void ShaderTransparentVolumes::set_rgba_sampler(GLint rgba_samp)
 {
-	prg_.setUniformValue(unif_rgba_texture_sampler_, rgba_samp);
+	unif_rgba_texture_sampler_.set(rgba_samp);
 }
 
-void ShaderTransparentVolumes::set_depth_sampler(GLuint depth_samp)
+void ShaderTransparentVolumes::set_depth_sampler(GLint depth_samp)
 {
-	prg_.setUniformValue(unif_depth_texture_sampler_, depth_samp);
+	unif_depth_texture_sampler_.set(depth_samp);
 }
 
 
@@ -223,11 +226,11 @@ ShaderTransparentVolumes* ShaderTransparentVolumes::get_instance()
 
 
 ShaderParamTransparentVolumes::ShaderParamTransparentVolumes(ShaderTransparentVolumes* sh) :
-	ShaderParam(sh),
-	color_(255, 0, 0),
-	plane_clip_(0, 0, 0, 0),
-	plane_clip2_(0, 0, 0, 0),
-	light_position_(10.0f, 100.0f, 1000.0f),
+	ogl::ShaderParam(sh),
+	color_(Color(255, 0, 0)),
+	plane_clip_(Vector4f(0, 0, 0, 0)),
+	plane_clip2_(Vector4f(0, 0, 0, 0)),
+	light_position_(Vector3f(10.0f, 100.0f, 1000.0f)),
 	explode_factor_(0.8f),
 	bf_culling_(false),
 	lighted_(true)
@@ -235,21 +238,17 @@ ShaderParamTransparentVolumes::ShaderParamTransparentVolumes(ShaderTransparentVo
 
 void ShaderParamTransparentVolumes::set_position_vbo(VBO* vbo_pos)
 {
-	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-	shader_->bind();
+	program->bind();
 	vao_->bind();
-	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ShaderTransparentVolumes::ATTRIB_POS);
-	ogl->glVertexAttribPointer(ShaderTransparentVolumes::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	vbo_pos->release();
+	vao_->attribPointer(ShaderTransparentVolumes::ATTRIB_POS, vbo_pos, GL_FLOAT);
 	vao_->release();
-	shader_->release();
+	program->release();
 
 }
 
 void ShaderParamTransparentVolumes::set_uniforms()
 {
-	ShaderTransparentVolumes* sh = static_cast<ShaderTransparentVolumes*>(this->shader_);
+	ShaderTransparentVolumes* sh = static_cast<ShaderTransparentVolumes*>(this->program);
 	sh->set_color(color_);
 	sh->set_explode_volume(explode_factor_);
 	sh->set_light_position(light_position_);

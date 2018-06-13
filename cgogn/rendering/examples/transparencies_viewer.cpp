@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "cgogn/rendering/opengl/all.h"
+
 #include <QApplication>
 #include <QMatrix4x4>
 #include <QKeyEvent>
@@ -139,7 +141,7 @@ void ViewerTransparency::closeEvent(QCloseEvent*)
 	vbo_pos_.reset();
 	vbo_norm_.reset();
 	transp_drawer_.reset();
-	cgogn::rendering::ShaderProgram::clean_all();
+	cgogn::rendering::ogl::ShaderProgram::clean_all();
 }
 
 ViewerTransparency::ViewerTransparency() :
@@ -165,11 +167,11 @@ void ViewerTransparency::draw()
 	camera()->getModelViewMatrix(view);
 
 	// draw opaque first
-	param_flat_->bind(proj,view);
+	param_flat_->bind(proj.data(),view.data());
 	render_->draw(cgogn::rendering::TRIANGLES);
 	param_flat_->release();
 
-	drawer_rend_->draw(proj,view);
+	drawer_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
 
 	// the the transparents objects.
 
@@ -181,22 +183,22 @@ void ViewerTransparency::draw()
 	transp_drawer_->draw( [&] ()
 	{
 		tr_flat_param_->set_alpha(150);
-		tr_flat_param_->bind(proj,view*tr1);
+		tr_flat_param_->bind(proj.data(),(view*tr1).data());
 		render_->draw(cgogn::rendering::TRIANGLES);
 		tr_flat_param_->release();
 
 		tr_phong_param_->set_alpha(170);
-		tr_phong_param_->bind(proj,view*tr2);
+		tr_phong_param_->bind(proj.data(),(view*tr2).data());
 		render_->draw(cgogn::rendering::TRIANGLES);
 		tr_phong_param_->release();
 
 		tr_flat_param_->set_alpha(100);
-		tr_flat_param_->bind(proj,view*tr1*tr1);
+		tr_flat_param_->bind(proj.data(),(view*tr1*tr1).data());
 		render_->draw(cgogn::rendering::TRIANGLES);
 		tr_flat_param_->release();
 
 		tr_phong_param_->set_alpha(90);
-		tr_phong_param_->bind(proj,view*tr2*tr2);
+		tr_phong_param_->bind(proj.data(),(view*tr2*tr2).data());
 		render_->draw(cgogn::rendering::TRIANGLES);
 		tr_phong_param_->release();
 	});
@@ -230,22 +232,22 @@ void ViewerTransparency::init()
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
-	param_flat_->front_color_ = QColor(0,50,200);
-	param_flat_->back_color_ = QColor(0,50,200);
+	param_flat_->front_color_ = Color(0,50,200);
+	param_flat_->back_color_ = Color(0,50,200);
 
 	transp_drawer_ = cgogn::make_unique<cgogn::rendering::SurfaceTransparencyDrawer>();
 //	transp_drawer_->set_max_nb_layers(16);
 
 	tr_flat_param_ = cgogn::rendering::ShaderFlatTransp::generate_param();
 	tr_flat_param_->set_position_vbo(vbo_pos_.get());
-	tr_flat_param_->front_color_ = QColor(0,250,0,100);
-	tr_flat_param_->back_color_ = QColor(0,250,0,100);
+	tr_flat_param_->front_color_ = Color(0,250,0,100);
+	tr_flat_param_->back_color_ = Color(0,250,0,100);
 
 	tr_phong_param_ = cgogn::rendering::ShaderPhongTransp::generate_param();
 	tr_phong_param_->set_position_vbo(vbo_pos_.get());
 	tr_phong_param_->set_normal_vbo(vbo_norm_.get());
-	tr_phong_param_->front_color_ = QColor(250,0,0,120);
-	tr_phong_param_->back_color_ = QColor(250,0,0,120);
+	tr_phong_param_->front_color_ = Color(250,0,0,120);
+	tr_phong_param_->back_color_ = Color(250,0,0,120);
 
 
 	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();

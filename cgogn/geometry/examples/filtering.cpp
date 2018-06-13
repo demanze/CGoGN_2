@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "cgogn/rendering/opengl/all.h"
+
 #include <QApplication>
 #include <QMatrix4x4>
 #include <QKeyEvent>
@@ -165,7 +167,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	vbo_color_.reset();
 	vbo_sphere_sz_.reset();
 	drawer_.reset();
-	cgogn::rendering::ShaderProgram::clean_all();
+	cgogn::rendering::ogl::ShaderProgram::clean_all();
 
 }
 
@@ -277,14 +279,14 @@ void Viewer::draw()
 	glPolygonOffset(1.0f, 2.0f);
 	if (flat_rendering_)
 	{
-		param_flat_->bind(proj, view);
+		param_flat_->bind(*((Matrix4f*)&proj), *((Matrix4f*)&view));
 		render_->draw(cgogn::rendering::TRIANGLES);
 		param_flat_->release();
 	}
 
 	if (phong_rendering_)
 	{
-		param_phong_->bind(proj, view);
+		param_phong_->bind(proj.data(), view.data());
 		render_->draw(cgogn::rendering::TRIANGLES);
 		param_phong_->release();
 	}
@@ -292,14 +294,14 @@ void Viewer::draw()
 
 	if (vertices_rendering_)
 	{
-		param_point_sprite_->bind(proj, view);
+		param_point_sprite_->bind(proj.data(), view.data());
 		render_->draw(cgogn::rendering::POINTS);
 		param_point_sprite_->release();
 	}
 
 	if (edge_rendering_)
 	{
-		param_edge_->bind(proj, view);
+		param_edge_->bind(proj.data(), view.data());
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		render_->draw(cgogn::rendering::LINES);
@@ -309,13 +311,13 @@ void Viewer::draw()
 
 	if (normal_rendering_)
 	{
-		param_normal_->bind(proj, view);
+		param_normal_->bind(proj.data(), view.data());
 		render_->draw(cgogn::rendering::POINTS);
 		param_normal_->release();
 	}
 
 	if (bb_rendering_)
-		drawer_rend_->draw(proj, view);
+		drawer_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
 }
 
 void Viewer::init()
@@ -350,24 +352,24 @@ void Viewer::init()
 
 	param_point_sprite_ = cgogn::rendering::ShaderPointSpriteSize::generate_param();
 	param_point_sprite_->set_all_vbos(vbo_pos_.get(), vbo_sphere_sz_.get());
-	param_point_sprite_->color_ = QColor(255, 0, 0);
+	param_point_sprite_->color_ = Color(255, 0, 0);
 
 //	shader_edge_ = new cgogn::rendering::ShaderBoldLine() ;
 //	param_edge_ = shader_edge_->generate_param();
 	param_edge_ = cgogn::rendering::ShaderBoldLine::generate_param();
 	param_edge_->set_position_vbo(vbo_pos_.get());
-	param_edge_->color_ = QColor(255,255,0);
+	param_edge_->color_ = Color(255,255,0);
 	param_edge_->width_= 2.5f;
 
 	param_flat_ =  cgogn::rendering::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
-	param_flat_->front_color_ = QColor(0,200,0);
-	param_flat_->back_color_ = QColor(0,0,200);
-	param_flat_->ambiant_color_ = QColor(5,5,5);
+	param_flat_->front_color_ = Color(0,200,0);
+	param_flat_->back_color_ = Color(0,0,200);
+	param_flat_->ambiant_color_ = Color(5,5,5);
 
 	param_normal_ = cgogn::rendering::ShaderVectorPerVertex::generate_param();
 	param_normal_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get());
-	param_normal_->color_ = QColor(200,0,200);
+	param_normal_->color_ = Color(200,0,200);
 	param_normal_->length_ = bb_.diag_size()/50;
 
 	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();

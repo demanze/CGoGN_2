@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "cgogn/rendering/opengl/all.h"
+
 #include <QApplication>
 #include <QMatrix4x4>
 #include <QKeyEvent>
@@ -121,7 +123,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	vbo_pos_.reset();
 	vbo_norm_.reset();
 	vbo_color_.reset();
-	cgogn::rendering::ShaderProgram::clean_all();
+	cgogn::rendering::ogl::ShaderProgram::clean_all();
 }
 
 Viewer::Viewer() :
@@ -167,14 +169,14 @@ void Viewer::draw()
 
 	if (flat_rendering_)
 	{
-		param_flat_->bind(proj,view);
+		param_flat_->bind(proj.data(),view.data());
 		glDrawArrays(GL_TRIANGLES,0,vbo_pos_->size());
 		param_flat_->release();
 	}
 
 	if (phong_rendering_)
 	{
-		param_phong_->bind(proj,view);
+		param_phong_->bind(proj.data(), view.data());
 		glDrawArrays(GL_TRIANGLES,0,vbo_pos_->size());
 		param_phong_->release();
 	}
@@ -217,14 +219,14 @@ void Viewer::init()
 
 	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();
 	param_phong_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get(), vbo_color_.get());
-	param_phong_->ambiant_color_ = QColor(5, 5, 5);
+	param_phong_->ambiant_color_ = Color(5, 5, 5);
 	param_phong_->double_side_ = true;
-	param_phong_->specular_color_ = QColor(255, 255, 255);
+	param_phong_->specular_color_ = Color(255, 255, 255);
 	param_phong_->specular_coef_ = 100.0;
 
 	param_flat_ = cgogn::rendering::ShaderFlatColor::generate_param();
 	param_flat_->set_all_vbos(vbo_pos_.get(), vbo_color_.get());
-	param_flat_->ambiant_color_ = QColor(5, 5, 5);
+	param_flat_->ambiant_color_ = Color(5, 5, 5);
 }
 
 int main(int argc, char** argv)

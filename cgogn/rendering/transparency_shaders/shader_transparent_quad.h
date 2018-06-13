@@ -24,13 +24,10 @@
 #ifndef CGOGN_RENDERING_SHADER_TRANSP_QUAD_H_
 #define CGOGN_RENDERING_SHADER_TRANSP_QUAD_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-
-#include <QOpenGLFunctions>
-#include <QColor>
-#include <QOpenGLFramebufferObject>
 
 namespace cgogn
 {
@@ -43,7 +40,7 @@ class ShaderTranspQuad;
 
 
 
-class CGOGN_RENDERING_API ShaderParamTranspQuad : public ShaderParam
+class CGOGN_RENDERING_API ShaderParamTranspQuad : public ogl::ShaderParam
 {
 protected:
 	void set_uniforms() override;
@@ -55,7 +52,7 @@ public:
 };
 
 
-class CGOGN_RENDERING_API ShaderTranspQuad : public ShaderProgram
+class CGOGN_RENDERING_API ShaderTranspQuad : public ogl::ShaderProgram
 {
 	friend class ShaderParamTranspQuad;
 
@@ -65,17 +62,17 @@ protected:
 	static const char* fragment_shader_source_;
 
 	// uniform ids
-	GLint unif_depth_texture_sampler_;
-	GLint unif_rgba_texture_sampler_;
+	ogl::Uniform unif_depth_texture_sampler_;
+	ogl::Uniform unif_rgba_texture_sampler_;
 
 public:
 
 	using Self = ShaderTranspQuad;
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderTranspQuad);
 
-	void set_rgba_sampler(GLuint rgba_samp);
+	void set_rgba_sampler(GLint rgba_samp);
 
-	void set_depth_sampler(GLuint depth_samp);
+	void set_depth_sampler(GLint depth_samp);
 
 	using Param = ShaderParamTranspQuad;
 

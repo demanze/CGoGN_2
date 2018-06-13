@@ -24,6 +24,8 @@
 #ifndef CGOGN_RENDERING_VOLUME_DRAWER_H_
 #define CGOGN_RENDERING_VOLUME_DRAWER_H_
 
+#include <cgogn/rendering/opengl/all.h>
+
 #include <cgogn/rendering/dll.h>
 
 #include <cgogn/rendering/shaders/shader_explode_volumes.h>
@@ -33,9 +35,6 @@
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/centroid.h>
 #include <cgogn/geometry/algos/ear_triangulation.h>
-
-#include <QOpenGLFunctions_3_3_Core>
-#include <QColor>
 
 namespace cgogn
 {
@@ -72,10 +71,10 @@ protected:
 	std::unique_ptr<VBO> vbo_pos_;
 	std::unique_ptr<VBO> vbo_col_;
 
-	QColor face_color_;
+	Vector4f face_color_;
 
 	std::unique_ptr<VBO> vbo_pos2_;
-	QColor edge_color_;
+	Vector4f edge_color_;
 
 	float32 shrink_v_;
 	float32 shrink_f_;
@@ -100,14 +99,14 @@ public:
 	public:
 
 		~Renderer();
-		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview);
-		void draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+		void draw_faces(const Matrix4f& projection, const Matrix4f& modelview);
+		void draw_edges(const Matrix4f& projection, const Matrix4f& modelview);
 		void set_explode_volume(float32 x);
-		void set_face_color(const QColor& rgb);
-		void set_edge_color(const QColor& rgb);
-		void set_clipping_plane(const QVector4D& pl);
-		void set_clipping_plane2(const QVector4D& pl);
-		void set_thick_clipping_plane(const QVector4D& p, float32 th);
+		void set_face_color(const Vector4f& rgb);
+		void set_edge_color(const Vector4f& rgb);
+		void set_clipping_plane(const Vector4f& pl);
+		void set_clipping_plane2(const Vector4f& pl);
+		void set_thick_clipping_plane(const Vector4f& p, float32 th);
 
 	};
 

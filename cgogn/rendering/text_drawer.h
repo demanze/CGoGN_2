@@ -24,15 +24,13 @@
 #ifndef CGOGN_RENDERING_TEXT_DRAWER_H_
 #define CGOGN_RENDERING_TEXT_DRAWER_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 
 #include <cgogn/rendering/shaders/shader_text.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
 #include <cgogn/geometry/types/geometry_traits.h>
-
-#include <QOpenGLFunctions_3_3_Core>
-#include <QColor>
 
 namespace cgogn
 {
@@ -79,11 +77,11 @@ protected:
 	
 	std::vector<Vec3f> positions_;
 	std::vector<std::string> strings_;
-	std::vector<QColor> colors_;
+	std::vector<Vector4f> colors_;
 	std::vector<float32> sizes_;
 
 	Vec3f current_pos_;
-	QColor current_color_;
+	Vector4f current_color_;
 	float32 current_size_;
 	bool next_pos_;
 
@@ -118,7 +116,7 @@ public:
 		return *this;
 	}
 
-	Self& operator << (const QColor& col);
+	Self& operator << (const Vector4f& col);
 
 	Self& operator << (float32 sz);
 
@@ -146,7 +144,7 @@ public:
 	public:
 		~Renderer();
 
-		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+		void draw(const Matrix4f& projection, const Matrix4f& modelview);
 
 		/**
 		 * @brief set italic %

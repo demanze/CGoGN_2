@@ -24,6 +24,7 @@
 #ifndef CGOGN_RENDERING_DLL_H_
 #define CGOGN_RENDERING_DLL_H_
 
+
 /**
 * \brief Linkage declaration for CGOGN symbols.
 */
@@ -38,3 +39,4 @@
 #endif
 
 #endif // CGOGN_RENDERING_DLL_H_
+

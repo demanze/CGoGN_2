@@ -56,17 +56,21 @@ ShaderCopyDepth* ShaderCopyDepth::instance_ = nullptr;
 
 ShaderCopyDepth::ShaderCopyDepth()
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.link();
+	addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+	addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+	link();
 
-	unif_depth_texture_sampler_ = prg_.uniformLocation("depth_texture");
+	bind(); 
+
+	unif_depth_texture_sampler_ = "depth_texture";
+
+	release(); 
 }
 
 
-void ShaderCopyDepth::set_depth_sampler(GLuint depth_samp)
+void ShaderCopyDepth::set_depth_sampler(GLint depth_samp)
 {
-	prg_.setUniformValue(unif_depth_texture_sampler_, depth_samp);
+	unif_depth_texture_sampler_.set(depth_samp);
 }
 
 std::unique_ptr< ShaderCopyDepth::Param> ShaderCopyDepth::generate_param()
@@ -80,15 +84,15 @@ std::unique_ptr< ShaderCopyDepth::Param> ShaderCopyDepth::generate_param()
 }
 
 ShaderParamCopyDepth::ShaderParamCopyDepth(ShaderCopyDepth* sh) :
-	ShaderParam(sh),
+	ogl::ShaderParam(sh),
 	texture_(nullptr)
 {}
 
 void ShaderParamCopyDepth::set_uniforms()
 {
-	ShaderCopyDepth* sh = static_cast<ShaderCopyDepth*>(this->shader_);
+	ShaderCopyDepth* sh = static_cast<ShaderCopyDepth*>(this->program);
 	sh->set_depth_sampler(0);
-	QOpenGLContext::currentContext()->functions()->glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE0);
 	if (texture_ != nullptr)
 		texture_->bind();
 }

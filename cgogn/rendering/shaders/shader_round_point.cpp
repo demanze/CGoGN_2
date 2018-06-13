@@ -153,62 +153,63 @@ ShaderRoundPointGen::ShaderRoundPointGen(bool color_per_vertex)
 {
 	if (color_per_vertex)
 	{
-		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source2_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source2_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source2_);
-		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
-		prg_.link();
+		addShader(GL_VERTEX_SHADER, vertex_shader_source2_);
+		addShader(GL_GEOMETRY_SHADER, geometry_shader_source2_);
+		addShader(GL_FRAGMENT_SHADER, fragment_shader_source2_);
+		bindAttributeLocation("vertex_pos", ATTRIB_POS);
+		bindAttributeLocation("vertex_color", ATTRIB_COLOR);
+		link();
 	}
 	else
 	{
-		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-		prg_.link();
+		addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+		addShader(GL_GEOMETRY_SHADER, geometry_shader_source_);
+		addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+		bindAttributeLocation("vertex_pos", ATTRIB_POS);
+		link();
 	}
 
+	bind(); 
+
 	get_matrices_uniforms();
-	unif_color_ = prg_.uniformLocation("color");
-	unif_size_ = prg_.uniformLocation("pointSizes");
-	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
-	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
+
+	unif_color_ = "color";
+	unif_size_ = "pointSizes";
+	unif_plane_clip_ = "plane_clip";
+	unif_plane_clip2_ = "plane_clip2";
 
 	set_size(3.0f);
-	set_color(QColor(255, 255, 255));
-	set_plane_clip(QVector4D(0,0,0,0));
-	set_plane_clip2(QVector4D(0,0,0,0));
+	set_color(Color(255, 255, 255));
+	set_plane_clip(Vector4f(0,0,0,0));
+	set_plane_clip2(Vector4f(0,0,0,0));
+
+	release(); 
 }
 
-void ShaderRoundPointGen::set_color(const QColor& rgb)
+void ShaderRoundPointGen::set_color(const Vector4f& rgb)
 {
-	if (unif_color_ >= 0)
-		prg_.setUniformValue(unif_color_, rgb);
+	if (unif_color_.found())
+		unif_color_.set(rgb);
 }
 
 void ShaderRoundPointGen::set_size(float32 wpix)
 {
-	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 	int viewport[4];
-	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
-	QSizeF wd(wpix / float32(viewport[2]), wpix / float32(viewport[3]));
-	prg_.setUniformValue(unif_size_, wd);
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	Vector2f wd(wpix / float32(viewport[2]), wpix / float32(viewport[3]));
+	unif_size_.set(wd);
 }
 
 
-void ShaderRoundPointGen::set_plane_clip(const QVector4D& plane)
+void ShaderRoundPointGen::set_plane_clip(const Vector4f& plane)
 {
-	prg_.setUniformValue(unif_plane_clip_, plane);
+	unif_plane_clip_.set(plane);
 }
 
-void ShaderRoundPointGen::set_plane_clip2(const QVector4D& plane)
+void ShaderRoundPointGen::set_plane_clip2(const Vector4f& plane)
 {
-	prg_.setUniformValue(unif_plane_clip2_, plane);
+	unif_plane_clip2_.set(plane);
 }
-
-
-
 
 template class CGOGN_RENDERING_API ShaderRoundPointTpl<false>;
 template class CGOGN_RENDERING_API ShaderRoundPointTpl<true>;

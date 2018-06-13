@@ -41,7 +41,7 @@ FrameManipulator::FrameManipulator():
 		trans_(0.0f,0.0f,0.0f),
 		scale_(1.0f,1.0f,1.0f)
 {
-	rotations_.setToIdentity();
+	rotations_ = Matrix4f::Identity(); 
 
 	for (uint32 i=0; i<11; ++i)
 	{
@@ -123,7 +123,7 @@ FrameManipulator::FrameManipulator():
 	vbo_grid_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
 	param_grid_ = cgogn::rendering::ShaderSimpleColor::generate_param();
 	param_grid_->set_position_vbo(vbo_grid_.get());
-	param_grid_->color_ = QColor(255,255,255);
+	param_grid_->color_ = Color(255,255,255);
 
 	points.clear();
 
@@ -142,7 +142,7 @@ FrameManipulator::FrameManipulator():
 	cgogn::rendering::update_vbo(points, vbo_grid_.get());
 }
 
-void FrameManipulator::z_plane_param(const QColor& color, float32 xc, float32 yc, float32 r)
+void FrameManipulator::z_plane_param(const Vector4f& color, float32 xc, float32 yc, float32 r)
 {
 	std::vector<Vec3> points;
 	points.reserve(nb_grid_ind_);
@@ -183,81 +183,79 @@ float32 FrameManipulator::get_size()
 	return scale_rendering_;
 }
 
-void FrameManipulator::draw(bool frame, bool zplane, const QMatrix4x4& proj, const QMatrix4x4& view)
+void FrameManipulator::draw(bool frame, bool zplane, const Matrix4f& proj, const Matrix4f& view)
 {
-	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
-
 	proj_mat_ = proj;
 	view_mat_ = view;
-	ogl33->glGetIntegerv(GL_VIEWPORT, viewport_);
+	glGetIntegerv(GL_VIEWPORT, viewport_);
 
-	QMatrix4x4 tr_view = view * transfo_render_frame();
+	Matrix4f tr_view = view * transfo_render_frame();
 
 	if (frame)
 	{
 		if (!locked_axis_[Xr])
 		{
 			if (highlighted_ == Xr)
-				param_sc_->color_ = QColor(255,255,0);
+				param_sc_->color_ = Color(255,255,0);
 			else
-				param_sc_->color_ = QColor(255,0,0);
+				param_sc_->color_ = Color(255,0,0);
 			param_sc_->bind(proj,tr_view);
-			ogl33->glDrawArrays(GL_TRIANGLE_STRIP, 0, 2*nb_segments+2);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 2*nb_segments+2);
 			param_sc_->release();
 		}
 
 		if (!locked_axis_[Yr])
 		{
 			if (highlighted_ == Yr)
-				param_sc_->color_ = QColor(255,255,0);
+				param_sc_->color_ = Color(255,255,0);
 			else
-				param_sc_->color_ = QColor(0,255,0);
+				param_sc_->color_ = Color(0,255,0);
 			param_sc_->bind(proj,tr_view);
-			ogl33->glDrawArrays(GL_TRIANGLE_STRIP, 2*nb_segments+2, 2*nb_segments+2);
+			glDrawArrays(GL_TRIANGLE_STRIP, 2*nb_segments+2, 2*nb_segments+2);
 			param_sc_->release();
 		}
 
 		if (!locked_axis_[Zr])
 		{
 			if (highlighted_ == Zr)
-				param_sc_->color_ = QColor(255,255,0);
+				param_sc_->color_ = Color(255,255,0);
 			else
-				param_sc_->color_ = QColor(0,0,255);
+				param_sc_->color_ = Color(0,0,255);
 			param_sc_->bind(proj,tr_view);
-			ogl33->glDrawArrays(GL_TRIANGLE_STRIP, 4*nb_segments+4, 2*nb_segments+2);
+			glDrawArrays(GL_TRIANGLE_STRIP, 4*nb_segments+4, 2*nb_segments+2);
 			param_sc_->release();
 		}
 
 		if (!locked_axis_[Xt])
 		{
 			if (highlighted_ == Xt)
-				param_sc_->color_ = QColor(255,255,0);
+				param_sc_->color_ = Color(255,255,0);
 			else
-				param_sc_->color_ = QColor(255,0,0);
+				param_sc_->color_ = Color(255,0,0);
 			param_sc_->bind(proj,tr_view);
-			ogl33->glDrawArrays(GL_TRIANGLE_FAN, 6*nb_segments+14, 6);
+			glDrawArrays(GL_TRIANGLE_FAN, 6*nb_segments+14, 6);
 			param_sc_->release();
 		}
 
 		if (!locked_axis_[Yt])
 		{
 			if (highlighted_ == Yt)
-				param_sc_->color_ = QColor(255,255,0);
+				param_sc_->color_ = Color(255,255,0);
 			else
-				param_sc_->color_ = QColor(0,255,0);
+				param_sc_->color_ = Color(0,255,0);
 			param_sc_->bind(proj,tr_view);
-			ogl33->glDrawArrays(GL_TRIANGLE_FAN, 6*nb_segments+22, 6);
+			glDrawArrays(GL_TRIANGLE_FAN, 6*nb_segments+22, 6);
 			param_sc_->release();
 		}
 
 		if (!locked_axis_[Zt])
 		{
 			if (highlighted_ == Zt)
-				param_sc_->color_ = QColor(255,255,0);
+				param_sc_->color_ = Color(255,255,0);
 			else
-				param_sc_->color_ = QColor(0,0,255);
+				param_sc_->color_ = Color(0,0,255);
 			param_sc_->bind(proj,tr_view);
-			ogl33->glDrawArrays(GL_TRIANGLE_FAN, 6*nb_segments+30, 6);
+			glDrawArrays(GL_TRIANGLE_FAN, 6*nb_segments+30, 6);
 			param_sc_->release();
 		}
 
@@ -265,9 +263,9 @@ void FrameManipulator::draw(bool frame, bool zplane, const QMatrix4x4& proj, con
 		if ((!locked_axis_[CENTER]) && (highlighted_ == CENTER))
 		{
 			param_bl_->width_ = 6.0;
-			param_bl_->color_ = QColor(255,255,0);
+			param_bl_->color_ = Color(255,255,0);
 			param_bl_->bind(proj,tr_view);
-			ogl33->glDrawArrays(GL_LINES, 6*nb_segments+6, 6);
+			glDrawArrays(GL_LINES, 6*nb_segments+6, 6);
 			param_bl_->release();
 		}
 		else
@@ -277,15 +275,15 @@ void FrameManipulator::draw(bool frame, bool zplane, const QMatrix4x4& proj, con
 				if (highlighted_ == Xs)
 				{
 					param_bl_->width_ = 6.0;
-					param_bl_->color_ = QColor(255,255,0);
+					param_bl_->color_ = Color(255,255,0);
 				}
 				else
 				{
 					param_bl_->width_ = 3.0;
-					param_bl_->color_ = QColor(200,0,0);
+					param_bl_->color_ = Color(200,0,0);
 				}
 				param_bl_->bind(proj,tr_view);
-				ogl33->glDrawArrays(GL_LINES, 6*nb_segments+6, 2);
+				glDrawArrays(GL_LINES, 6*nb_segments+6, 2);
 				param_bl_->release();
 			}
 
@@ -294,15 +292,15 @@ void FrameManipulator::draw(bool frame, bool zplane, const QMatrix4x4& proj, con
 				if (highlighted_ == Ys)
 				{
 					param_bl_->width_ = 6.0;
-					param_bl_->color_ = QColor(255,255,0);
+					param_bl_->color_ = Color(255,255,0);
 				}
 				else
 				{
 					param_bl_->width_ = 3.0;
-					param_bl_->color_ = QColor(0,200,0);
+					param_bl_->color_ = Color(0,200,0);
 				}
 				param_bl_->bind(proj,tr_view);
-				ogl33->glDrawArrays(GL_LINES, 6*nb_segments+8, 2);
+				glDrawArrays(GL_LINES, 6*nb_segments+8, 2);
 				param_bl_->release();
 			}
 
@@ -311,15 +309,15 @@ void FrameManipulator::draw(bool frame, bool zplane, const QMatrix4x4& proj, con
 				if (highlighted_ == Zs)
 				{
 					param_bl_->width_ = 6.0;
-					param_bl_->color_ = QColor(255,255,0);
+					param_bl_->color_ = Color(255,255,0);
 				}
 				else
 				{
 					param_bl_->width_ = 3.0;
-					param_bl_->color_ = QColor(0,0,200);
+					param_bl_->color_ = Color(0,0,200);
 				}
 				param_bl_->bind(proj,tr_view);
-				ogl33->glDrawArrays(GL_LINES, 6*nb_segments+10, 2);
+				glDrawArrays(GL_LINES, 6*nb_segments+10, 2);
 				param_bl_->release();
 			}
 		}
@@ -329,15 +327,15 @@ void FrameManipulator::draw(bool frame, bool zplane, const QMatrix4x4& proj, con
 			if (highlighted_ == Xt)
 			{
 				param_bl_->width_ = 6.0;
-				param_bl_->color_ = QColor(255,255,0);
+				param_bl_->color_ = Color(255,255,0);
 			}
 			else
 			{
 				param_bl_->width_ = 3.0;
-				param_bl_->color_ = QColor(255,0,0);
+				param_bl_->color_ = Color(255,0,0);
 			}
 			param_bl_->bind(proj,tr_view);
-			ogl33->glDrawArrays(GL_LINES, 6*nb_segments+12, 2);
+			glDrawArrays(GL_LINES, 6*nb_segments+12, 2);
 			param_bl_->release();
 		}
 
@@ -346,15 +344,15 @@ void FrameManipulator::draw(bool frame, bool zplane, const QMatrix4x4& proj, con
 			if (highlighted_ == Yt)
 			{
 				param_bl_->width_ = 6.0;
-				param_bl_->color_ = QColor(255,255,0);
+				param_bl_->color_ = Color(255,255,0);
 			}
 			else
 			{
 				param_bl_->width_ = 3.0;
-				param_bl_->color_ = QColor(0,255,0);
+				param_bl_->color_ = Color(0,255,0);
 			}
 			param_bl_->bind(proj,tr_view);
-			ogl33->glDrawArrays(GL_LINES, 6*nb_segments+20, 2);
+			glDrawArrays(GL_LINES, 6*nb_segments+20, 2);
 			param_bl_->release();
 		}
 
@@ -363,22 +361,22 @@ void FrameManipulator::draw(bool frame, bool zplane, const QMatrix4x4& proj, con
 			if (highlighted_ == Zt)
 			{
 				param_bl_->width_ = 6.0;
-				param_bl_->color_ = QColor(255,255,0);
+				param_bl_->color_ = Color(255,255,0);
 			}
 			else
 			{
 				param_bl_->width_ = 3.0;
-				param_bl_->color_ = QColor(0,0,255);
+				param_bl_->color_ = Color(0,0,255);
 			}
 			param_bl_->bind(proj,tr_view);
-			ogl33->glDrawArrays(GL_LINES, 6*nb_segments+28, 2);
+			glDrawArrays(GL_LINES, 6*nb_segments+28, 2);
 			param_bl_->release();
 		}
 	}
 	if (zplane)
 	{
 		param_grid_->bind(proj,tr_view);
-		ogl33->glDrawArrays(GL_LINES, 0, nb_grid_ind_);
+		glDrawArrays(GL_LINES, 0, nb_grid_ind_);
 		param_grid_->release();
 	}
 
@@ -393,12 +391,12 @@ void FrameManipulator::highlight(uint32 axis)
 }
 
 
-uint32 FrameManipulator::pick_frame(const QVector4D& PP, const QVector4D& QQ)
+uint32 FrameManipulator::pick_frame(const Vector4f& PP, const Vector4f& QQ)
 {
 	// ray inverse transfo
-	QMatrix4x4 invtr = transfo_render_frame().inverted();
-	QVector4D tP = invtr*PP;
-	QVector4D tQ = invtr*QQ;
+	Matrix4f invtr = transfo_render_frame().inverse();
+	Vector4f tP = invtr*PP;
+	Vector4f tQ = invtr*QQ;
 	Vec3 P(tP[0]/tP[3], tP[1]/tP[3], tP[2]/tP[3]);
 	Vec3 Q(tQ[0]/tQ[3], tQ[1]/tQ[3], tQ[2]/tQ[3]);
 	Vec3 V = Q - P;
@@ -554,21 +552,20 @@ uint32 FrameManipulator::pick_frame(const QVector4D& PP, const QVector4D& QQ)
 void FrameManipulator::rotate(uint32 axis, float32 angle)
 {
 	// create axis
-	QVector3D ax(0.0f,0.0f,0.0f);
+	Vector3f ax(0.0f,0.0f,0.0f);
 	ax[axis-Xr]=1.0f;
 
 //	glm::mat4 tr = glm::rotate(glm::mat4(1.0f),glm::radians(angle),ax);
-	QMatrix4x4 tr;
-	tr.setToIdentity();
-	tr.rotate(angle,ax);
+	Matrix4f tr = Matrix4f::Identity(); 
+	Rotate(tr,angle,ax);
 
 	rotations_ = rotations_*tr;
 }
 
 void FrameManipulator::translate(uint32 axis, float32 x)
 {
-	QVector4D col = rotations_.column(axis-Xt);
-	trans_ += x*scale_rendering_ * QVector3D(col[0],col[1],col[2]);
+	Vector4f col = rotations_.col(axis-Xt);
+	trans_ += x*scale_rendering_ * Vector3f(col[0],col[1],col[2]);
 }
 
 void FrameManipulator::set_length_axes()
@@ -652,7 +649,7 @@ void FrameManipulator::set_length_axes()
 
 	vbo_frame_->release_pointer();
 
-	length_axes_ = QVector3D(0.25f*sc0, 0.25f*sc1, 0.25f*sc2);
+	length_axes_ = Vector3f(0.25f*sc0, 0.25f*sc1, 0.25f*sc2);
 }
 
 void FrameManipulator::scale(uint32 axis, float32 sc)
@@ -669,56 +666,54 @@ void FrameManipulator::scale(uint32 axis, float32 sc)
 	set_length_axes();
 }
 
-QMatrix4x4 FrameManipulator::transfo_render_frame()
+Matrix4f FrameManipulator::transfo_render_frame()
 {
-	QMatrix4x4 tr;
-	tr.setToIdentity();
-	tr.translate(trans_);
+	Matrix4f tr = Matrix4f::Identity(); 
+	Translate(tr, trans_); 
 	tr *= rotations_;
 
 	// tr.scale(scale_*scale_rendering_); ??
 	float32 avgScale =(scale_[0]+scale_[1]+scale_[2])/3.0f;
 	avgScale *= scale_rendering_;
-	tr.scale(avgScale);
+	Scale(tr, avgScale);
 
 	return tr;
 }
 
-QMatrix4x4 FrameManipulator::transfo()
+Matrix4f FrameManipulator::transfo()
 {
-	QMatrix4x4 tr;
-	tr.setToIdentity();
-	tr.translate(trans_);
+	Matrix4f tr = Matrix4f::Identity(); 
+	Translate(tr, trans_);
 	tr *= rotations_;
-	tr.scale(scale_);
+	Scale(tr, scale_);
 	return tr;
 }
 
 
-void FrameManipulator::set_scale(const QVector3D& S)
+void FrameManipulator::set_scale(const Vector3f& S)
 {
 	scale_ = S;
 	set_length_axes();
 }
 
-bool FrameManipulator::set_orientation(const QVector3D& X, const QVector3D& Y)
+bool FrameManipulator::set_orientation(const Vector3f& X, const Vector3f& Y)
 {
-	QVector3D Z = QVector3D::crossProduct(X,Y);
+	Vector3f Z = X.cross(Y);
 
-	if ((X.length() != 1.0f) || (Y.length() != 1.0f) || (Z.length() != 1.0f))
+	if ((X.norm() != 1.0f) || (Y.norm() != 1.0f) || (Z.norm() != 1.0f))
 		return false;
 
-	QVector4D col = rotations_.column(0);
+	Vector4f col = rotations_.col(0);
 	col[0] = X[0];
 	col[1] = X[1];
 	col[2] = X[2];
 
-	col = rotations_.column(1);
+	col = rotations_.col(1);
 	col[0] = Y[0];
 	col[1] = Y[1];
 	col[2] = Y[2];
 
-	col = rotations_.column(2);
+	col = rotations_.col(2);
 	col[0] = Z[0];
 	col[1] = Z[1];
 	col[2] = Z[2];
@@ -726,36 +721,36 @@ bool FrameManipulator::set_orientation(const QVector3D& X, const QVector3D& Y)
 	return true;
 }
 
-void FrameManipulator::set_transformation( const QMatrix4x4& transfo)
+void FrameManipulator::set_transformation( const Matrix4f& transfo)
 {
 	unused_parameters(transfo);
 	// TODO E.S.: transfo parameter is not used. It seems wrong.
-	QVector4D col = rotations_.column(3);
-	set_position(QVector3D(col[0],col[1],col[2]));
-	col = rotations_.column(0);
-	QVector3D Rx(	col[0], col[1], col[2]);
-	col = rotations_.column(1);
-	QVector3D Ry(	col[0], col[1], col[2]);
-	col = rotations_.column(2);
-	QVector3D Rz(	col[0], col[1], col[2]);
+	Vector4f col = rotations_.col(3);
+	set_position(Vector3f(col[0],col[1],col[2]));
+	col = rotations_.col(0);
+	Vector3f Rx(	col[0], col[1], col[2]);
+	col = rotations_.col(1);
+	Vector3f Ry(	col[0], col[1], col[2]);
+	col = rotations_.col(2);
+	Vector3f Rz(	col[0], col[1], col[2]);
 
-	set_scale(QVector3D(float32(Rx.length()), float32(Ry.length()), float32(Rz.length())));
+	set_scale(Vector3f(float32(Rx.norm()), float32(Ry.norm()), float32(Rz.norm())));
 
 	col[3] = 0.0f;
 	col[0] = Rx[0];
 	col[1] = Rx[1];
 	col[2] = Rx[2];
-	rotations_.setColumn(0,col);
+	rotations_.col(0) = col;
 
 	col[0] = Ry[0];
 	col[1] = Ry[1];
 	col[2] = Ry[2];
-	rotations_.setColumn(0,col);
+	rotations_.col(0) = col;
 
 	col[0] = Rz[0];
 	col[1] = Rz[1];
 	col[2] = Rz[2];
-	rotations_.setColumn(0,col);
+	rotations_.col(0) = col;
 }
 
 void FrameManipulator::lock(uint32 axis)
@@ -878,36 +873,36 @@ bool FrameManipulator::locked_picking(uint32 axis)
 }
 
 
-QVector3D  FrameManipulator::get_axis(uint32 ax)
+Vector3f  FrameManipulator::get_axis(uint32 ax)
 {
 	uint32 i = (ax-Xt)%3;
-	QVector4D col = rotations_.column(i);
+	Vector4f col = rotations_.col(i);
 
-	return QVector3D(col[0],col[1],col[2]);
+	return Vector3f(col[0],col[1],col[2]);
 }
 
 void FrameManipulator::store_projection(uint32 ax)
 {
-	QMatrix4x4 mat = proj_mat_*view_mat_;
-	QVector3D Or = mat.map(trans_);
-	projected_origin_ = Or * 0.5f + QVector3D(0.5f, 0.5f, 0.5f);
+	Matrix4f mat = proj_mat_*view_mat_;
+	Vector3f Or = Map(mat, trans_);
+	projected_origin_ = Or * 0.5f + Vector3f(0.5f, 0.5f, 0.5f);
 	projected_origin_[0] = projected_origin_[0] * float32(viewport_[2]) + float32(viewport_[0]);
 	projected_origin_[1] = projected_origin_[1] * float32(viewport_[3]) + float32(viewport_[1]);
 
 	if (ax>CENTER)
 	{
-		QVector3D A = get_axis(ax);
+		Vector3f A = get_axis(ax);
 		if ((ax>=Xr) && (ax<=Zr))
 		{
 			// compute screen orientation
-			QVector3D V = view_mat_.mapVector(A);
-			Or =  view_mat_.map(trans_);
-			axis_orientation_ = (QVector3D::dotProduct(Or,V)<0);
+			Vector3f V = (view_mat_ * Vector4f(A.x(), A.y(), A.z(), 0.0f)).head<3>();
+			Or = Map(view_mat_, trans_);
+			axis_orientation_ = (Or.dot(V)<0);
 		}
 
 		A = A+trans_;
-		projected_selected_axis_ = mat.map(A);
-		projected_selected_axis_ = projected_selected_axis_ * 0.5f + QVector3D(0.5f,0.5f,0.5f);
+		projected_selected_axis_ = Map(mat, A);
+		projected_selected_axis_ = projected_selected_axis_ * 0.5f + Vector3f(0.5f,0.5f,0.5f);
 		projected_selected_axis_[0] = projected_selected_axis_[0] * float32(viewport_[2]) + float32(viewport_[0]);
 		projected_selected_axis_[1] = projected_selected_axis_[1] * float32(viewport_[3]) + float32(viewport_[1]);
 		projected_selected_axis_ -= projected_origin_;
@@ -980,13 +975,13 @@ void FrameManipulator::translate_in_screen(int dx, int dy)
 {
 
 	// unproject origin shifted
-	QMatrix4x4 inv_mat = (proj_mat_*view_mat_).inverted();
-	QVector4D P(projected_origin_[0]+float32(dx), projected_origin_[1]+float32(dy),projected_origin_[2],1.0f);
+	Matrix4f inv_mat = (proj_mat_*view_mat_).inverse();
+	Vector4f P(projected_origin_[0]+float32(dx), projected_origin_[1]+float32(dy),projected_origin_[2],1.0f);
 	P[0] = (P[0] - float32(viewport_[0])) / float32(viewport_[2]);
 	P[1] = (P[1] - float32(viewport_[1])) / float32(viewport_[3]);
-	P = P*2.0f - QVector4D(1.0f,1.0f,1.0f,1.0f);
+	P = P*2.0f - Vector4f(1.0f,1.0f,1.0f,1.0f);
 
-	P = inv_mat.map(P);
+	P = inv_mat * P;
 	P /= P[3];
 
 	// and store it
@@ -998,28 +993,27 @@ void FrameManipulator::translate_in_screen(int dx, int dy)
 
 void FrameManipulator::rotate_in_screen(int dx, int dy)
 {
-	QMatrix4x4& proj = proj_mat_;
-	QMatrix4x4& view = view_mat_;
+	Matrix4f& proj = proj_mat_;
+	Matrix4f& view = view_mat_;
 
 	// unproject origin
-	QMatrix4x4 inv_mat = (proj*view).inverted();
+	Matrix4f inv_mat = (proj*view).inverse();
 
-	QVector4D P(projected_origin_[0]-float32(dy), projected_origin_[1]+float32(dx),projected_origin_[2],1.0f);
+	Vector4f P(projected_origin_[0]-float32(dy), projected_origin_[1]+float32(dx),projected_origin_[2],1.0f);
 	P[0] = (P[0] - float32(viewport_[0])) / float32(viewport_[2]);
 	P[1] = (P[1] - float32(viewport_[1])) / float32(viewport_[3]);
-	P = P*2.0f - QVector4D(1.0f,1.0f,1.0f,1.0f);
+	P = P*2.0f - Vector4f(1.0f,1.0f,1.0f,1.0f);
 
-	P = inv_mat.map(P);
+	P = inv_mat * P;
 	P /= P[3];
 
 	// and apply rotation
-	QVector3D axis_rot(P[0]-trans_[0], P[1]-trans_[1], P[2]-trans_[2]);
+	Vector3f axis_rot(P[0]-trans_[0], P[1]-trans_[1], P[2]-trans_[2]);
 	axis_rot.normalize();
 
-	QMatrix4x4 tr;
-	tr.setToIdentity();
+	Matrix4f tr = Matrix4f::Identity(); 
 	float32 angle = std::sqrt(float32(dx*dx+dy*dy))/2.0f;
-	tr.rotate(angle,axis_rot);
+	Rotate(tr,angle,axis_rot);
 
 	rotations_ = tr*rotations_;
 }

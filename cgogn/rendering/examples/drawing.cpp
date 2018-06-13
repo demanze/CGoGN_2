@@ -20,6 +20,7 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#include "cgogn/rendering/opengl/all.h"
 
 #include <QApplication>
 #include <QMatrix4x4>
@@ -80,7 +81,7 @@ void Drawing::closeEvent(QCloseEvent*)
 	drawer2_.reset();
 	wp_.reset();
 	button_.reset();
-	cgogn::rendering::ShaderProgram::clean_all();
+	cgogn::rendering::ogl::ShaderProgram::clean_all();
 }
 
 Drawing::Drawing() :
@@ -121,8 +122,8 @@ void Drawing::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	drawer_rend_->draw(proj,view);
-	drawer2_rend_->draw(proj,view);
+	drawer_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
+	drawer2_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
 }
 
 void Drawing::init()

@@ -25,7 +25,7 @@
 
 #include <cgogn/rendering/volume_drawer.h>
 
-#include <QOpenGLFunctions>
+
 #include <iostream>
 #include<QColor>
 
@@ -38,9 +38,9 @@ namespace rendering
 VolumeDrawerGen::VolumeDrawerGen(bool with_color_per_face) :
 	vbo_pos_(nullptr),
 	vbo_col_(nullptr),
-	face_color_(0,150,0),
+	face_color_(Color(0,150,0)),
 	vbo_pos2_(nullptr),
-	edge_color_(0,0,0),
+	edge_color_(Color(0,0,0)),
 	shrink_v_(0.6f)
 {
 	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
@@ -85,30 +85,30 @@ VolumeDrawerGen::Renderer::Renderer(VolumeDrawerGen* vr) :
 VolumeDrawerGen::Renderer::~Renderer()
 {}
 
-void VolumeDrawerGen::Renderer::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview)
+void VolumeDrawerGen::Renderer::draw_faces(const Matrix4f& projection, const Matrix4f& modelview)
 {
-	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+
 
 	if (param_expl_vol_col_)
 	{
 		param_expl_vol_col_->bind(projection, modelview);
-		ogl33->glDrawArrays(GL_LINES_ADJACENCY, 0, volume_drawer_data_->vbo_pos_->size());
+		glDrawArrays(GL_LINES_ADJACENCY, 0, volume_drawer_data_->vbo_pos_->size());
 		param_expl_vol_col_->release();
 	}
 	else
 	{ 
 		param_expl_vol_->bind(projection, modelview);
-		ogl33->glDrawArrays(GL_LINES_ADJACENCY, 0, volume_drawer_data_->vbo_pos_->size());
+		glDrawArrays(GL_LINES_ADJACENCY, 0, volume_drawer_data_->vbo_pos_->size());
 		param_expl_vol_->release();
 	}
 }
 
-void VolumeDrawerGen::Renderer::draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview)
+void VolumeDrawerGen::Renderer::draw_edges(const Matrix4f& projection, const Matrix4f& modelview)
 {
-	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+
 
 	param_expl_vol_line_->bind(projection,modelview);
-	ogl33->glDrawArrays(GL_TRIANGLES, 0, volume_drawer_data_->vbo_pos2_->size());
+	glDrawArrays(GL_TRIANGLES, 0, volume_drawer_data_->vbo_pos2_->size());
 	param_expl_vol_line_->release();
 }
 
@@ -122,19 +122,19 @@ void VolumeDrawerGen::Renderer::set_explode_volume(float32 x)
 		param_expl_vol_line_->explode_factor_ = x;
 }
 
-void VolumeDrawerGen::Renderer::set_face_color(const QColor& rgb)
+void VolumeDrawerGen::Renderer::set_face_color(const Vector4f& rgb)
 {
 	if (param_expl_vol_)
 		param_expl_vol_->color_ = rgb;
 }
 
-void VolumeDrawerGen::Renderer::set_edge_color(const QColor& rgb)
+void VolumeDrawerGen::Renderer::set_edge_color(const Vector4f& rgb)
 {
 	if (param_expl_vol_line_)
 		param_expl_vol_line_->color_=rgb;
 }
 
-void VolumeDrawerGen::Renderer::set_clipping_plane(const QVector4D& pl)
+void VolumeDrawerGen::Renderer::set_clipping_plane(const Vector4f& pl)
 {
 	if (param_expl_vol_)
 		param_expl_vol_->plane_clip_ = pl;
@@ -144,7 +144,7 @@ void VolumeDrawerGen::Renderer::set_clipping_plane(const QVector4D& pl)
 		param_expl_vol_line_->plane_clip_ = pl;
 }
 
-void VolumeDrawerGen::Renderer::set_clipping_plane2(const QVector4D& pl)
+void VolumeDrawerGen::Renderer::set_clipping_plane2(const Vector4f& pl)
 {
 	if (param_expl_vol_)
 		param_expl_vol_->plane_clip2_ = pl;
@@ -154,13 +154,13 @@ void VolumeDrawerGen::Renderer::set_clipping_plane2(const QVector4D& pl)
 		param_expl_vol_line_->plane_clip2_ = pl;
 }
 
-void VolumeDrawerGen::Renderer::set_thick_clipping_plane(const QVector4D& p, float32 th)
+void VolumeDrawerGen::Renderer::set_thick_clipping_plane(const Vector4f& p, float32 th)
 {
-	QVector4D p1 = p;
+	Vector4f p1 = p;
 	p1[3] -= th/2.0f;
 	set_clipping_plane(p1);
 
-	QVector4D p2 = -p;
+	Vector4f p2 = -p;
 	p2[3] -= th/2.0f;
 	set_clipping_plane2(p2);
 }

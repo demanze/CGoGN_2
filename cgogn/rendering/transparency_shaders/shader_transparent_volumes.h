@@ -24,6 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADER_TRANSP_VOLUMES_H_
 #define CGOGN_RENDERING_SHADER_TRANSP_VOLUMES_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 
 #include <cgogn/rendering/shaders/vbo.h>
@@ -33,10 +34,6 @@
 #include <cgogn/geometry/algos/centroid.h>
 #include <cgogn/geometry/algos/ear_triangulation.h>
 
-#include <QOpenGLFunctions_3_3_Core>
-#include <QColor>
-#include <QOpenGLFramebufferObject>
-
 namespace cgogn
 {
 
@@ -45,7 +42,7 @@ namespace rendering
 
 class ShaderTransparentVolumes;
 
-class ShaderParamTransparentVolumes : public ShaderParam
+class ShaderParamTransparentVolumes : public ogl::ShaderParam
 {
 protected:
 
@@ -55,10 +52,10 @@ public:
 
 	using ShaderType = ShaderTransparentVolumes;
 
-	QColor color_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
-	QVector3D light_position_;
+	Vector4f color_;
+	Vector4f plane_clip_;
+	Vector4f plane_clip2_;
+	Vector3f light_position_;
 	float32 explode_factor_;
 
 	bool bf_culling_;
@@ -71,7 +68,7 @@ public:
 };
 
 
-class CGOGN_RENDERING_API ShaderTransparentVolumes : public ShaderProgram
+class CGOGN_RENDERING_API ShaderTransparentVolumes : public ogl::ShaderProgram
 {
 	friend class ShaderParamTransparentVolumes;
 
@@ -82,16 +79,16 @@ protected:
 	static const char* fragment_shader_source_;
 
 	// uniform ids
-	GLint unif_expl_v_;
-	GLint unif_light_position_;
-	GLint unif_plane_clip_;
-	GLint unif_plane_clip2_;
-	GLint unif_color_;
-	GLint unif_bf_culling_;
-	GLint unif_lighted_;
-	GLint unif_layer_;
-	GLint unif_depth_texture_sampler_;
-	GLint unif_rgba_texture_sampler_;
+	ogl::Uniform unif_expl_v_;
+	ogl::Uniform unif_light_position_;
+	ogl::Uniform unif_plane_clip_;
+	ogl::Uniform unif_plane_clip2_;
+	ogl::Uniform unif_color_;
+	ogl::Uniform unif_bf_culling_;
+	ogl::Uniform unif_lighted_;
+	ogl::Uniform unif_layer_;
+	ogl::Uniform unif_depth_texture_sampler_;
+	ogl::Uniform unif_rgba_texture_sampler_;
 
 public:
 
@@ -104,16 +101,16 @@ public:
 	};
 
 	void set_explode_volume(float32 x);
-	void set_light_position(const QVector3D& l);
-	void set_plane_clip(const QVector4D& plane);
-	void set_plane_clip2(const QVector4D& plane);
-	void set_color(const QColor& rgb);
+	void set_light_position(const Vector3f& l);
+	void set_plane_clip(const Vector4f& plane);
+	void set_plane_clip2(const Vector4f& plane);
+	void set_color(const Vector4f& rgb);
 
 	void set_bf_culling(bool cull);
 	void set_lighted(bool lighted);
 	void set_layer(int layer);
-	void set_rgba_sampler(GLuint rgba_samp);
-	void set_depth_sampler(GLuint depth_samp);
+	void set_rgba_sampler(GLint rgba_samp);
+	void set_depth_sampler(GLint depth_samp);
 
 	using Param = ShaderParamTransparentVolumes;
 

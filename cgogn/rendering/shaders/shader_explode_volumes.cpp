@@ -148,62 +148,64 @@ ShaderExplodeVolumesGen::ShaderExplodeVolumesGen(bool color_per_vertex)
 {
 	if (color_per_vertex)
 	{
-		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source2_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source2_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source2_);
-		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
+		addShader(GL_VERTEX_SHADER, vertex_shader_source2_);
+		addShader(GL_GEOMETRY_SHADER, geometry_shader_source2_);
+		addShader(GL_FRAGMENT_SHADER, fragment_shader_source2_);
+		bindAttributeLocation("vertex_pos", ATTRIB_POS);
+		bindAttributeLocation("vertex_color", ATTRIB_COLOR);
 	}
 	else
 	{
-		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
+		addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+		addShader(GL_GEOMETRY_SHADER, geometry_shader_source_);
+		addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+		bindAttributeLocation("vertex_pos", ATTRIB_POS);
 	}
-	prg_.link();
+
+	link();
+
 	get_matrices_uniforms();
-	unif_expl_v_ = prg_.uniformLocation("explode_vol");
-	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
-	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
-	unif_light_position_ = prg_.uniformLocation("light_position");
-	unif_color_ = prg_.uniformLocation("color");
+	unif_expl_v_ = "explode_vol";
+	unif_plane_clip_ = "plane_clip";
+	unif_plane_clip2_ = "plane_clip2";
+	unif_light_position_ = "light_position";
+	unif_color_ = "color";
 
 	// default param
 	bind();
-	set_light_position(QVector3D(10.0f,100.0f,1000.0f));
+	set_light_position(Vector3f(10.0f,100.0f,1000.0f));
 	set_explode_volume(0.8f);
-	set_color(QColor(255,0,0));
-	set_plane_clip(QVector4D(0,0,0,0));
-	set_plane_clip2(QVector4D(0,0,0,0));
+	set_color(Color(255,0,0));
+	set_plane_clip(Vector4f(0,0,0,0));
+	set_plane_clip2(Vector4f(0,0,0,0));
 	release();
 }
 
-void ShaderExplodeVolumesGen::set_color(const QColor& rgb)
+void ShaderExplodeVolumesGen::set_color(const Vector4f& rgb)
 {
-	if (unif_color_ >= 0)
-		prg_.setUniformValue(unif_color_, rgb);
+	if (unif_color_.found())
+		unif_color_.set(rgb);
 }
 
-void ShaderExplodeVolumesGen::set_light_position(const QVector3D& l)
+void ShaderExplodeVolumesGen::set_light_position(const Vector3f& l)
 {
-	prg_.setUniformValue(unif_light_position_, l);
+	unif_light_position_.set(l);
 }
 
 void ShaderExplodeVolumesGen::set_explode_volume(float32 x)
 {
-	prg_.setUniformValue(unif_expl_v_, x);
+	unif_expl_v_.set(x);
 }
 
-void ShaderExplodeVolumesGen::set_plane_clip(const QVector4D& plane)
+void ShaderExplodeVolumesGen::set_plane_clip(const Vector4f& plane)
 {
-	prg_.setUniformValue(unif_plane_clip_, plane);
+	unif_plane_clip_.set(plane);
 }
 
 
-void ShaderExplodeVolumesGen::set_plane_clip2(const QVector4D& plane)
+void ShaderExplodeVolumesGen::set_plane_clip2(const Vector4f& plane)
 {
-	prg_.setUniformValue(unif_plane_clip2_, plane);
+	unif_plane_clip2_.set(plane);
 }
 
 

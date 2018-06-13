@@ -27,7 +27,6 @@
 #include <cgogn/rendering/shaders/shader_simple_color.h>
 #include <cgogn/rendering/shaders/shader_bold_line.h>
 #include <cgogn/rendering/shaders/vbo.h>
-#include <QOpenGLFunctions_3_3_Core>
 #include <cgogn/geometry/functions/distance.h>
 #include <cgogn/geometry/functions/intersection.h>
 #include <cgogn/geometry/types/vec.h>
@@ -115,35 +114,35 @@ protected:
 
 	bool axis_orientation_;
 
-	QMatrix4x4 rotations_;
+	Matrix4f rotations_;
 
 	float32 scale_rendering_;
 
-	QVector3D trans_;
+	Vector3f trans_;
 
-	QVector3D scale_;
+	Vector3f scale_;
 
-	QVector3D length_axes_;
+	Vector3f length_axes_;
 
-	QVector3D projected_selected_axis_;
+	Vector3f projected_selected_axis_;
 
-	QVector3D projected_origin_;
+	Vector3f projected_origin_;
 
-	QMatrix4x4 proj_mat_;
-	QMatrix4x4 view_mat_;
+	Matrix4f proj_mat_;
+	Matrix4f view_mat_;
 	GLint viewport_[4];
 
 	// last mouse position
 	int beg_X_;
 	int beg_Y_;
 
-	QMatrix4x4 transfo_render_frame();
+	Matrix4f transfo_render_frame();
 
 	inline bool axis_pickable(uint32 a) { return (!locked_axis_[a]) && (!locked_picking_axis_[a]);}
 
 	void set_length_axes();
 
-	uint32 pick_frame(const QVector4D& PP, const QVector4D& QQ);
+	uint32 pick_frame(const Vector4f& PP, const Vector4f& QQ);
 
 	void store_projection(uint32 ax);
 
@@ -174,7 +173,7 @@ public:
 	 * @param yc y position [-1/1] (default 0)
 	 * @param r radius (default 1)
 	 */
-	void z_plane_param(const QColor& color, float32 xc, float32 yc, float32 r);
+	void z_plane_param(const Vector4f& color, float32 xc, float32 yc, float32 r);
 
 	/**
 	 * get the size of frame
@@ -188,7 +187,7 @@ public:
 	 * @param proj projection matrix
 	 * @param view model-view matrix
 	 */
-	void draw(bool frame, bool zplane, const QMatrix4x4& proj, const QMatrix4x4& view);
+	void draw(bool frame, bool zplane, const Matrix4f& proj, const Matrix4f& view);
 
 	/**
 	 * @brief try picking the frame
@@ -277,7 +276,7 @@ public:
 	/**
 	 * get the matrix transformation
 	 */
-	QMatrix4x4 transfo();
+	Matrix4f transfo();
 
 	/**
 	 * set the position of frame
@@ -286,14 +285,14 @@ public:
 	template <typename VEC3>
 	void set_position(const VEC3& P);
 
-	inline QVector3D get_position() { return trans_; }
+	inline Vector3f get_position() { return trans_; }
 
 	/**
 	 * @brief get an axis
 	 * @param ax (Xr,Yr,Zr)
 	 * @return the axis
 	 */
-	QVector3D get_axis(uint32 ax);
+	Vector3f get_axis(uint32 ax);
 
 	/// get position in a non-QVector3 vector
 	template <typename VEC3>
@@ -308,7 +307,7 @@ public:
 	 * set the scale of frame
 	 * @param P the vector of scale factors
 	 */
-	void set_scale(const QVector3D& S);
+	void set_scale(const Vector3f& S);
 
 	/**
 	 * set the orientation of frame (Z is deduced)
@@ -316,12 +315,12 @@ public:
 	 * @param Y the vector Y of frame
 	 * @return return false if parameters are not unit orthogonal vectors
 	 */
-	bool set_orientation(const QVector3D& X, const QVector3D& Y);
+	bool set_orientation(const Vector3f& X, const Vector3f& Y);
 
 	/**
 	 * set transformation matrix
 	 */
-	void set_transformation( const QMatrix4x4& transfo);
+	void set_transformation( const Matrix4f& transfo);
 
 
 	inline static bool rotation_axis(uint32 axis) { return (axis >= Xr) && (axis <= Zr); }
@@ -340,8 +339,8 @@ void FrameManipulator::pick(int x, int y, const VEC& PP, const VEC& QQ)
 	beg_X_ = x;
 	beg_Y_ = y;
 
-	QVector4D P(PP[0],PP[1],PP[2],1.0);
-	QVector4D Q(QQ[0],QQ[1],QQ[2],1.0);
+	Vector4f P(PP[0],PP[1],PP[2],1.0);
+	Vector4f Q(QQ[0],QQ[1],QQ[2],1.0);
 	highlighted_ = pick_frame(P,Q);
 
 	if (highlighted_ != NONE)
@@ -370,7 +369,7 @@ void FrameManipulator::get_position(VEC3& pos)
 template <typename VEC3>
 void FrameManipulator::get_axis(uint32 ax,VEC3& axis)
 {
-	QVector3D A = get_axis(ax);
+	Vector3f A = get_axis(ax);
 	axis[0] = A[0];
 	axis[1] = A[1];
 	axis[2] = A[2];

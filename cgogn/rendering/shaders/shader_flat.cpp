@@ -111,59 +111,68 @@ ShaderFlatGen::ShaderFlatGen(bool color_per_vertex)
 {
 	if (color_per_vertex)
 	{
-		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source2_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source2_);
-		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-		prg_.bindAttributeLocation("vertex_col", ATTRIB_COLOR);
-		prg_.link();
+		addShader(GL_VERTEX_SHADER, vertex_shader_source2_);
+		addShader(GL_FRAGMENT_SHADER, fragment_shader_source2_);
+		bindAttributeLocation("vertex_pos", ATTRIB_POS);
+		bindAttributeLocation("vertex_col", ATTRIB_COLOR);
+		link();
+
+		bind();
+
 		get_matrices_uniforms();
 	}
 	else
 	{
-		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-		prg_.link();
+		addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+		addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+		bindAttributeLocation("vertex_pos", ATTRIB_POS);
+		link();
+
+		bind();
+
 		get_matrices_uniforms();
-	}
-	unif_front_color_ = prg_.uniformLocation("front_color");
-	unif_back_color_ = prg_.uniformLocation("back_color");
-	unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
-	unif_light_position_ = prg_.uniformLocation("lightPosition");
-	unif_bf_culling_ = prg_.uniformLocation("cull_back_face");
+	} 
+
+	unif_front_color_ = "front_color";
+	unif_back_color_ = "back_color";
+	unif_ambiant_color_ = "ambiant_color";
+	unif_light_position_ = "lightPosition";
+	unif_bf_culling_ = "cull_back_face";
+
+	release(); 
 }
 
-void ShaderFlatGen::set_light_position(const QVector3D& l)
+void ShaderFlatGen::set_light_position(const Vector3f& l)
 {
-	prg_.setUniformValue(unif_light_position_, l);
+	unif_light_position_.set(l);
 }
 
-void ShaderFlatGen::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
+void ShaderFlatGen::set_local_light_position(const Vector3f& l, const Matrix4f& view_matrix)
 {
-	QVector4D loc4 = view_matrix.map(QVector4D(l, 1.0));
-	prg_.setUniformValue(unif_light_position_, QVector3D(loc4) / loc4.w());
+	Vector4f loc4 = view_matrix * Vector4f(l.x(), l.y(), l.z(), 1.0);
+	unif_light_position_.set(Vector3f(loc4.head<3>() / loc4.w()));
 }
 
-void ShaderFlatGen::set_front_color(const QColor& rgb)
+void ShaderFlatGen::set_front_color(const Vector4f& rgb)
 {
-	if (unif_front_color_ >= 0)
-		prg_.setUniformValue(unif_front_color_, rgb);
+	if (unif_front_color_.found())
+		unif_front_color_.set(rgb);
 }
 
-void ShaderFlatGen::set_back_color(const QColor& rgb)
+void ShaderFlatGen::set_back_color(const Vector4f& rgb)
 {
-	if (unif_back_color_ >= 0)
-		prg_.setUniformValue(unif_back_color_, rgb);
+	if (unif_back_color_.found())
+		unif_back_color_.set(rgb);
 }
 
-void ShaderFlatGen::set_ambiant_color(const QColor& rgb)
+void ShaderFlatGen::set_ambiant_color(const Vector4f& rgb)
 {
-	prg_.setUniformValue(unif_ambiant_color_, rgb);
+	unif_ambiant_color_.set(rgb);
 }
 
 void ShaderFlatGen::set_bf_culling(bool cull)
 {
-	prg_.setUniformValue(unif_bf_culling_, cull);
+	unif_bf_culling_.set(cull);
 }
 
 template class CGOGN_RENDERING_API ShaderFlatTpl<false>;

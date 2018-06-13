@@ -24,10 +24,10 @@
 #ifndef CGOGN_RENDERING_WALL_PAPER_H_
 #define CGOGN_RENDERING_WALL_PAPER_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/shaders/shader_texture.h>
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/dll.h>
-#include <QOpenGLFunctions_3_3_Core>
 
 namespace cgogn
 {
@@ -92,7 +92,7 @@ public:
 	 * @brief constructor, init all buffers (data and OpenGL) and shader
 	 * @param col color unique color of wallPaper
 	 */
-	WallPaper(const QColor& col);
+	WallPaper(const Vector4f& col);
 
 	/**
 	 * @brief  constructor, init all buffers (data and OpenGL) and shader
@@ -101,13 +101,13 @@ public:
 	 * @param col_bl bottom left color
 	 * @param col_br botton right color
 	 */
-	WallPaper(const QColor& col_tl, const QColor& col_tr, const QColor& col_bl, const QColor& col_br);
+	WallPaper(const Vector4f& col_tl, const Vector4f& col_tr, const Vector4f& col_bl, const Vector4f& col_br);
 
 	/**
 	 * @brief change color for unique color image
 	 * @param col color
 	 */
-	void change_color(const QColor& col);
+	void change_color(const Vector4f& col);
 
 	/**
 	 * @brief change colors for 4 colors image only
@@ -116,7 +116,7 @@ public:
 	 * @param col_bl bottom left color
 	 * @param col_br botton right color
 	 */
-	void change_colors(const QColor& col_tl, const QColor& col_tr, const QColor& col_bl, const QColor& col_br);
+	void change_colors(const Vector4f& col_tl, const Vector4f& col_tr, const Vector4f& col_bl, const Vector4f& col_br);
 
 	/**
 	 * release buffers and shader

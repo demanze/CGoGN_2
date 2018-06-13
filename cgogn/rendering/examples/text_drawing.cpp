@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "cgogn/rendering/opengl/all.h"
+
 #include <iomanip>
 #include <QApplication>
 #include <QMatrix4x4>
@@ -69,16 +71,18 @@ TextDrawing::TextDrawing() :
 
 void TextDrawing::draw()
 {
+	glewInit();
+
 	QMatrix4x4 proj;
 	QMatrix4x4 view;
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	tdr_rend_->draw(proj, view);
-	QMatrix4x4 Id;
-	QMatrix4x4 ratio;
-	ratio.translate(-1,-1,0);
-	ratio.scale(0.5f, 0.5f*width()/height(),0.0f);
+	tdr_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
+	Matrix4f Id = Matrix4f::Identity();
+	Matrix4f ratio;
+	Translate(ratio, Vector3f(-1,-1,0));
+	Scale(ratio, Vector3f(0.5f, 0.5f*width()/height(),0.0f));
 	tdr_rend2_->draw(ratio,Id);
 
 	nb_fps_++;
@@ -97,6 +101,8 @@ void TextDrawing::draw()
 
 void TextDrawing::init()
 {
+	glewInit();
+
 	setSceneRadius(5.0);
 	setSceneCenter(qoglviewer::Vec(0.0,0.0,0.0));
 	showEntireScene();
@@ -110,10 +116,10 @@ void TextDrawing::init()
 			for (float x = -4; x < 4; x += 1)
 			{
 				Vec3 P{ x,y,z };
-				QColor col(rand()%255, rand() % 255, rand() % 255);
+				Vector4f col = Color(rand()%255, rand() % 255, rand() % 255);
 				float sz = 0.1f*rand() / RAND_MAX + 0.05f;
 				std::stringstream ss;
-				ss << std::setprecision(2)<< "(" << x << "," << y << "," << z << ")";
+				ss << std::setprecision(2) << "(" << x << "," << y << "," << z << ")";
 				*tdr_ << P << col << sz << ss.str();
 			}
 	*tdr_ << cgogn::rendering::TextDrawer::end; 
@@ -122,7 +128,7 @@ void TextDrawing::init()
 	tdr_rend2_ = tdr2_->generate_renderer();
 
 	float sz = 32.0f / (devicePixelRatio()*width());
-	*tdr2_ <<Vec3{sz,sz,-1} << QColor("white") <<sz << fps_ << " fps"<< cgogn::rendering::TextDrawer::end ;
+	*tdr2_ <<Vec3{sz,sz,-1} <<sz << fps_ << " fps"<< cgogn::rendering::TextDrawer::end ;
 	tdr_rend2_->set_italic(0.2f);
 	start_fps_ = std::chrono::system_clock::now();
 	nb_fps_ = 0;
@@ -131,10 +137,12 @@ void TextDrawing::init()
 
 void TextDrawing::resizeEvent(QResizeEvent *ev)
 {
+	glewInit();
+
 	if (tdr2_)
 	{
 		float sz = 32.0f / (devicePixelRatio()*width());
-		*tdr2_ <<Vec3{sz,sz,-1} << QColor("white") <<sz << fps_ << " fps"<< cgogn::rendering::TextDrawer::end ;
+		*tdr2_ <<Vec3{sz,sz,-1} <<sz << fps_ << " fps"<< cgogn::rendering::TextDrawer::end ;
 	}
 
 	QOGLViewer::resizeEvent(ev);

@@ -24,12 +24,10 @@
 #ifndef CGOGN_RENDERING_SHADERS_FLAT_H_
 #define CGOGN_RENDERING_SHADERS_FLAT_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-
-#include <QOpenGLFunctions>
-#include <QColor>
 
 namespace cgogn
 {
@@ -39,10 +37,10 @@ namespace rendering
 
 // forward
 template <bool CPV>
-class ShaderParamFlat: public ShaderParam
+class ShaderParamFlat: public ogl::ShaderParam
 {};
 
-class CGOGN_RENDERING_API ShaderFlatGen : public ShaderProgram
+class CGOGN_RENDERING_API ShaderFlatGen : public ogl::ShaderProgram
 {
 	template <bool CPV> friend class ShaderParamFlat;
 
@@ -55,11 +53,11 @@ protected:
 	static const char* fragment_shader_source2_;
 
 	// uniform ids
-	GLint unif_front_color_;
-	GLint unif_back_color_;
-	GLint unif_ambiant_color_;
-	GLint unif_light_position_;
-	GLint unif_bf_culling_;
+	ogl::Uniform unif_front_color_;
+	ogl::Uniform unif_back_color_;
+	ogl::Uniform unif_ambiant_color_;
+	ogl::Uniform unif_light_position_;
+	ogl::Uniform unif_bf_culling_;
 
 public:
 
@@ -76,32 +74,32 @@ public:
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_front_color(const QColor& rgb);
+	void set_front_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_back_color(const QColor& rgb);
+	void set_back_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set current ambiant color
 	 * @param rgb
 	 */
-	void set_ambiant_color(const QColor& rgb);
+	void set_ambiant_color(const Vector4f& rgb);
 
 	/**
 	 * @brief set light position relative to screen
 	 * @param l light position
 	 */
-	void set_light_position(const QVector3D& l);
+	void set_light_position(const Vector3f& l);
 
 	/**
 	 * @brief set light position relative to world
 	 * @param l light position
 	 * @param view_matrix
 	 */
-	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
+	void set_local_light_position(const Vector3f& l, const Matrix4f& view_matrix);
 
 	void set_bf_culling(bool cull);
 
@@ -130,13 +128,13 @@ ShaderFlatTpl<CPV>* ShaderFlatTpl<CPV>::instance_ = nullptr;
 
 // COLOR UNIFORM PARAM
 template <>
-class ShaderParamFlat<false> : public ShaderParam
+class ShaderParamFlat<false> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderFlatGen* sh = static_cast<ShaderFlatGen*>(this->shader_);
+		ShaderFlatGen* sh = static_cast<ShaderFlatGen*>(this->program);
 		sh->set_front_color(front_color_);
 		sh->set_back_color(back_color_);
 		sh->set_ambiant_color(ambiant_color_);
@@ -148,46 +146,40 @@ public:
 
 	using ShaderType = ShaderFlatTpl<false>;
 
-	QColor front_color_;
-	QColor back_color_;
-	QColor ambiant_color_;
-	QVector3D light_pos_;
+	Vector4f front_color_;
+	Vector4f back_color_;
+	Vector4f ambiant_color_;
+	Vector3f light_pos_;
 	bool bf_culling_;
 
 	ShaderParamFlat(ShaderFlatTpl<false>* sh) :
-		ShaderParam(sh),
-		front_color_(250, 0, 0),
-		back_color_(0, 250, 0),
-		ambiant_color_(5, 5, 5),
-		light_pos_(10, 100, 1000),
+		ogl::ShaderParam(sh),
+		front_color_(Color(250, 0, 0)),
+		back_color_(Color(0, 250, 0)),
+		ambiant_color_(Color(5, 5, 5)),
+		light_pos_(Vector3f(10, 100, 1000)),
 		bf_culling_(false)
 	{}
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		bind();
 		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderFlatGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderFlatGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		release();
 	}
 };
 
-
 // COLOR PER VERTEX PARAM
 template <>
-class ShaderParamFlat<true> : public ShaderParam
+class ShaderParamFlat<true> : public ogl::ShaderParam
 {
 protected:
 
 	void set_uniforms() override
 	{
-		ShaderFlatGen* sh = static_cast<ShaderFlatGen*>(this->shader_);
+		ShaderFlatGen* sh = static_cast<ShaderFlatGen*>(this->program);
 		sh->set_ambiant_color(ambiant_color_);
 		sh->set_light_position(light_pos_);
 		sh->set_bf_culling(bf_culling_);
@@ -197,60 +189,43 @@ public:
 
 	using ShaderType = ShaderFlatTpl<true>;
 
-	QColor ambiant_color_;
-	QVector3D light_pos_;
+	Vector4f ambiant_color_;
+	Vector3f light_pos_;
 	bool bf_culling_;
 
 	ShaderParamFlat(ShaderFlatTpl<true>* sh) :
-		ShaderParam(sh),
-		ambiant_color_(5, 5, 5),
-		light_pos_(10, 100, 1000),
+		ogl::ShaderParam(sh),
+		ambiant_color_(Color(5, 5, 5)),
+		light_pos_(Vector3f(10, 100, 1000)),
 		bf_culling_(false)
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		bind();
 		vao_->bind();
-		// position
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderFlatGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		// color
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderFlatGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
+		vao_->attribPointer(ShaderFlatGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
+		vao_->attribPointer(ShaderFlatGen::ATTRIB_COLOR, vbo_color, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		release();
 	}
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		bind();
 		vao_->bind();
-		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderFlatGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
+		vao_->attribPointer(ShaderFlatGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		release();
 	}
 
 	void set_color_vbo(VBO* vbo_color)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
+		bind();
 		vao_->bind();
-		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderFlatGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
+		vao_->attribPointer(ShaderFlatGen::ATTRIB_COLOR, vbo_color, GL_FLOAT);
 		vao_->release();
-		shader_->release();
+		release();
 	}
 };
 

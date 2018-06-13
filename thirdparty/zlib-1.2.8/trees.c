@@ -967,7 +967,7 @@ void ZLIB_INTERNAL _tr_flush_block(s, buf, stored_len, last)
         _tr_stored_block(s, buf, stored_len, last);
 
 #ifdef FORCE_STATIC
-    } else if (static_lenb >= 0) { /* force static trees */
+    } else if (static_lenb.found()) { /* force static trees */
 #else
     } else if (s->strategy == Z_FIXED || static_lenb == opt_lenb) {
 #endif

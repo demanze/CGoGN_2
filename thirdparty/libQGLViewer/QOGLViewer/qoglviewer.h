@@ -26,10 +26,10 @@
 #include "camera.h"
 
 //#include <QOpenGLWidget>
-#include <QOpenGLFunctions_3_3_Core>
 #include <QMap>
 #include <QClipboard>
 #include <QTime>
+#include <qopenglfunctions_3_3_core.h>
 
 class QTabWidget;
 
@@ -275,9 +275,9 @@ public:
 	See QGLWidget documentation. */
 	static QImage convertToGLFormat(const QImage & image);
 	/*! Calls \c glColor3. See QGLWidget::qglColor(). */
-	void qglColor(const QColor& color) const;
+	void qglColor(const Vector4f& color) const;
 	/*! Calls \c glClearColor. See QGLWidget documentation. */
-	void qglClearColor(const QColor& color) const;
+	void qglClearColor(const Vector4f& color) const;
 	/*! Returns \c true if the widget has a valid GL rendering context. See QGLWidget
 	documentation. */
 	bool isValid() const;

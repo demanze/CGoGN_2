@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "cgogn/rendering/opengl/all.h"
+
 #include <QApplication>
 #include <QMatrix4x4>
 #include <QKeyEvent>
@@ -108,7 +110,7 @@ private:
 
 	float32 expl_;
 
-	QVector4D plane_clipping1_;
+	Vector4f plane_clipping1_;
 	float32 plane_thickness_;
 	bool thick_plane_mode_;
 };
@@ -162,7 +164,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	volume_drawer_rend_.reset();
 	drawer_.reset();
 	drawer_rend_.reset();
-	cgogn::rendering::ShaderProgram::clean_all();
+	cgogn::rendering::ogl::ShaderProgram::clean_all();
 }
 
 Viewer::Viewer() :
@@ -267,7 +269,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 
 
 	if ((event->modifiers() & Qt::ControlModifier) && !(event->modifiers() & Qt::ShiftModifier))
-		frame_manip_->pick(event->x(), event->y(),P,Q);
+		frame_manip_->pick(event->x(), event->y(), Vector3f(P.x, P.y, P.z), Vector3f(Q.x, Q.y, Q.z));
 
 	if ((event->modifiers() & Qt::ShiftModifier) && !(event->modifiers() & Qt::ControlModifier))
 	{
@@ -360,19 +362,19 @@ void Viewer::draw()
 	{
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 1.0f);
-		volume_drawer_rend_->draw_faces(proj,view);
+		volume_drawer_rend_->draw_faces(Matrix4f(proj.data()), Matrix4f(view.data()));
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
 	if (edge_rendering_)
-		volume_drawer_rend_->draw_edges(proj,view);
+		volume_drawer_rend_->draw_edges(Matrix4f(proj.data()), Matrix4f(view.data()));
 
 	if (topo_drawering_)
-		topo_drawer_rend_->draw(proj,view);
+		topo_drawer_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
 
-	drawer_rend_->draw(proj, view);
+	drawer_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
 
-	frame_manip_->draw(true,true,proj, view);
+	frame_manip_->draw(true,true, Matrix4f(proj.data()), Matrix4f(view.data()));
 }
 
 void Viewer::init()
@@ -401,7 +403,7 @@ void Viewer::init()
 	frame_manip_ = cgogn::make_unique<cgogn::rendering::FrameManipulator>();
 	frame_manip_->set_size(bb_.diag_size()/4);
 	frame_manip_->set_position(bb_.max());
-	frame_manip_->z_plane_param(QColor(200,200,200),-1.5f,-1.5f, 2.0f);
+	frame_manip_->z_plane_param(Color(200,200,200),-1.5f,-1.5f, 2.0f);
 
 	plane_thickness_ = bb_.diag_size()/20;
 
@@ -426,7 +428,7 @@ void Viewer::plane_clip_from_frame()
 	frame_manip_->get_position(position);
 	frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
 	float32 d = -(position.dot(axis_z));
-	plane_clipping1_ = QVector4D(axis_z[0],axis_z[1],axis_z[2],d);
+	plane_clipping1_ = Vector4f(axis_z[0],axis_z[1],axis_z[2],d);
 }
 
 int main(int argc, char** argv)

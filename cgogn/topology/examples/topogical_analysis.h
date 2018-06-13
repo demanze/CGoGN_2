@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "cgogn/rendering/opengl/all.h"
+
 #include <QApplication>
 #include <QMatrix4x4>
 #include <QKeyEvent>
@@ -110,12 +112,12 @@ public:
 		float size = float(bb_.max_size()) / 500.0f;
 
 		param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
-		param_point_sprite_->color_ = QColor(180,180,180);
+		param_point_sprite_->color_ = Color(180,180,180);
 		param_point_sprite_->size_ = size;
 		param_point_sprite_->set_position_vbo(vbo_pos_.get());
 
 		param_edge_ = cgogn::rendering::ShaderBoldLine::generate_param();
-		param_edge_->color_ = QColor(10,10,80);
+		param_edge_->color_ = Color(10,10,80);
 		param_edge_->width_= 1.5f;
 		param_edge_->set_position_vbo(vbo_pos_.get());
 
@@ -151,15 +153,15 @@ public:
 
 		if(feature_points_rendering_)
 		{
-			features_renderer_->draw(proj, view);
-			lines_renderer_->draw(proj, view);
+			features_renderer_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
+			lines_renderer_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
 		}
 
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 2.0f);
 		if (map_rendering_)
 		{
-			param_scalar_->bind(proj,view);
+			param_scalar_->bind(proj.data(), view.data());
 			map_render_->draw(cgogn::rendering::TRIANGLES);
 			param_scalar_->release();
 		}
@@ -167,14 +169,14 @@ public:
 
 		if (vertices_rendering_)
 		{
-			param_point_sprite_->bind(proj,view);
+			param_point_sprite_->bind(proj.data(), view.data());;
 			map_render_->draw(cgogn::rendering::POINTS);
 			param_point_sprite_->release();
 		}
 
 		if (edge_rendering_)
 		{
-			param_edge_->bind(proj,view);
+			param_edge_->bind(proj.data(), view.data());;
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			map_render_->draw(cgogn::rendering::LINES);
@@ -398,7 +400,7 @@ public:
 
 	virtual void closeEvent(QCloseEvent*)
 	{
-		cgogn::rendering::ShaderProgram::clean_all();
+		cgogn::rendering::ogl::ShaderProgram::clean_all();
 	}
 
 	template <typename T, typename std::enable_if<T::DIMENSION == 2>::type* = nullptr>

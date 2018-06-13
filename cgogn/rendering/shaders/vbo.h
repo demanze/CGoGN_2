@@ -25,7 +25,7 @@
 #ifndef CGOGN_RENDERING_SHADERS_VBO_H_
 #define CGOGN_RENDERING_SHADERS_VBO_H_
 
-#include <QOpenGLBuffer>
+#include "cgogn/rendering/opengl/buffer.h"
 
 #include <cgogn/core/cmap/attribute.h>
 #include <cgogn/core/cmap/map_traits.h>
@@ -43,7 +43,7 @@ protected:
 
 	std::size_t nb_vectors_;
 	uint32 vector_dimension_;
-	QOpenGLBuffer buffer_;
+	ogl::Buffer buffer_;
 	std::string name_;
 
 public:
@@ -52,14 +52,9 @@ public:
 		nb_vectors_(),
 		vector_dimension_(vec_dim)
 	{
-		const bool buffer_created = buffer_.create();
-		if (!buffer_created)
-		{
-			cgogn_log_error("VBO::VBO(uint32)") << "The call to QOpenGLBuffer::create() failed. Maybe there is no QOpenGLContext.";
-			std::exit(EXIT_FAILURE);
-		}
+		buffer_.create();
 		buffer_.bind();
-		buffer_.setUsagePattern(QOpenGLBuffer::StreamDraw);
+		buffer_.setUsagePattern(GL_STREAM_DRAW);
 	}
 
 	inline ~VBO()
@@ -114,7 +109,7 @@ public:
 	inline float32* lock_pointer()
 	{
 		buffer_.bind();
-		return reinterpret_cast<float32*>(buffer_.map(QOpenGLBuffer::ReadWrite));
+		return reinterpret_cast<float32*>(buffer_.map(GL_READ_WRITE));
 	}
 
 	/**

@@ -147,85 +147,91 @@ ShaderPhongGen::ShaderPhongGen(bool color_per_vertex)
 {
 	if (color_per_vertex)
 	{
-		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_2_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_2_);
-		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-		prg_.bindAttributeLocation("vertex_normal", ATTRIB_NORM);
-		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
-		prg_.link();
+		addShader(GL_VERTEX_SHADER, vertex_shader_source_2_);
+		addShader(GL_FRAGMENT_SHADER, fragment_shader_source_2_);
+		bindAttributeLocation("vertex_pos", ATTRIB_POS);
+		bindAttributeLocation("vertex_normal", ATTRIB_NORM);
+		bindAttributeLocation("vertex_color", ATTRIB_COLOR);
+		link();
+
+		bind();
+
 		get_matrices_uniforms();
 	}
 	else
 	{
-		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-		prg_.bindAttributeLocation("vertex_normal", ATTRIB_NORM);
-		prg_.link();
+		addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+		addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+		bindAttributeLocation("vertex_pos", ATTRIB_POS);
+		bindAttributeLocation("vertex_normal", ATTRIB_NORM);
+		link();
+
+		bind();
+
 		get_matrices_uniforms();
 	}
 
-	unif_front_color_ = prg_.uniformLocation("front_color");
-	unif_back_color_ = prg_.uniformLocation("back_color");
-	unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
-	unif_spec_color_ = prg_.uniformLocation("spec_color");
-	unif_spec_coef_ = prg_.uniformLocation("spec_coef");
-	unif_double_side_ = prg_.uniformLocation("double_side");
-	unif_light_position_ = prg_.uniformLocation("lightPosition");
+	unif_front_color_ = "front_color";
+	unif_back_color_ = "back_color";
+	unif_ambiant_color_ = "ambiant_color";
+	unif_spec_color_ ="spec_color";
+	unif_spec_coef_ = "spec_coef";
+	unif_double_side_ = "double_side";
+	unif_light_position_ = "lightPosition";
 
 	//default param
-	bind();
-	set_light_position(QVector3D(10.0f, 100.0f, 1000.0f));
-	set_front_color(QColor(250, 0, 0));
-	set_back_color(QColor(0, 250, 5));
-	set_ambiant_color(QColor(5, 5, 5));
-	set_specular_color(QColor(100, 100, 100));
+
+	set_light_position(Vector3f(10.0f, 100.0f, 1000.0f));
+	set_front_color(Color(250, 0, 0));
+	set_back_color(Color(0, 250, 5));
+	set_ambiant_color(Color(5, 5, 5));
+	set_specular_color(Color(100, 100, 100));
 	set_specular_coef(50.0f);
 	set_double_side(true);
 	release();
 }
 
-void ShaderPhongGen::set_light_position(const QVector3D& l)
+void ShaderPhongGen::set_light_position(const Vector3f& l)
 {
-	prg_.setUniformValue(unif_light_position_, l);
+	unif_light_position_.set(l);
 }
 
-void ShaderPhongGen::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
+void ShaderPhongGen::set_local_light_position(const Vector3f& l, const Matrix4f& view_matrix)
 {
-	QVector4D loc4 = view_matrix.map(QVector4D(l, 1.0));
-	prg_.setUniformValue(unif_light_position_, QVector3D(loc4) / loc4.w());
+	Vector4f loc4 = view_matrix * Vector4f(l.x(), l.y(), l.z(), 1.0);
+	unif_light_position_.set(Vector3f(loc4.head<3>() / loc4.w()));
 }
 
-void ShaderPhongGen::set_front_color(const QColor& rgb)
+void ShaderPhongGen::set_front_color(const Vector4f& rgb)
 {
-	if (unif_front_color_ >= 0)
-		prg_.setUniformValue(unif_front_color_, rgb);
+	if (unif_front_color_.found())
+		unif_front_color_.set(rgb);
 }
 
-void ShaderPhongGen::set_back_color(const QColor& rgb)
+void ShaderPhongGen::set_back_color(const Vector4f& rgb)
 {
-	if (unif_back_color_ >= 0)
-		prg_.setUniformValue(unif_back_color_, rgb);
+	if (unif_back_color_.found())
+		unif_back_color_.set(rgb);
 }
 
-void ShaderPhongGen::set_ambiant_color(const QColor& rgb)
+void ShaderPhongGen::set_ambiant_color(const Vector4f& rgb)
 {
-	prg_.setUniformValue(unif_ambiant_color_, rgb);
+	unif_ambiant_color_.set(rgb);
 }
 
-void ShaderPhongGen::set_specular_color(const QColor& rgb)
+void ShaderPhongGen::set_specular_color(const Vector4f& rgb)
 {
-	prg_.setUniformValue(unif_spec_color_, rgb);
+	unif_spec_color_.set(rgb);
 }
 
 void ShaderPhongGen::set_specular_coef(float32 coef)
 {
-	prg_.setUniformValue(unif_spec_coef_, coef);
+	unif_spec_coef_.set(coef);
 }
 
 void ShaderPhongGen::set_double_side(bool ts)
 {
-	prg_.setUniformValue(unif_double_side_, ts);
+	unif_double_side_.set(ts);
 }
 
 template class CGOGN_RENDERING_API ShaderPhongTpl<false>;

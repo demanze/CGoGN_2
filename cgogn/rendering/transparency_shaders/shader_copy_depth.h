@@ -24,11 +24,11 @@
 #ifndef CGOGN_RENDERING_SHADER_COPY_DEPTH_H_
 #define CGOGN_RENDERING_SHADER_COPY_DEPTH_H_
 
+#include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
-#include <QOpenGLFunctions>
 #include <QOpenGLTexture>
 
 namespace cgogn
@@ -40,7 +40,7 @@ namespace rendering
 // forward
 class ShaderCopyDepth;
 
-class CGOGN_RENDERING_API ShaderParamCopyDepth : public ShaderParam
+class CGOGN_RENDERING_API ShaderParamCopyDepth : public ogl::ShaderParam
 {
 protected:
 
@@ -54,7 +54,7 @@ public:
 	ShaderParamCopyDepth(ShaderCopyDepth* sh);
 };
 
-class CGOGN_RENDERING_API ShaderCopyDepth : public ShaderProgram
+class CGOGN_RENDERING_API ShaderCopyDepth : public ogl::ShaderProgram
 {
 	friend class ShaderParamCopyDepth;
 
@@ -64,14 +64,14 @@ protected:
 	static const char* fragment_shader_source_;
 
 	// uniform ids
-	GLint unif_depth_texture_sampler_;
+	ogl::Uniform unif_depth_texture_sampler_;
 
 public:
 
 	using Self = ShaderCopyDepth;
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderCopyDepth);
 
-	void set_depth_sampler(GLuint depth_samp);
+	void set_depth_sampler(GLint depth_samp);
 
 	using Param = ShaderParamCopyDepth;
 

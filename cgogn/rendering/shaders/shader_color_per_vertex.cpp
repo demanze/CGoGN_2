@@ -58,12 +58,16 @@ const char* ShaderColorPerVertex::fragment_shader_source_ =
 
 ShaderColorPerVertex::ShaderColorPerVertex()
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-	prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
-	prg_.link();
+	addShader(GL_VERTEX_SHADER, vertex_shader_source_);
+	addShader(GL_FRAGMENT_SHADER, fragment_shader_source_);
+	bindAttributeLocation("vertex_pos", ATTRIB_POS);
+	bindAttributeLocation("vertex_color", ATTRIB_COLOR);
+
+	link();
+
+	bind();
 	get_matrices_uniforms();
+	release(); 
 }
 
 std::unique_ptr<ShaderColorPerVertex::Param> ShaderColorPerVertex::generate_param()
