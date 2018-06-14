@@ -112,12 +112,12 @@ public:
 		float size = float(bb_.max_size()) / 500.0f;
 
 		param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
-		param_point_sprite_->color_ = Color(180,180,180);
+		param_point_sprite_->color_ = cgogn::Color(180,180,180);
 		param_point_sprite_->size_ = size;
 		param_point_sprite_->set_position_vbo(vbo_pos_.get());
 
 		param_edge_ = cgogn::rendering::ShaderBoldLine::generate_param();
-		param_edge_->color_ = Color(10,10,80);
+		param_edge_->color_ = cgogn::Color(10,10,80);
 		param_edge_->width_= 1.5f;
 		param_edge_->set_position_vbo(vbo_pos_.get());
 
@@ -153,8 +153,8 @@ public:
 
 		if(feature_points_rendering_)
 		{
-			features_renderer_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
-			lines_renderer_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
+			features_renderer_->draw(cgogn::Matrix4f(proj.data()), cgogn::Matrix4f(view.data()));
+			lines_renderer_->draw(cgogn::Matrix4f(proj.data()), cgogn::Matrix4f(view.data()));
 		}
 
 		glEnable(GL_POLYGON_OFFSET_FILL);

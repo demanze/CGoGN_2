@@ -219,14 +219,14 @@ void Viewer::init()
 
 	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();
 	param_phong_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get(), vbo_color_.get());
-	param_phong_->ambiant_color_ = Color(5, 5, 5);
+	param_phong_->ambiant_color_ = cgogn::Color(5, 5, 5);
 	param_phong_->double_side_ = true;
-	param_phong_->specular_color_ = Color(255, 255, 255);
+	param_phong_->specular_color_ = cgogn::Color(255, 255, 255);
 	param_phong_->specular_coef_ = 100.0;
 
 	param_flat_ = cgogn::rendering::ShaderFlatColor::generate_param();
 	param_flat_->set_all_vbos(vbo_pos_.get(), vbo_color_.get());
-	param_flat_->ambiant_color_ = Color(5, 5, 5);
+	param_flat_->ambiant_color_ = cgogn::Color(5, 5, 5);
 }
 
 int main(int argc, char** argv)

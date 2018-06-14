@@ -63,7 +63,7 @@ public:
 	 * @brief set current color
 	 * @param rgb
 	 */
-	void set_color(const Vector4f& rgb);
+	void set_color(const Color& rgb);
 
 protected:
 
@@ -85,7 +85,7 @@ public:
 
 	using ShaderType = ShaderSimpleColor;
 
-	Vector4f color_;
+	Color color_;
 
 	ShaderParamSimpleColor(ShaderSimpleColor* sh) :
 		ogl::ShaderParam(sh),

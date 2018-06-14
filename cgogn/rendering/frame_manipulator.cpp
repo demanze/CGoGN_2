@@ -142,7 +142,7 @@ FrameManipulator::FrameManipulator():
 	cgogn::rendering::update_vbo(points, vbo_grid_.get());
 }
 
-void FrameManipulator::z_plane_param(const Vector4f& color, float32 xc, float32 yc, float32 r)
+void FrameManipulator::z_plane_param(const Color& color, float32 xc, float32 yc, float32 r)
 {
 	std::vector<Vec3> points;
 	points.reserve(nb_grid_ind_);

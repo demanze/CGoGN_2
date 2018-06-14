@@ -133,7 +133,7 @@ void TopoDrawer::Renderer::set_thick_clipping_plane(const Vector4f& p, float32 t
 }
 
 
-void TopoDrawer::update_color(Dart d, const Vector4f& rgb)
+void TopoDrawer::update_color(Dart d, const Color& rgb)
 {
 	auto it = std::find(darts_id_.begin(), darts_id_.end(), d);
 	if (it != darts_id_.end())
@@ -141,8 +141,8 @@ void TopoDrawer::update_color(Dart d, const Vector4f& rgb)
 		std::size_t x = it - darts_id_.begin();
 
 		vbo_color_darts_->bind();
-		float32 rgbf[6] = {float32(rgb.x()),float32(rgb.y()),float32(rgb.z()),
-						  float32(rgb.x()),float32(rgb.y()),float32(rgb.z())};
+		float32 rgbf[6] = { rgb[0] , rgb[1] , rgb[2],
+							rgb[0] , rgb[1] , rgb[2] };
 		vbo_color_darts_->copy_data(uint32(x)*24u, 24u, rgbf);
 		vbo_color_darts_->release();
 	}

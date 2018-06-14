@@ -92,7 +92,7 @@ public:
 	 * @brief constructor, init all buffers (data and OpenGL) and shader
 	 * @param col color unique color of wallPaper
 	 */
-	WallPaper(const Vector4f& col);
+	WallPaper(const Color& col);
 
 	/**
 	 * @brief  constructor, init all buffers (data and OpenGL) and shader
@@ -101,13 +101,13 @@ public:
 	 * @param col_bl bottom left color
 	 * @param col_br botton right color
 	 */
-	WallPaper(const Vector4f& col_tl, const Vector4f& col_tr, const Vector4f& col_bl, const Vector4f& col_br);
+	WallPaper(const Color& col_tl, const Color& col_tr, const Color& col_bl, const Color& col_br);
 
 	/**
 	 * @brief change color for unique color image
 	 * @param col color
 	 */
-	void change_color(const Vector4f& col);
+	void change_color(const Color& col);
 
 	/**
 	 * @brief change colors for 4 colors image only
@@ -116,7 +116,7 @@ public:
 	 * @param col_bl bottom left color
 	 * @param col_br botton right color
 	 */
-	void change_colors(const Vector4f& col_tl, const Vector4f& col_tr, const Vector4f& col_bl, const Vector4f& col_br);
+	void change_colors(const Color& col_tl, const Color& col_tr, const Color& col_bl, const Color& col_br);
 
 	/**
 	 * release buffers and shader

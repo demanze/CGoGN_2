@@ -72,13 +72,13 @@ public:
 		ATTRIB_SIZE
 	};
 
-	void set_color(const Vector4f& rgb);
+	void set_color(const Color& rgb);
 
 	/**
 	* @brief set ambiant color
 	* @param rgb
 	*/
-	void set_ambiant(const Vector4f& rgb);
+	void set_ambiant(const Color& rgb);
 
 	/**
 	* @brief set light position relative to screen
@@ -156,8 +156,8 @@ public:
 
 	using ShaderType = ShaderPointSpriteTpl<false, false>;
 
-	Vector4f color_;
-	Vector4f ambiant_color_;
+	Color color_;
+	Color ambiant_color_;
 	Vector3f light_pos_;
 	float32 size_;
 	Vector4f plane_clip_;
@@ -202,8 +202,8 @@ public:
 
 	using ShaderType = ShaderPointSpriteTpl<false, true>;
 
-	Vector4f color_;
-	Vector4f ambiant_color_;
+	Color color_;
+	Color ambiant_color_;
 	Vector3f light_pos_;
 	Vector4f plane_clip_;
 	Vector4f plane_clip2_;
@@ -266,7 +266,7 @@ public:
 
 	using ShaderType = ShaderPointSpriteTpl<true, false>;
 
-	Vector4f ambiant_color_;
+	Color ambiant_color_;
 	Vector3f light_pos_;
 	float32 size_;
 	Vector4f plane_clip_;
@@ -275,11 +275,11 @@ public:
 
 	ShaderParamPointSprite(ShaderPointSpriteTpl<true, false>* sh) :
 		ogl::ShaderParam(sh),
-		ambiant_color_(Color(5, 5, 5)),
-		light_pos_(Vector3f(10, 100, 1000)),
+		ambiant_color_(5, 5, 5),
+		light_pos_(10, 100, 1000),
 		size_(1.0),
-		plane_clip_(Vector4f(0,0,0,0)),
-		plane_clip2_(Vector4f(0,0,0,0))
+		plane_clip_(0,0,0,0),
+		plane_clip2_(0,0,0,0)
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
@@ -329,7 +329,7 @@ public:
 
 	using ShaderType = ShaderPointSpriteTpl<true, true>;
 
-	Vector4f ambiant_color_;
+	Color ambiant_color_;
 	Vector3f light_pos_;
 	Vector4f plane_clip_;
 	Vector4f plane_clip2_;

@@ -152,7 +152,7 @@ ShaderTransparentVolumes::ShaderTransparentVolumes()
 }
 
 
-void ShaderTransparentVolumes::set_color(const Vector4f& rgb)
+void ShaderTransparentVolumes::set_color(const Color& rgb)
 {
 	unif_color_.set(rgb);
 }

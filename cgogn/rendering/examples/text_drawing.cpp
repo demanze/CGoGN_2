@@ -78,11 +78,11 @@ void TextDrawing::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	tdr_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
-	Matrix4f Id = Matrix4f::Identity();
-	Matrix4f ratio;
-	Translate(ratio, Vector3f(-1,-1,0));
-	Scale(ratio, Vector3f(0.5f, 0.5f*width()/height(),0.0f));
+	tdr_rend_->draw(cgogn::Matrix4f(proj.data()), cgogn::Matrix4f(view.data()));
+	cgogn::Matrix4f Id = cgogn::Matrix4f::Identity();
+	cgogn::Matrix4f ratio;
+	cgogn::Translate(ratio, cgogn::Vector3f(-1,-1,0));
+	cgogn::Scale(ratio, cgogn::Vector3f(0.5f, 0.5f*width()/height(),0.0f));
 	tdr_rend2_->draw(ratio,Id);
 
 	nb_fps_++;
@@ -116,7 +116,7 @@ void TextDrawing::init()
 			for (float x = -4; x < 4; x += 1)
 			{
 				Vec3 P{ x,y,z };
-				Vector4f col = Color(rand()%255, rand() % 255, rand() % 255);
+				cgogn::Color col = cgogn::Color(rand()%255, rand() % 255, rand() % 255);
 				float sz = 0.1f*rand() / RAND_MAX + 0.05f;
 				std::stringstream ss;
 				ss << std::setprecision(2) << "(" << x << "," << y << "," << z << ")";

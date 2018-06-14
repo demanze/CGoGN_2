@@ -202,24 +202,24 @@ void ShaderPhongGen::set_local_light_position(const Vector3f& l, const Matrix4f&
 	unif_light_position_.set(Vector3f(loc4.head<3>() / loc4.w()));
 }
 
-void ShaderPhongGen::set_front_color(const Vector4f& rgb)
+void ShaderPhongGen::set_front_color(const Color& rgb)
 {
 	if (unif_front_color_.found())
 		unif_front_color_.set(rgb);
 }
 
-void ShaderPhongGen::set_back_color(const Vector4f& rgb)
+void ShaderPhongGen::set_back_color(const Color& rgb)
 {
 	if (unif_back_color_.found())
 		unif_back_color_.set(rgb);
 }
 
-void ShaderPhongGen::set_ambiant_color(const Vector4f& rgb)
+void ShaderPhongGen::set_ambiant_color(const Color& rgb)
 {
 	unif_ambiant_color_.set(rgb);
 }
 
-void ShaderPhongGen::set_specular_color(const Vector4f& rgb)
+void ShaderPhongGen::set_specular_color(const Color& rgb)
 {
 	unif_spec_color_.set(rgb);
 }

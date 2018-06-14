@@ -122,13 +122,13 @@ void VolumeDrawerGen::Renderer::set_explode_volume(float32 x)
 		param_expl_vol_line_->explode_factor_ = x;
 }
 
-void VolumeDrawerGen::Renderer::set_face_color(const Vector4f& rgb)
+void VolumeDrawerGen::Renderer::set_face_color(const Color& rgb)
 {
 	if (param_expl_vol_)
 		param_expl_vol_->color_ = rgb;
 }
 
-void VolumeDrawerGen::Renderer::set_edge_color(const Vector4f& rgb)
+void VolumeDrawerGen::Renderer::set_edge_color(const Color& rgb)
 {
 	if (param_expl_vol_line_)
 		param_expl_vol_line_->color_=rgb;

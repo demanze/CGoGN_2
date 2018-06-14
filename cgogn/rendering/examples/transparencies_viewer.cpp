@@ -171,7 +171,7 @@ void ViewerTransparency::draw()
 	render_->draw(cgogn::rendering::TRIANGLES);
 	param_flat_->release();
 
-	drawer_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
+	drawer_rend_->draw(cgogn::Matrix4f(proj.data()), cgogn::Matrix4f(view.data()));
 
 	// the the transparents objects.
 
@@ -232,22 +232,22 @@ void ViewerTransparency::init()
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
-	param_flat_->front_color_ = Color(0,50,200);
-	param_flat_->back_color_ = Color(0,50,200);
+	param_flat_->front_color_ = cgogn::Color(0,50,200);
+	param_flat_->back_color_ = cgogn::Color(0,50,200);
 
 	transp_drawer_ = cgogn::make_unique<cgogn::rendering::SurfaceTransparencyDrawer>();
 //	transp_drawer_->set_max_nb_layers(16);
 
 	tr_flat_param_ = cgogn::rendering::ShaderFlatTransp::generate_param();
 	tr_flat_param_->set_position_vbo(vbo_pos_.get());
-	tr_flat_param_->front_color_ = Color(0,250,0,100);
-	tr_flat_param_->back_color_ = Color(0,250,0,100);
+	tr_flat_param_->front_color_ = cgogn::Color(0,250,0,100);
+	tr_flat_param_->back_color_ = cgogn::Color(0,250,0,100);
 
 	tr_phong_param_ = cgogn::rendering::ShaderPhongTransp::generate_param();
 	tr_phong_param_->set_position_vbo(vbo_pos_.get());
 	tr_phong_param_->set_normal_vbo(vbo_norm_.get());
-	tr_phong_param_->front_color_ = Color(250,0,0,120);
-	tr_phong_param_->back_color_ = Color(250,0,0,120);
+	tr_phong_param_->front_color_ = cgogn::Color(250,0,0,120);
+	tr_phong_param_->back_color_ = cgogn::Color(250,0,0,120);
 
 
 	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();

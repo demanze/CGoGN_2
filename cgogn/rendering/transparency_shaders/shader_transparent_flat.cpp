@@ -116,19 +116,19 @@ void ShaderFlatTransp::set_light_position(const Vector3f& l)
 	unif_light_position_.set(l);
 }
 
-void ShaderFlatTransp::set_front_color(const Vector4f& rgb)
+void ShaderFlatTransp::set_front_color(const Color& rgb)
 {
 	if (unif_front_color_.found())
 		unif_front_color_.set(rgb);
 }
 
-void ShaderFlatTransp::set_back_color(const Vector4f& rgb)
+void ShaderFlatTransp::set_back_color(const Color& rgb)
 {
 	if (unif_back_color_.found())
 		unif_back_color_.set(rgb);
 }
 
-void ShaderFlatTransp::set_ambiant_color(const Vector4f& rgb)
+void ShaderFlatTransp::set_ambiant_color(const Color& rgb)
 {
 	unif_ambiant_color_.set(rgb);
 }
@@ -212,8 +212,8 @@ void ShaderParamFlatTransp::set_uniforms()
 
 void ShaderParamFlatTransp::set_alpha(int alpha)
 {
-	front_color_.w() = alpha / 255.0f;
-	back_color_.w() = alpha / 255.0f;
+	front_color_[3] = alpha / 255.0f;
+	back_color_[3] = alpha / 255.0f;
 }
 
 

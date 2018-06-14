@@ -112,7 +112,7 @@ ShaderExplodeVolumesLine::ShaderExplodeVolumesLine()
 	release();
 }
 
-void ShaderExplodeVolumesLine::set_color(const Vector4f& rgb)
+void ShaderExplodeVolumesLine::set_color(const Color& rgb)
 {
 	if (unif_color_.found())
 		unif_color_.set(rgb);

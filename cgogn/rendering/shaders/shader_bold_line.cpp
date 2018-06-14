@@ -231,7 +231,7 @@ ShaderBoldLineGen::ShaderBoldLineGen(bool color_per_vertex)
 	release(); 
 }
 
-void ShaderBoldLineGen::set_color(const Vector4f& rgb)
+void ShaderBoldLineGen::set_color(const Color& rgb)
 {
 	if (unif_color_.found())
 		unif_color_.set(rgb);

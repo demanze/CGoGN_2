@@ -175,14 +175,14 @@ void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
 		case Qt::Key_Plus:
 			std::cout <<"mesh_transparency_ " << mesh_transparency_<< std::endl;
 			if (mesh_transparency_<254) mesh_transparency_++;
-			transp_drawer_->set_front_color(Color(0,250,0,mesh_transparency_));
-			transp_drawer_->set_back_color(Color(0,250,0,mesh_transparency_));
+			transp_drawer_->set_front_color(cgogn::Color(0,250,0,mesh_transparency_));
+			transp_drawer_->set_back_color(cgogn::Color(0,250,0,mesh_transparency_));
 			break;
 		case Qt::Key_Minus:
 			std::cout <<"mesh_transparency_ " << mesh_transparency_<< std::endl;
 			if (mesh_transparency_>0) mesh_transparency_--;
-			transp_drawer_->set_front_color(Color(0,250,0,mesh_transparency_));
-			transp_drawer_->set_back_color(Color(0,250,0,mesh_transparency_));
+			transp_drawer_->set_front_color(cgogn::Color(0,250,0,mesh_transparency_));
+			transp_drawer_->set_back_color(cgogn::Color(0,250,0,mesh_transparency_));
 			break;
 		case Qt::Key_L:
 			lighted_ = !lighted_;
@@ -221,9 +221,9 @@ void ViewerTransparency::draw()
 	}
 
 	if (phong_rendered_)
-		transp_drawer_->draw_phong(Matrix4f(proj.data()), Matrix4f(view.data()), [&] { render_->draw(cgogn::rendering::TRIANGLES); });
+		transp_drawer_->draw_phong(cgogn::Matrix4f(proj.data()), cgogn::Matrix4f(view.data()), [&] { render_->draw(cgogn::rendering::TRIANGLES); });
 	else
-		transp_drawer_->draw_flat(Matrix4f(proj.data()), Matrix4f(view.data()), [&] { render_->draw(cgogn::rendering::TRIANGLES); });
+		transp_drawer_->draw_flat(cgogn::Matrix4f(proj.data()), cgogn::Matrix4f(view.data()), [&] { render_->draw(cgogn::rendering::TRIANGLES); });
 
 	nb_fps_++;
 	std::chrono::duration<float64> elapsed_seconds = std::chrono::system_clock::now() - start_fps_;
@@ -254,14 +254,14 @@ void ViewerTransparency::init()
 	param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
 	param_point_sprite_->set_position_vbo(vbo_pos_.get());
 	param_point_sprite_->size_ = bb_.diag_size()/1000;
-	param_point_sprite_->color_ = Color(200,200,0);
+	param_point_sprite_->color_ = cgogn::Color(200,200,0);
 
 	transp_drawer_ = cgogn::make_unique<cgogn::rendering::SurfaceTransparencyDrawer>();
 	transp_drawer_->set_position_vbo(vbo_pos_.get());
 	transp_drawer_->set_normal_vbo(vbo_norm_.get());
 	std::cout <<"mesh_transparency_ " << mesh_transparency_<< std::endl;
-	transp_drawer_->set_front_color(Color(0,250,0,mesh_transparency_));
-	transp_drawer_->set_back_color(Color(0,250,0,mesh_transparency_));
+	transp_drawer_->set_front_color(cgogn::Color(0,250,0,mesh_transparency_));
+	transp_drawer_->set_back_color(cgogn::Color(0,250,0,mesh_transparency_));
 
 	wp_ = std::make_shared<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
 	wp_rend_ = wp_->generate_renderer();

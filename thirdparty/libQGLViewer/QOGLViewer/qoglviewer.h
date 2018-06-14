@@ -275,9 +275,9 @@ public:
 	See QGLWidget documentation. */
 	static QImage convertToGLFormat(const QImage & image);
 	/*! Calls \c glColor3. See QGLWidget::qglColor(). */
-	void qglColor(const Vector4f& color) const;
+	void qglColor(const Color& color) const;
 	/*! Calls \c glClearColor. See QGLWidget documentation. */
-	void qglClearColor(const Vector4f& color) const;
+	void qglClearColor(const Color& color) const;
 	/*! Returns \c true if the widget has a valid GL rendering context. See QGLWidget
 	documentation. */
 	bool isValid() const;

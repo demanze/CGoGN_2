@@ -83,7 +83,7 @@ ShaderSimpleColor::ShaderSimpleColor()
 	release(); 
 }
 
-void ShaderSimpleColor::set_color(const Vector4f& rgb)
+void ShaderSimpleColor::set_color(const Color& rgb)
 {
 	unif_color_.set(rgb);
 }

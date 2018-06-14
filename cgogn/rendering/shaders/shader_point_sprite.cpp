@@ -252,7 +252,7 @@ ShaderPointSpriteGen::ShaderPointSpriteGen(bool color_per_vertex, bool size_per_
 	release(); 
 }
 
-void ShaderPointSpriteGen::set_color(const Vector4f& rgb)
+void ShaderPointSpriteGen::set_color(const Color& rgb)
 {
 	if (unif_color_.found())
 		unif_color_.set(rgb);
@@ -262,7 +262,7 @@ void ShaderPointSpriteGen::set_color(const Vector4f& rgb)
 * @brief set ambiant color
 * @param rgb
 */
-void ShaderPointSpriteGen::set_ambiant(const Vector4f& rgb)
+void ShaderPointSpriteGen::set_ambiant(const Color& rgb)
 {
 	if (unif_ambiant_.found())
 		unif_ambiant_.set(rgb);

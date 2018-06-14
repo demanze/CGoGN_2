@@ -77,25 +77,25 @@ public:
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_front_color(const Vector4f& rgb);
+	void set_front_color(const Color& rgb);
 
 	/**
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_back_color(const Vector4f& rgb);
+	void set_back_color(const Color& rgb);
 
 	/**
 	 * @brief set current ambiant color
 	 * @param rgb
 	 */
-	void set_ambiant_color(const Vector4f& rgb);
+	void set_ambiant_color(const Color& rgb);
 
 	/**
 	 * @brief set current specular color
 	 * @param rgb
 	 */
-	void set_specular_color(const Vector4f& rgb);
+	void set_specular_color(const Color& rgb);
 
 	/**
 	 * @brief set current specular coefficient
@@ -168,20 +168,20 @@ public:
 	using ShaderType = ShaderPhongTpl<false>;
 
 	Vector3f light_position_;
-	Vector4f front_color_;
-	Vector4f back_color_;
-	Vector4f ambiant_color_;
-	Vector4f specular_color_;
+	Color front_color_;
+	Color back_color_;
+	Color ambiant_color_;
+	Color specular_color_;
 	float32 specular_coef_;
 	bool double_side_;
 
 	ShaderParamPhong(ShaderPhongTpl<false>* sh) :
 		ogl::ShaderParam(sh),
 		light_position_(10.0f, 100.0f, 1000.0f),
-		front_color_(Color(250, 0, 0)),
-		back_color_(Color(0, 250, 5)),
-		ambiant_color_(Color(5, 5, 5)),
-		specular_color_(Color(100, 100, 100)),
+		front_color_(250, 0, 0),
+		back_color_(0, 250, 5),
+		ambiant_color_(5, 5, 5),
+		specular_color_(100, 100, 100),
 		specular_coef_(50.0f),
 		double_side_(true)
 	{}
@@ -235,16 +235,16 @@ public:
 	using ShaderType = ShaderPhongTpl<true>;
 
 	Vector3f light_position_;
-	Vector4f ambiant_color_;
-	Vector4f specular_color_;
+	Color ambiant_color_;
+	Color specular_color_;
 	float32 specular_coef_;
 	bool double_side_;
 
 	ShaderParamPhong(ShaderPhongTpl<true>* sh) :
 		ogl::ShaderParam(sh),
 		light_position_(10.0f, 100.0f, 1000.0f),
-		ambiant_color_(Color(5, 5, 5)),
-		specular_color_(Color(100, 100, 100)),
+		ambiant_color_(5, 5, 5),
+		specular_color_(100, 100, 100),
 		specular_coef_(50.0f),
 		double_side_(true)
 	{}

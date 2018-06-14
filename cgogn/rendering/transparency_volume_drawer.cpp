@@ -76,7 +76,7 @@ void VolumeTransparencyDrawer::Renderer::set_explode_volume(float32 x)
 		param_transp_vol_->explode_factor_ = x;
 }
 
-void VolumeTransparencyDrawer::Renderer::set_color(const Vector4f& rgb)
+void VolumeTransparencyDrawer::Renderer::set_color(const Color& rgb)
 {
 	if (param_transp_vol_)
 		param_transp_vol_->color_ = rgb;

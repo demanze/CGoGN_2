@@ -140,7 +140,7 @@ void Viewer::draw()
 
 	glDisable(GL_POLYGON_OFFSET_FILL);
 
-	drawer_rend_->draw(Matrix4f(proj_.data()), Matrix4f(view_.data()));
+	drawer_rend_->draw(cgogn::Matrix4f(proj_.data()), cgogn::Matrix4f(view_.data()));
 }
 
 void Viewer::init()
@@ -156,9 +156,9 @@ void Viewer::init()
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 
 	param_flat_->set_position_vbo(vbo_pos_.get());
-	param_flat_->front_color_ = Color(0,200,0);
-	param_flat_->back_color_ = Color(200,0,0);
-	param_flat_->ambiant_color_ = Color(5,5,5);
+	param_flat_->front_color_ = cgogn::Color(0,200,0);
+	param_flat_->back_color_ = cgogn::Color(200,0,0);
+	param_flat_->ambiant_color_ = cgogn::Color(5,5,5);
 
 	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
 	drawer_rend_ = drawer_->generate_renderer();

@@ -122,8 +122,8 @@ void Drawing::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	drawer_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
-	drawer2_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
+	drawer_rend_->draw(cgogn::Matrix4f(proj.data()), cgogn::Matrix4f(view.data()));
+	drawer2_rend_->draw(cgogn::Matrix4f(proj.data()), cgogn::Matrix4f(view.data()));
 }
 
 void Drawing::init()

@@ -71,10 +71,10 @@ protected:
 	std::unique_ptr<VBO> vbo_pos_;
 	std::unique_ptr<VBO> vbo_col_;
 
-	Vector4f face_color_;
+	Color face_color_;
 
 	std::unique_ptr<VBO> vbo_pos2_;
-	Vector4f edge_color_;
+	Color edge_color_;
 
 	float32 shrink_v_;
 	float32 shrink_f_;
@@ -102,8 +102,8 @@ public:
 		void draw_faces(const Matrix4f& projection, const Matrix4f& modelview);
 		void draw_edges(const Matrix4f& projection, const Matrix4f& modelview);
 		void set_explode_volume(float32 x);
-		void set_face_color(const Vector4f& rgb);
-		void set_edge_color(const Vector4f& rgb);
+		void set_face_color(const Color& rgb);
+		void set_edge_color(const Color& rgb);
 		void set_clipping_plane(const Vector4f& pl);
 		void set_clipping_plane2(const Vector4f& pl);
 		void set_thick_clipping_plane(const Vector4f& p, float32 th);

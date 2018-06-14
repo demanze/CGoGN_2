@@ -286,12 +286,11 @@ void Viewer::init()
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
 	render_->init_primitives(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
-
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
-	param_flat_->front_color_ = Color(0, 200, 0);
-	param_flat_->back_color_ = Color(0, 0, 200);
-	param_flat_->ambiant_color_ = Color(5, 5, 5);
+	param_flat_->front_color_ = cgogn::Color(0, 200, 0);
+	param_flat_->back_color_ = cgogn::Color(0, 0, 200);
+	param_flat_->ambiant_color_ = cgogn::Color(5, 5, 5);
 
 }
 

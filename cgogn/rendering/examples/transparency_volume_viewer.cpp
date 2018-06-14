@@ -100,7 +100,7 @@ private:
 
 	float32 expl_;
 
-	Vector4f plane_clipping1_;
+	cgogn::Vector4f plane_clipping1_;
 	float32 plane_thickness_;
 	bool thick_plane_mode_;
 	int mesh_transparency_;
@@ -221,13 +221,13 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			mesh_transparency_ += 1;
 			if (mesh_transparency_ > 254)
 				mesh_transparency_ = 254;
-			volume_drawer_rend_->set_color(Color(0,250,0,mesh_transparency_));
+			volume_drawer_rend_->set_color(cgogn::Color(0,250,0,mesh_transparency_));
 			break;
 		case Qt::Key_Z:
 			mesh_transparency_ -= 1;
 			if (mesh_transparency_ < 0)
 				mesh_transparency_ = 0;
-			volume_drawer_rend_->set_color(Color(0,250,0,mesh_transparency_));
+			volume_drawer_rend_->set_color(cgogn::Color(0,250,0,mesh_transparency_));
 			break;
 		case Qt::Key_L:
 			lighted_ = !lighted_;
@@ -264,9 +264,8 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 	Vec3 A(P[0], P[1], P[2]);
 	Vec3 B(Q[0], Q[1], Q[2]);
 
-
 	if ((event->modifiers() & Qt::ControlModifier) && !(event->modifiers() & Qt::ShiftModifier))
-		frame_manip_->pick(event->x(), event->y(),Vector3f(P.x, P.y,P.z), Vector3f(Q.x, Q.y, Q.z));
+		frame_manip_->pick(event->x(), event->y(), cgogn::Vector3f(P.x, P.y,P.z), cgogn::Vector3f(Q.x, Q.y, Q.z));
 
 	QOGLViewer::mousePressEvent(event);
 	update();
@@ -311,11 +310,11 @@ void Viewer::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	frame_manip_->draw(true, true, Matrix4f(proj.data()), Matrix4f(view.data())); // draw opaque first
+	frame_manip_->draw(true, true, cgogn::Matrix4f(proj.data()), cgogn::Matrix4f(view.data())); // draw opaque first
 
 	transp_drawer_->draw([&]() -> void
 	{
-		volume_drawer_rend_->draw_faces(Matrix4f(proj.data()), Matrix4f(view.data()));
+		volume_drawer_rend_->draw_faces(cgogn::Matrix4f(proj.data()), cgogn::Matrix4f(view.data()));
 	});
 	
 
@@ -342,7 +341,7 @@ void Viewer::init()
 
 	volume_drawer_rend_ = volume_drawer_->generate_renderer();
 	volume_drawer_rend_->set_explode_volume(expl_);
-	volume_drawer_rend_->set_color(Color(0,250,0,mesh_transparency_));
+	volume_drawer_rend_->set_color(cgogn::Color(0,250,0,mesh_transparency_));
 
 	transp_drawer_ = cgogn::make_unique<cgogn::rendering::SurfaceTransparencyDrawer>();
 	transp_drawer_->set_max_nb_layers(16);
@@ -350,7 +349,7 @@ void Viewer::init()
 	frame_manip_ = cgogn::make_unique<cgogn::rendering::FrameManipulator>();
 	frame_manip_->set_size(bb_.diag_size()/4);
 	frame_manip_->set_position(bb_.max());
-	frame_manip_->z_plane_param(Color(200,200,200),-1.5f,-1.5f, 2.0f);
+	frame_manip_->z_plane_param(cgogn::Color(200,200,200),-1.5f,-1.5f, 2.0f);
 
 	plane_thickness_ = bb_.diag_size()/20;
 
@@ -383,7 +382,7 @@ void Viewer::plane_clip_from_frame()
 	frame_manip_->get_position(position);
 	frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
 	float32 d = -(position.dot(axis_z));
-	plane_clipping1_ = Vector4f(axis_z[0],axis_z[1],axis_z[2],d);
+	plane_clipping1_ = cgogn::Vector4f(axis_z[0],axis_z[1],axis_z[2],d);
 }
 
 int main(int argc, char** argv)

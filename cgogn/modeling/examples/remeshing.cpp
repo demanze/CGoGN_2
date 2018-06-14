@@ -93,13 +93,13 @@ public:
 
 		param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 		param_flat_->set_position_vbo(vbo_pos_.get());
-		param_flat_->front_color_ = Color(0,200,0);
-		param_flat_->back_color_ = Color(0,0,200);
-		param_flat_->ambiant_color_ = Color(5,5,5);
+		param_flat_->front_color_ = cgogn::Color(0,200,0);
+		param_flat_->back_color_ = cgogn::Color(0,0,200);
+		param_flat_->ambiant_color_ = cgogn::Color(5,5,5);
 
 		param_edge_ = cgogn::rendering::ShaderBoldLine::generate_param();
 		param_edge_->set_position_vbo(vbo_pos_.get());
-		param_edge_->color_ = Color(20,20,20);
+		param_edge_->color_ = cgogn::Color(20,20,20);
 		param_edge_->width_= 2.5f;
 
 		param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();

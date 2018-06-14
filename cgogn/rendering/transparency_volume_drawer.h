@@ -47,7 +47,7 @@ protected:
 
 	using Vec3f = std::array<float32, 3>;
 	std::unique_ptr<VBO> vbo_pos_;
-	Vector4f face_color_;
+	Color face_color_;
 	float32 shrink_v_;
 
 public:
@@ -66,7 +66,7 @@ public:
 
 		void set_explode_volume(float32 x);
 
-		void set_color(const Vector4f& rgb);
+		void set_color(const Color& rgb);
 
 		void set_clipping_plane(const Vector4f& pl);
 

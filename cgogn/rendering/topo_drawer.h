@@ -68,9 +68,9 @@ protected:
 	std::unique_ptr<VBO> vbo_relations_;
 	std::unique_ptr<VBO> vbo_color_darts_;
 
-	Vector4f dart_color_;
-	Vector4f phi2_color_;
-	Vector4f phi3_color_;
+	Color dart_color_;
+	Color phi2_color_;
+	Color phi3_color_;
 
 	float32 shrink_v_;
 	float32 shrink_f_;
@@ -171,7 +171,7 @@ public:
 	 * @param d the dart
 	 * @param rgb the color
 	 */
-	void update_color(Dart d, const Vector4f& rgb);
+	void update_color(Dart d, const Color& rgb);
 
 	/**
 	 * @brief pick the closest dart to a given ray
@@ -274,9 +274,9 @@ auto TopoDrawer::update(const MAP& m, const VERTEX_ATTR& position)
 	darts_col.resize(darts_pos_.size());
 	for (auto& c: darts_col)
 	{
-		c[0] = float32(dart_color_.x());
-		c[1] = float32(dart_color_.y());
-		c[2] = float32(dart_color_.z());
+		c[0] = dart_color_[0];
+		c[1] = dart_color_[1];
+		c[2] = dart_color_[2];
 	}
 
 	uint32 nbvec = std::uint32_t(darts_pos_.size());
@@ -393,9 +393,9 @@ auto TopoDrawer::update(const MAP& m, const VERTEX_ATTR& position)
 	darts_col.resize(darts_pos_.size());
 	for (auto& c: darts_col)
 	{
-		c[0] = float32(dart_color_.x());
-		c[1] = float32(dart_color_.y());
-		c[2] = float32(dart_color_.z());
+		c[0] = dart_color_[0];
+		c[1] = dart_color_[1];
+		c[2] = dart_color_[2];
 	}
 
 	uint32 nbvec = uint32(darts_pos_.size());

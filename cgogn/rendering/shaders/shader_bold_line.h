@@ -75,7 +75,7 @@ public:
 	 * @brief set current color
 	 * @param rgb
 	 */
-	void set_color(const Vector4f& rgb);
+	void set_color(const Color& rgb);
 
 	/**
 	 * @brief set the width of lines (call before each draw)
@@ -137,7 +137,7 @@ protected:
 public:
 	using ShaderType = ShaderBoldLineTpl<false>;
 
-	Vector4f color_;
+	Color color_;
 	float32 width_;
 	Vector4f plane_clip_;
 	Vector4f plane_clip2_;

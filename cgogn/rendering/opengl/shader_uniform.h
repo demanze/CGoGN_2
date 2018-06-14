@@ -56,6 +56,8 @@ namespace cgogn
 
 					void set(Vector4f value);
 
+					void set(Color value);
+
 					void set(Matrix4f value); 
 
 					void set(Matrix3f value);

@@ -66,26 +66,26 @@ WallPaper::WallPaper(const QImage& img):
 	init(img);
 }
 
-WallPaper::WallPaper(const Vector4f& col) :
+WallPaper::WallPaper(const Color& col) :
 	vbo_pos_(nullptr),
 	vbo_tc_(nullptr),
 	texture_(nullptr)
 {
 	QImage img(1, 1, QImage::Format_RGB32);
-	img.setPixel(0, 0, RGBA(col));
+	img.setPixel(0, 0, col.compress());
 	init(img);
 }
 
-WallPaper::WallPaper(const Vector4f& col_tl, const Vector4f& col_tr, const Vector4f& col_bl, const Vector4f& col_br) :
+WallPaper::WallPaper(const Color& col_tl, const Color& col_tr, const Color& col_bl, const Color& col_br) :
 	vbo_pos_(nullptr),
 	vbo_tc_(nullptr),
 	texture_(nullptr)
 {
 	QImage img(2, 2, QImage::Format_RGB32);
-	img.setPixel(0, 1, RGBA(col_bl));
-	img.setPixel(1, 1, RGBA(col_br));
-	img.setPixel(1, 0, RGBA(col_tr));
-	img.setPixel(0, 0, RGBA(col_tl));
+	img.setPixel(0, 1, col_bl.compress());
+	img.setPixel(1, 1, col_br.compress());
+	img.setPixel(1, 0, col_tr.compress());
+	img.setPixel(0, 0, col_tl.compress());
 	init(img);
 	texture_->setWrapMode(QOpenGLTexture::ClampToEdge);
 }
@@ -96,11 +96,11 @@ WallPaper::~WallPaper()
 }
 
 
-void WallPaper::change_color(const Vector4f& col)
+void WallPaper::change_color(const Color& col)
 {
 	if ((texture_->width()==1)&&(texture_->height()==1))
 	{
-		float32 color[3] = {float32(col.x()), float32(col.y()), float32(col.z())};
+		float32 color[3] = { col[0], col[1], col[2] };
 		texture_->setData(QOpenGLTexture::RGB, QOpenGLTexture::Float32, color);
 	}
 	else
@@ -109,15 +109,16 @@ void WallPaper::change_color(const Vector4f& col)
 	}
 }
 
-void WallPaper::change_colors(const Vector4f& col_tl, const Vector4f& col_tr, const Vector4f& col_bl, const Vector4f& col_br)
+void WallPaper::change_colors(const Color& col_tl, const Color& col_tr, const Color& col_bl, const Color& col_br)
 {
 	if ((texture_->width()==2)&&(texture_->height()==2))
 	{
 		float32 colors[12] =
-		{float32(col_tl.x()), float32(col_tl.y()), float32(col_tl.z()),
-		 float32(col_tr.x()), float32(col_tr.y()), float32(col_tr.z()),
-		 float32(col_bl.x()), float32(col_bl.y()), float32(col_bl.z()),
-		 float32(col_br.x()), float32(col_br.y()), float32(col_br.z())
+		{
+			col_tl[0], col_tl[1], col_tl[2],
+			col_tr[0], col_tr[1], col_tr[2],
+			col_bl[0], col_bl[1], col_bl[2],
+			col_br[0], col_br[1], col_br[2]
 		 };
 
 		texture_->setData(QOpenGLTexture::RGB, QOpenGLTexture::Float32, colors);

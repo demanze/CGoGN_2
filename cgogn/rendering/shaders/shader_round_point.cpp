@@ -186,7 +186,7 @@ ShaderRoundPointGen::ShaderRoundPointGen(bool color_per_vertex)
 	release(); 
 }
 
-void ShaderRoundPointGen::set_color(const Vector4f& rgb)
+void ShaderRoundPointGen::set_color(const Color& rgb)
 {
 	if (unif_color_.found())
 		unif_color_.set(rgb);

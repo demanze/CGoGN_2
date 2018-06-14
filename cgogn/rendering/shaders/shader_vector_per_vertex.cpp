@@ -106,7 +106,7 @@ ShaderVectorPerVertex::ShaderVectorPerVertex()
 	release(); 
 }
 
-void ShaderVectorPerVertex::set_color(const Vector4f& rgb)
+void ShaderVectorPerVertex::set_color(const Color& rgb)
 {
 	unif_color_.set(rgb);
 }

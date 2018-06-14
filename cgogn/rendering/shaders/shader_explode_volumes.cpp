@@ -181,7 +181,7 @@ ShaderExplodeVolumesGen::ShaderExplodeVolumesGen(bool color_per_vertex)
 	release();
 }
 
-void ShaderExplodeVolumesGen::set_color(const Vector4f& rgb)
+void ShaderExplodeVolumesGen::set_color(const Color& rgb)
 {
 	if (unif_color_.found())
 		unif_color_.set(rgb);

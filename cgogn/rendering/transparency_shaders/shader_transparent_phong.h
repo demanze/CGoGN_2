@@ -47,10 +47,10 @@ protected:
 public:
 	using ShaderType = ShaderPhongTransp;
 
-	Vector4f front_color_;
-	Vector4f back_color_;
-	Vector4f ambiant_color_;
-	Vector4f specular_color_;;
+	Color front_color_;
+	Color back_color_;
+	Color ambiant_color_;
+	Color specular_color_;;
 	GLfloat specular_coef_;
 	Vector3f light_pos_;
 	bool bf_culling_;
@@ -103,25 +103,25 @@ public:
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_front_color(const Vector4f& rgb);
+	void set_front_color(const Color& rgb);
 
 	/**
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_back_color(const Vector4f& rgb);
+	void set_back_color(const Color& rgb);
 
 	/**
 	 * @brief set current ambiant color
 	 * @param rgb
 	 */
-	void set_ambiant_color(const Vector4f& rgb);
+	void set_ambiant_color(const Color& rgb);
 
 	/**
 	 * @brief set current specular color
 	 * @param rgb
 	 */
-	void set_specular_color(const Vector4f& rgb);
+	void set_specular_color(const Color& rgb);
 
 	/**
 	 * @brief set current specular coefficient

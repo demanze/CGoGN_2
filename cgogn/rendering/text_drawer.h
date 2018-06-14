@@ -77,11 +77,11 @@ protected:
 	
 	std::vector<Vec3f> positions_;
 	std::vector<std::string> strings_;
-	std::vector<Vector4f> colors_;
+	std::vector<cgogn::Color> colors_;
 	std::vector<float32> sizes_;
 
 	Vec3f current_pos_;
-	Vector4f current_color_;
+	cgogn::Color current_color_;
 	float32 current_size_;
 	bool next_pos_;
 
@@ -116,7 +116,7 @@ public:
 		return *this;
 	}
 
-	Self& operator << (const Vector4f& col);
+	Self& operator << (const Color& col);
 
 	Self& operator << (float32 sz);
 

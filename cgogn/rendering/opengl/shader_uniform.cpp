@@ -71,6 +71,11 @@ namespace cgogn
 				glUniform4f(location, value.x(), value.y(), value.z(), value.w());
 			}
 
+			void Uniform::set(Color value)
+			{
+				glUniform4f(location, value[0], value[1], value[2], value[3]);
+			}
+
 			void Uniform::set(Matrix4f value)
 			{
 				glUniformMatrix4fv(location, 1, GL_FALSE, value.data());

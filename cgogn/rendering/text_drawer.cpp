@@ -58,7 +58,7 @@ TextDrawer::~TextDrawer()
 {}
 
 
-TextDrawer& TextDrawer::operator << (const Vector4f& col)
+TextDrawer& TextDrawer::operator << (const Color& col)
 {
 	current_color_ = col;
 	return *this;
@@ -105,7 +105,7 @@ TextDrawer& TextDrawer::operator << (TextDrawer::End)
 	for (const auto& s : strings_)
 	{
 		Vec4f p{ (*it)[0], (*it)[1], (*it)[2], 0 };
-		Vec4f cs{ float32(jt->x()), float32(jt->y()), float32(jt->z()), *kt++ };
+		Vec4f cs{ (*jt)[0], (*jt)[1], (*jt)[2], *kt++ };
 		it++;
 		jt++;
 		for (auto c : s)

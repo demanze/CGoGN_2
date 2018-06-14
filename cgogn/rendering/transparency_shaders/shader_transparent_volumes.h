@@ -52,7 +52,7 @@ public:
 
 	using ShaderType = ShaderTransparentVolumes;
 
-	Vector4f color_;
+	Color color_;
 	Vector4f plane_clip_;
 	Vector4f plane_clip2_;
 	Vector3f light_position_;
@@ -104,7 +104,7 @@ public:
 	void set_light_position(const Vector3f& l);
 	void set_plane_clip(const Vector4f& plane);
 	void set_plane_clip2(const Vector4f& plane);
-	void set_color(const Vector4f& rgb);
+	void set_color(const Color& rgb);
 
 	void set_bf_culling(bool cull);
 	void set_lighted(bool lighted);

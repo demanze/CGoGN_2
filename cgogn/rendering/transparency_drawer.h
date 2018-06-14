@@ -160,19 +160,19 @@ public:
 		param_phong_->light_pos_ = l;
 	}
 
-	inline void set_front_color(const Vector4f& rgba)
+	inline void set_front_color(const Color& rgba)
 	{
 		param_flat_->front_color_ = rgba;
 		param_phong_->front_color_ = rgba;
 	}
 
-	inline void set_back_color(const Vector4f& rgba)
+	inline void set_back_color(const Color& rgba)
 	{
 		param_flat_->back_color_ = rgba;
 		param_phong_->back_color_ = rgba;
 	}
 
-	inline void set_ambiant_color(const Vector4f& rgba)
+	inline void set_ambiant_color(const Color& rgba)
 	{
 		param_flat_->ambiant_color_ = rgba;
 		param_phong_->ambiant_color_ = rgba;

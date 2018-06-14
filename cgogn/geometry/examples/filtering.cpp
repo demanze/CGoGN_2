@@ -279,7 +279,7 @@ void Viewer::draw()
 	glPolygonOffset(1.0f, 2.0f);
 	if (flat_rendering_)
 	{
-		param_flat_->bind(*((Matrix4f*)&proj), *((Matrix4f*)&view));
+		param_flat_->bind(cgogn::Matrix4f(proj.data()), cgogn::Matrix4f(view.data()));
 		render_->draw(cgogn::rendering::TRIANGLES);
 		param_flat_->release();
 	}
@@ -317,7 +317,7 @@ void Viewer::draw()
 	}
 
 	if (bb_rendering_)
-		drawer_rend_->draw(Matrix4f(proj.data()), Matrix4f(view.data()));
+		drawer_rend_->draw(cgogn::Matrix4f(proj.data()), cgogn::Matrix4f(view.data()));
 }
 
 void Viewer::init()
@@ -352,24 +352,24 @@ void Viewer::init()
 
 	param_point_sprite_ = cgogn::rendering::ShaderPointSpriteSize::generate_param();
 	param_point_sprite_->set_all_vbos(vbo_pos_.get(), vbo_sphere_sz_.get());
-	param_point_sprite_->color_ = Color(255, 0, 0);
+	param_point_sprite_->color_ = cgogn::Color(255, 0, 0);
 
 //	shader_edge_ = new cgogn::rendering::ShaderBoldLine() ;
 //	param_edge_ = shader_edge_->generate_param();
 	param_edge_ = cgogn::rendering::ShaderBoldLine::generate_param();
 	param_edge_->set_position_vbo(vbo_pos_.get());
-	param_edge_->color_ = Color(255,255,0);
+	param_edge_->color_ = cgogn::Color(255,255,0);
 	param_edge_->width_= 2.5f;
 
 	param_flat_ =  cgogn::rendering::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
-	param_flat_->front_color_ = Color(0,200,0);
-	param_flat_->back_color_ = Color(0,0,200);
-	param_flat_->ambiant_color_ = Color(5,5,5);
+	param_flat_->front_color_ = cgogn::Color(0,200,0);
+	param_flat_->back_color_ = cgogn::Color(0,0,200);
+	param_flat_->ambiant_color_ = cgogn::Color(5,5,5);
 
 	param_normal_ = cgogn::rendering::ShaderVectorPerVertex::generate_param();
 	param_normal_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get());
-	param_normal_->color_ = Color(200,0,200);
+	param_normal_->color_ = cgogn::Color(200,0,200);
 	param_normal_->length_ = bb_.diag_size()/50;
 
 	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();

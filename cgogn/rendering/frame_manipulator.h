@@ -173,7 +173,7 @@ public:
 	 * @param yc y position [-1/1] (default 0)
 	 * @param r radius (default 1)
 	 */
-	void z_plane_param(const Vector4f& color, float32 xc, float32 yc, float32 r);
+	void z_plane_param(const Color& color, float32 xc, float32 yc, float32 r);
 
 	/**
 	 * get the size of frame

@@ -64,7 +64,7 @@ public:
 	 * @brief set current color
 	 * @param rgb
 	 */
-	void set_color(const Vector4f& rgb);
+	void set_color(const Color& rgb);
 
 	/**
 	 * @brief set length of normal
@@ -93,7 +93,7 @@ public:
 
 	using ShaderType = ShaderVectorPerVertex;
 
-	Vector4f color_;
+	Color color_;
 	float32 length_;
 
 	ShaderParamVectorPerVertex(ShaderVectorPerVertex* sh) :
