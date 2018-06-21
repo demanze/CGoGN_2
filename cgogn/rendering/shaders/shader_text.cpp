@@ -89,7 +89,7 @@ ShaderText::ShaderText()
 
 	ogl::Uniform unif_texture_unit_; 
 	unif_texture_unit_ = "texture_unit"; 
-	unif_texture_unit_.set(0); 
+	unif_texture_unit_.set(10); 
 	set_italic(0);
 
 	release();
@@ -117,8 +117,7 @@ ShaderParamText::ShaderParamText(ShaderText* sh) :
 
 void ShaderParamText::set_uniforms()
 {
-	glActiveTexture(GL_TEXTURE0);
-	(*texture_)->bind();
+	(*texture_)->bindAt(10);
 
 	ShaderText* sh = static_cast<ShaderText*>(this->program);
 	sh->set_italic(italic_);

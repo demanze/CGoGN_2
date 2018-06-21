@@ -26,9 +26,6 @@
 
 #include <cgogn/rendering/opengl/all.h>
 
-
-#include <QOpenGLTexture>
-
 namespace cgogn
 {
 
@@ -46,7 +43,7 @@ protected:
 public:
 	using ShaderType = ShaderText;
 
-	std::unique_ptr<QOpenGLTexture>* texture_;
+	std::unique_ptr<ogl::Texture>* texture_;
 
 	float32 italic_;
 

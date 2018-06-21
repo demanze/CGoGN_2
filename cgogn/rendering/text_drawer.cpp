@@ -35,7 +35,7 @@ namespace rendering
 
 TextDrawer::End TextDrawer::end = TextDrawer::End();
 
-std::unique_ptr<QOpenGLTexture> TextDrawer::texture_ = nullptr;
+std::unique_ptr<ogl::Texture> TextDrawer::texture_ = nullptr;
 
 
 TextDrawer::TextDrawer() :
@@ -51,8 +51,10 @@ TextDrawer::TextDrawer() :
 	QImage img(":fonte4064.png");
 	if (texture_ == nullptr)
 	{
-		texture_ = cgogn::make_unique<QOpenGLTexture>(img, QOpenGLTexture::DontGenerateMipMaps);
-		//texture_->setImage2D(img); 
+		texture_ = cgogn::make_unique<ogl::Texture>();
+		texture_->bind(); 
+		texture_->setImage2D(img); 
+		texture_->release(); 
 	}
 	//	cgogn::make_unique<QOpenGLTexture>(img, QOpenGLTexture::DontGenerateMipMaps);
 }

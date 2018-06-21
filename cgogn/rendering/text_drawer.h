@@ -25,14 +25,10 @@
 #define CGOGN_RENDERING_TEXT_DRAWER_H_
 
 #include <cgogn/rendering/opengl/all.h>
-#include <cgogn/rendering/dll.h>
 
 #include <cgogn/rendering/shaders/shader_text.h>
-
-
 #include <cgogn/geometry/types/geometry_traits.h>
 
-#include <QOpenGLTexture>
 
 namespace cgogn
 {
@@ -75,7 +71,7 @@ protected:
 	std::unique_ptr<VBO> vbo_char_;
 	std::unique_ptr<VBO> vbo_colsz_;
 
-	static std::unique_ptr<QOpenGLTexture> texture_;
+	static std::unique_ptr<ogl::Texture> texture_;
 	
 	std::vector<Vec3f> positions_;
 	std::vector<std::string> strings_;

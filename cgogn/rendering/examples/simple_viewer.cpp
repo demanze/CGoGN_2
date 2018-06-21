@@ -125,7 +125,6 @@ private:
 	std::unique_ptr<cgogn::rendering::shaders::Blur::Param> param_blur;
 	std::unique_ptr<cgogn::rendering::shaders::Shadowed::Param> param_shadowed;
 
-	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_shadow_fakecolor;
 	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_shadow_depth;
 	std::unique_ptr<cgogn::rendering::ogl::Framebuffer> fbo_shadow;
 
@@ -463,12 +462,6 @@ void Viewer::resizeGL(int w, int h)
 	
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &cgogn::rendering::ogl::Framebuffer::qtDefaultFramebuffer);
 
-
-	texture_shadow_fakecolor = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
-	texture_shadow_fakecolor->bind();
-	texture_shadow_fakecolor->setImage2D_simple(w, h, GL_RGBA, GL_FLOAT);
-	texture_shadow_fakecolor->release();
-
 	texture_shadow_depth = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
 	texture_shadow_depth->bind();
 	texture_shadow_depth->setImage2D_simple(w, h, GL_DEPTH_COMPONENT, GL_FLOAT);
@@ -477,7 +470,6 @@ void Viewer::resizeGL(int w, int h)
 	fbo_shadow = cgogn::make_unique<cgogn::rendering::ogl::Framebuffer>();
 	fbo_shadow->bind();
 	fbo_shadow->attach(texture_shadow_depth, GL_DEPTH_ATTACHMENT);
-	fbo_shadow->attach(texture_shadow_fakecolor, GL_COLOR_ATTACHMENT0);
 	fbo_shadow->check();
 	fbo_shadow->release();
 
