@@ -21,7 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "cgogn/rendering/opengl/shader_program_.h"
+#include "cgogn/rendering/opengl/shader_program.h"
 
 namespace cgogn
 {
@@ -70,6 +70,15 @@ namespace cgogn
 				}
 
 				shaders.push_back(shader);
+			}
+
+			void ShaderProgram::addShaderFromFile(GLenum type, const char* filename)
+			{
+				std::ifstream file;
+				file.open(filename);
+				std::stringstream buffer;
+				buffer << file.rdbuf();
+				addShader(type, buffer.str().c_str());
 			}
 
 			void ShaderProgram::link()

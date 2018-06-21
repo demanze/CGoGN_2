@@ -70,14 +70,25 @@ namespace cgogn
 				target = ~0u;
 			}
 
-
-			void Texture::setImage2D_simple(int w, int h, GLenum internal_format, GLenum format, GLenum type)
+			void Texture::setImage2D_simple(int w, int h, GLenum format, GLenum type)
 			{
-				glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, type, nullptr);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format, type, nullptr);
+			}
+
+			void Texture::setImage2D(const QImage& image)
+			{
+				QImage glImage = image.convertToFormat(QImage::Format_RGBA8888);
+
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, glImage.width(), glImage.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, glImage.bits());
+				//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, glImage.width(), glImage.height(), GL_RGBA, GL_UNSIGNED_BYTE, glImage.constBits());
 			}
 
 			Texture::~Texture()

@@ -25,7 +25,7 @@
 #define OGL_VAO
 
 #include "cgogn/rendering/reimp.h"
-#include "cgogn/rendering/shaders/vbo.h"
+#include "vbo.h"
 
 namespace cgogn
 {

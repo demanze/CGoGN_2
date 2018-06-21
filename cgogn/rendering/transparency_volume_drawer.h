@@ -27,7 +27,7 @@
 #include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/dll.h>
 
-#include <cgogn/rendering/shaders/vbo.h>
+
 #include <cgogn/rendering/transparency_shaders/shader_transparent_volumes.h>
 
 #include <cgogn/geometry/types/geometry_traits.h>

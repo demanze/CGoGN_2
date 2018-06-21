@@ -26,7 +26,7 @@
 
 #include <cgogn/rendering/shaders/shader_simple_color.h>
 #include <cgogn/rendering/shaders/shader_bold_line.h>
-#include <cgogn/rendering/shaders/vbo.h>
+
 #include <cgogn/geometry/functions/distance.h>
 #include <cgogn/geometry/functions/intersection.h>
 #include <cgogn/geometry/types/vec.h>

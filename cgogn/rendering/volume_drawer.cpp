@@ -27,7 +27,6 @@
 
 
 #include <iostream>
-#include<QColor>
 
 namespace cgogn
 {

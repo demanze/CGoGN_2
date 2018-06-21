@@ -37,7 +37,7 @@
 
 #include <cgogn/rendering/map_render.h>
 #include <cgogn/rendering/shaders/shader_flat.h>
-#include <cgogn/rendering/shaders/vbo.h>
+
 #include <cgogn/rendering/drawer.h>
 
 #include <cgogn/geometry/algos/picking.h>

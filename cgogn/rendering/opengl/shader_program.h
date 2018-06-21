@@ -21,76 +21,62 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADERS_TEXT_H_
-#define CGOGN_RENDERING_SHADERS_TEXT_H_
+#ifndef OGL_SHADERPROGRAM
+#define OGL_SHADERPROGRAM
 
-#include <cgogn/rendering/opengl/all.h>
-
-
-#include <QOpenGLTexture>
+#include "cgogn/rendering/reimp.h"
+#include "shader_uniform.h"
 
 namespace cgogn
 {
-
-namespace rendering
-{
-
-class ShaderText;
-
-class CGOGN_RENDERING_API ShaderParamText : public ogl::ShaderParam
-{
-protected:
-
-	void set_uniforms();
-
-public:
-	using ShaderType = ShaderText;
-
-	std::unique_ptr<QOpenGLTexture>* texture_;
-
-	float32 italic_;
-
-	ShaderParamText(ShaderText* sh);
-
-	void set_vbo(VBO* vbo_pos, VBO* vbo_str, VBO* vbo_colsize);
-};
-
-class CGOGN_RENDERING_API ShaderText : public ogl::ShaderProgram
-{
-	static const char* vertex_shader_source_;
-	static const char* fragment_shader_source_;
-	ogl::Uniform unif_italic_;
-
-public:
-
-	enum
+	namespace rendering
 	{
-		ATTRIB_POS = 0,
-		ATTRIB_CHAR,
-		ATTRIB_COLSZ
-	};
+		namespace ogl
+		{
+			class CGOGN_RENDERING_API ShaderProgram
+			{
+				friend class Uniform;
 
-	using Param = ShaderParamText;
+				private:
+					static std::vector<ShaderProgram*>* instances_;
+				
+					GLuint handle;
+					std::vector<GLuint> shaders;
 
-	/**
-	 * @brief generate shader parameter object
-	 * @return pointer
-	 */
-	static std::unique_ptr<Param> generate_param();
+					Uniform unif_mv_matrix_;
+					Uniform unif_projection_matrix_;
+					Uniform unif_normal_matrix_;
 
-	/**
-	 * @brief set_italic
-	 * @param i %
-	 */
-	void set_italic(float32 i);
+				public:
 
-protected:
-	ShaderText();
-	static ShaderText* instance_;
-};
+					static void register_instance(ShaderProgram* sh);
 
-} // namespace rendering
+					ShaderProgram();
 
-} // namespace cgogn
+					void addShader(GLenum type, const GLchar* source);
 
-#endif // CGOGN_RENDERING_SHADERS_TEXTURE_H_
+					void addShaderFromFile(GLenum type, const char* filename);
+
+					void link();
+
+					void bind();
+
+					void release();
+
+					void get_matrices_uniforms();
+
+					void set_matrices(const Matrix4f& proj, const Matrix4f& mv);
+
+					void set_view_matrix(const Matrix4f& mv);
+
+					void bindAttributeLocation(const GLchar* name, GLuint index);
+
+					static void clean_all();
+
+					~ShaderProgram();
+			};
+		}
+	}
+}
+
+#endif

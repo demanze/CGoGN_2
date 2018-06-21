@@ -24,7 +24,7 @@
 #ifndef OGL_SHADERPARAM
 #define OGL_SHADERPARAM
 
-#include "shader_program_.h"
+#include "shader_program.h"
 #include "vao.h"
 
 namespace cgogn

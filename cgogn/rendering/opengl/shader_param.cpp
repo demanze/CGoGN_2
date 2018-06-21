@@ -59,7 +59,6 @@ namespace cgogn
 				vao_->release();
 			}
 
-
 			void ShaderParam::bind(const Matrix4f& proj, const Matrix4f& mv)
 			{
 				program->bind();
@@ -73,7 +72,6 @@ namespace cgogn
 				bind(Matrix4f(proj), Matrix4f(mv));
 			}
 
-		
 			void ShaderParam::release()
 			{
 				program->release();

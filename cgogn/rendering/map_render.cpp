@@ -48,8 +48,6 @@ void MapRender::draw(DrawingType prim)
 	if (nb_indices_[prim] == 0)
 		return;
 
-	
-
 	indices_buffers_[prim]->bind();
 	switch (prim)
 	{

@@ -32,7 +32,7 @@
 #include <cgogn/rendering/shaders/shader_bold_line.h>
 #include <cgogn/rendering/shaders/shader_round_point.h>
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
-#include <cgogn/rendering/shaders/vbo.h>
+
 
 namespace cgogn
 {

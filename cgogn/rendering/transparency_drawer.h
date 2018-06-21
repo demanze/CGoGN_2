@@ -32,7 +32,7 @@
 #include <cgogn/rendering/transparency_shaders/shader_transparent_quad.h>
 #include <cgogn/rendering/transparency_shaders/shader_copy_depth.h>
 
-#include <cgogn/rendering/shaders/vbo.h>
+
 
 namespace cgogn
 {

@@ -23,11 +23,9 @@
 
 #define CGOGN_RENDER_SHADERS_FLAT_CPP_
 
-
 #include <iostream>
 
 #include <cgogn/rendering/shaders/shader_flat.h>
-
 
 namespace cgogn
 {

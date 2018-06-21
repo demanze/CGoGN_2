@@ -25,9 +25,7 @@
 #define CGOGN_RENDERING_SHADERS_SCALARPERVERTEX_H_
 
 #include <cgogn/rendering/opengl/all.h>
-#include <cgogn/rendering/dll.h>
-#include <cgogn/rendering/shaders/shader_program.h>
-#include <cgogn/rendering/shaders/vbo.h>
+
 
 namespace cgogn
 {

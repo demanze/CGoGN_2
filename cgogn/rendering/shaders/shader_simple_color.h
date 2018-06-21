@@ -25,9 +25,7 @@
 #define CGOGN_RENDERING_SHADERS_SIMPLECOLOR_H_
 
 #include <cgogn/rendering/opengl/all.h>
-#include <cgogn/rendering/dll.h>
-#include <cgogn/rendering/shaders/shader_program.h>
-#include <cgogn/rendering/shaders/vbo.h>
+
 
 namespace cgogn
 {
@@ -96,7 +94,7 @@ public:
 	{
 		program->bind();
 		vao_->bind();
-		vao_->attribPointer(ShaderSimpleColor::ATTRIB_POS, vbo_pos, GL_FLOAT, stride * vbo_pos->vector_dimension() * 4, (void*)(first * vbo_pos->vector_dimension() * 4));
+		vao_->attribPointer(ShaderSimpleColor::ATTRIB_POS, vbo_pos, GL_FLOAT, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
 		vao_->release();
 		program->release();
 	}

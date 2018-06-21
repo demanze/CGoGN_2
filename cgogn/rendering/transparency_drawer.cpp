@@ -71,37 +71,37 @@ void SurfaceTransparencyDrawer::resize(int w, int h)
 
 	texture_depth_ = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
 	texture_depth_->bind();
-	texture_depth_->setImage2D_simple(w, h, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
+	texture_depth_->setImage2D_simple(w, h, GL_DEPTH_COMPONENT, GL_FLOAT);
 	texture_depth_->release();
 
 	texture_color0_ = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
 	texture_color0_->bind();
-	texture_color0_->setImage2D_simple(w, h, GL_RGBA, GL_RGBA, GL_FLOAT);
+	texture_color0_->setImage2D_simple(w, h, GL_RGBA, GL_FLOAT);
 	texture_color0_->release();
 
 	texture_color1_ = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
 	texture_color1_->bind();
-	texture_color1_->setImage2D_simple(w, h, GL_R32F, GL_R32F, GL_FLOAT);
+	texture_color1_->setImage2D_simple(w, h, GL_R, GL_FLOAT);
 	texture_color1_->release();
 
 	texture_color2_ = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
 	texture_color2_->bind();
-	texture_color2_->setImage2D_simple(w, h, GL_R32F, GL_R32F, GL_FLOAT);
+	texture_color2_->setImage2D_simple(w, h, GL_R, GL_FLOAT);
 	texture_color2_->release();
 
 	texture_color3_ = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
 	texture_color3_->bind();
-	texture_color3_->setImage2D_simple(w, h, GL_RGBA, GL_RGBA, GL_FLOAT);
+	texture_color3_->setImage2D_simple(w, h, GL_RGBA, GL_FLOAT);
 	texture_color3_->release();
 
 	texture_color4_ = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
 	texture_color4_->bind();
-	texture_color4_->setImage2D_simple(w, h, GL_R32F, GL_R32F, GL_FLOAT);
+	texture_color4_->setImage2D_simple(w, h, GL_R, GL_FLOAT);
 	texture_color4_->release();
 
 	texture_color5_ = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
 	texture_color5_->bind();
-	texture_color5_->setImage2D_simple(w, h, GL_RGBA, GL_RGBA, GL_FLOAT);
+	texture_color5_->setImage2D_simple(w, h, GL_RGBA, GL_FLOAT);
 	texture_color5_->release();
 
 	fbo_layer_ = cgogn::make_unique<ogl::Framebuffer>();

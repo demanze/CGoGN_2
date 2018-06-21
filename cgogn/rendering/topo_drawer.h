@@ -30,7 +30,7 @@
 #include <cgogn/rendering/shaders/shader_simple_color.h>
 #include <cgogn/rendering/shaders/shader_bold_line.h>
 #include <cgogn/rendering/shaders/shader_round_point.h>
-#include <cgogn/rendering/shaders/vbo.h>
+
 
 #include <cgogn/geometry/algos/centroid.h>
 #include <cgogn/geometry/types/geometry_traits.h>

@@ -46,7 +46,7 @@
 #include <cgogn/rendering/shaders/shader_simple_color.h>
 #include <cgogn/rendering/shaders/shader_flat.h>
 #include <cgogn/rendering/shaders/shader_vector_per_vertex.h>
-#include <cgogn/rendering/shaders/vbo.h>
+
 #include <cgogn/rendering/shaders/shader_bold_line.h>
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
 

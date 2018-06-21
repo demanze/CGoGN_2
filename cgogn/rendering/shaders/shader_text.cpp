@@ -117,11 +117,8 @@ ShaderParamText::ShaderParamText(ShaderText* sh) :
 
 void ShaderParamText::set_uniforms()
 {
-	if (texture_)
-	{
-		glActiveTexture(GL_TEXTURE0);
-		texture_->bind();
-	}
+	glActiveTexture(GL_TEXTURE0);
+	(*texture_)->bind();
 
 	ShaderText* sh = static_cast<ShaderText*>(this->program);
 	sh->set_italic(italic_);

@@ -30,7 +30,7 @@
 
 #include <cgogn/rendering/shaders/shader_explode_volumes.h>
 #include <cgogn/rendering/shaders/shader_explode_volumes_line.h>
-#include <cgogn/rendering/shaders/vbo.h>
+
 
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/centroid.h>

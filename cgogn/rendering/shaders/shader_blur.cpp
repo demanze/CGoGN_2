@@ -21,60 +21,68 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef OGL_SHADERPROGRAM
-#define OGL_SHADERPROGRAM
+#include <iostream>
 
-#include "cgogn/rendering/reimp.h"
-#include "shader_uniform.h"
+#include <cgogn/rendering/shaders/shader_blur.h>
 
 namespace cgogn
 {
-	namespace rendering
-	{
-		namespace ogl
+
+namespace rendering
+{
+
+namespace shaders
+{
+		Blur* Blur::instance_ = nullptr;
+
+		Blur::Blur()
 		{
-			class CGOGN_RENDERING_API ShaderProgram
+			addShaderFromFile(GL_VERTEX_SHADER, "shaders/blur_vert.glsl");
+			addShaderFromFile(GL_FRAGMENT_SHADER, "shaders/blur_frag.glsl");
+			
+			link();
+
+			bind();
+
+			unif_rgba_texture_sampler = "rgba_texture";
+			unif_blur_dimension = "dimension";
+
+			release(); 
+		}
+
+		void ParamBlur::set_rgba_sampler(GLint value)
+		{
+			Blur* sh = static_cast<Blur*>(this->program);
+			sh->unif_rgba_texture_sampler.set(value);
+		}
+
+		void ParamBlur::set_blur_dimension(GLuint value)
+		{
+			Blur* sh = static_cast<Blur*>(this->program);
+			sh->unif_blur_dimension.set(value);  
+		}
+
+		std::unique_ptr< Blur::Param> Blur::generate_param()
+		{
+			if (!instance_)
 			{
-				friend class Uniform;
+				instance_ = new Blur();
+				ShaderProgram::register_instance(instance_);
+			}
+			return cgogn::make_unique<Param>(instance_);
+		}
 
-				private:
-					static std::vector<ShaderProgram*>* instances_;
-				
-					GLuint handle;
-					std::vector<GLuint> shaders;
+		void ParamBlur::set_uniforms()
+		{
 
-					Uniform unif_mv_matrix_;
-					Uniform unif_projection_matrix_;
-					Uniform unif_normal_matrix_;
+		}
 
-				public:
-
-					static void register_instance(ShaderProgram* sh);
-
-					ShaderProgram();
-
-					void addShader(GLenum type, const GLchar* source);
-
-					void link();
-
-					void bind();
-
-					void release();
-
-					void get_matrices_uniforms();
-
-					void set_matrices(const Matrix4f& proj, const Matrix4f& mv);
-
-					void set_view_matrix(const Matrix4f& mv);
-
-					void bindAttributeLocation(const GLchar* name, GLuint index);
-
-					static void clean_all();
-
-					~ShaderProgram();
-			};
+		ParamBlur::ParamBlur(Blur* sh) :
+			ogl::ShaderParam(sh)
+		{
 		}
 	}
-}
 
-#endif
+} 
+
+} 

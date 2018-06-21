@@ -128,6 +128,8 @@ void Drawing::draw()
 
 void Drawing::init()
 {
+	glewInit(); 
+
 	setSceneRadius(5.0);
 	setSceneCenter(qoglviewer::Vec(0.0,0.0,0.0));
 	showEntireScene();
@@ -149,8 +151,10 @@ void Drawing::init()
 		return;
 	}
 
-	wp_ = std::make_shared<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
-	button_ = std::make_shared<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/igg.png")));
+	auto image_wp = QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png"));
+	wp_ = std::make_shared<cgogn::rendering::WallPaper>(image_wp);
+	auto image_button = QImage(QString(DEFAULT_MESH_PATH) + QString("../images/igg.png"));
+	button_ = std::make_shared<cgogn::rendering::WallPaper>(image_button);
 //	button_->set_local_position(this->width(),this->height(),10,10,50,50);
 	button_->set_local_position(0.1f,0.1f,0.2f,0.2f);
 

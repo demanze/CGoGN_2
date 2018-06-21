@@ -39,7 +39,7 @@
 
 #include <cgogn/rendering/map_render.h>
 #include <cgogn/rendering/shaders/shader_flat.h>
-#include <cgogn/rendering/shaders/vbo.h>
+
 #include <cgogn/rendering/shaders/shader_bold_line.h>
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
 

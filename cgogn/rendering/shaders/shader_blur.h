@@ -21,13 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADERS_TEXT_H_
-#define CGOGN_RENDERING_SHADERS_TEXT_H_
+#ifndef CGOGN_RENDERING_SHADER_BLUR_H_
+#define CGOGN_RENDERING_SHADER_BLUR_H_
 
 #include <cgogn/rendering/opengl/all.h>
 
 
-#include <QOpenGLTexture>
 
 namespace cgogn
 {
@@ -35,62 +34,51 @@ namespace cgogn
 namespace rendering
 {
 
-class ShaderText;
-
-class CGOGN_RENDERING_API ShaderParamText : public ogl::ShaderParam
+namespace shaders
 {
-protected:
 
-	void set_uniforms();
+	// forward
+	class Blur;
 
-public:
-	using ShaderType = ShaderText;
-
-	std::unique_ptr<QOpenGLTexture>* texture_;
-
-	float32 italic_;
-
-	ShaderParamText(ShaderText* sh);
-
-	void set_vbo(VBO* vbo_pos, VBO* vbo_str, VBO* vbo_colsize);
-};
-
-class CGOGN_RENDERING_API ShaderText : public ogl::ShaderProgram
-{
-	static const char* vertex_shader_source_;
-	static const char* fragment_shader_source_;
-	ogl::Uniform unif_italic_;
-
-public:
-
-	enum
+	class CGOGN_RENDERING_API ParamBlur : public ogl::ShaderParam
 	{
-		ATTRIB_POS = 0,
-		ATTRIB_CHAR,
-		ATTRIB_COLSZ
+		public:
+			using Type = Blur;
+
+			ParamBlur(Blur* sh);
+
+			void set_rgba_sampler(GLint value);
+			void set_blur_dimension(GLuint value);
+
+			void set_uniforms(); 
 	};
 
-	using Param = ShaderParamText;
+	class CGOGN_RENDERING_API Blur : public ogl::ShaderProgram
+	{
+		friend class ParamBlur;
+	
+		private:
+			static Blur* instance_;
+			Blur();
 
-	/**
-	 * @brief generate shader parameter object
-	 * @return pointer
-	 */
-	static std::unique_ptr<Param> generate_param();
+		protected:
 
-	/**
-	 * @brief set_italic
-	 * @param i %
-	 */
-	void set_italic(float32 i);
+			// uniforms
+			ogl::Uniform unif_rgba_texture_sampler;
+			ogl::Uniform unif_blur_dimension; 
+			
+		public: 
+			using Param = ParamBlur;
+			using Self = Blur;
+			CGOGN_NOT_COPYABLE_NOR_MOVABLE(Blur);
 
-protected:
-	ShaderText();
-	static ShaderText* instance_;
-};
+			static std::unique_ptr<Param> generate_param();
+	};
+
+}
 
 } // namespace rendering
 
 } // namespace cgogn
 
-#endif // CGOGN_RENDERING_SHADERS_TEXTURE_H_
+#endif // CGOGN_RENDERING_SHADER_TRANSP_FLAT_H_

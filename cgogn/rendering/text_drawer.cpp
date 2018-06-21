@@ -26,7 +26,6 @@
 #include <cgogn/rendering/text_drawer.h>
 
 #include <iostream>
-#include<QColor>
 
 namespace cgogn
 {
@@ -36,7 +35,7 @@ namespace rendering
 
 TextDrawer::End TextDrawer::end = TextDrawer::End();
 
-QOpenGLTexture* TextDrawer::texture_ = nullptr;
+std::unique_ptr<QOpenGLTexture> TextDrawer::texture_ = nullptr;
 
 
 TextDrawer::TextDrawer() :
@@ -48,9 +47,13 @@ TextDrawer::TextDrawer() :
 	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(4);
 	vbo_char_ = cgogn::make_unique<cgogn::rendering::VBO>(1);
 	vbo_colsz_ = cgogn::make_unique<cgogn::rendering::VBO>(4);
+
 	QImage img(":fonte4064.png");
 	if (texture_ == nullptr)
-		texture_ = new QOpenGLTexture(img, QOpenGLTexture::DontGenerateMipMaps);
+	{
+		texture_ = cgogn::make_unique<QOpenGLTexture>(img, QOpenGLTexture::DontGenerateMipMaps);
+		//texture_->setImage2D(img); 
+	}
 	//	cgogn::make_unique<QOpenGLTexture>(img, QOpenGLTexture::DontGenerateMipMaps);
 }
 
@@ -176,7 +179,7 @@ TextDrawer::Renderer::Renderer(TextDrawer* tr) :
 	text_drawer_data_(tr)
 {
 	param_text_ = ShaderText::generate_param();
-	param_text_->texture_ = text_drawer_data_->texture_;
+	param_text_->texture_ = &text_drawer_data_->texture_;
 	param_text_->italic_ = 0;
 	param_text_->set_vbo(text_drawer_data_->vbo_pos_.get(), text_drawer_data_->vbo_char_.get(), text_drawer_data_->vbo_colsz_.get());
 }

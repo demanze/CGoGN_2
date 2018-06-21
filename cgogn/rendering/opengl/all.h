@@ -29,6 +29,7 @@
 #include "texture.h"
 #include "framebuffer.h"
 #include "vao.h"
-#include "shader_program_.h"
+#include "shader_program.h"
 #include "shader_uniform.h"
 #include "shader_param.h"
+#include "vbo.h"

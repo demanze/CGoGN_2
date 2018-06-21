@@ -26,7 +26,7 @@
 
 #include <cgogn/rendering/opengl/all.h>
 #include <cgogn/rendering/shaders/shader_texture.h>
-#include <cgogn/rendering/shaders/vbo.h>
+
 #include <cgogn/rendering/dll.h>
 
 namespace cgogn

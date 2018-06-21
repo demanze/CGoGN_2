@@ -36,7 +36,7 @@
 #include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/io/map_import.h>
 #include <cgogn/geometry/algos/bounding_box.h>
-#include <cgogn/rendering/shaders/vbo.h>
+
 
 #include <cgogn/rendering/transparency_drawer.h>
 #include <cgogn/rendering/transparency_volume_drawer.h>

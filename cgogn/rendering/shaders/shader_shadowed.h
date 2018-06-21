@@ -21,13 +21,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADER_PP1_H_
-#define CGOGN_RENDERING_SHADER_PP1_H_
+#ifndef CGOGN_RENDERING_SHADER_SHADOWED_H_
+#define CGOGN_RENDERING_SHADER_SHADOWED_H_
 
 #include <cgogn/rendering/opengl/all.h>
-#include <cgogn/rendering/dll.h>
-#include <cgogn/rendering/shaders/vbo.h>
-
 
 namespace cgogn
 {
@@ -35,47 +32,40 @@ namespace cgogn
 namespace rendering
 {
 
-namespace shaders2
+namespace shaders
 {
 
 	// forward
-	class PostProcessing1;
+	class Shadowed;
 
-	class CGOGN_RENDERING_API ParamPostProcessing1 : public ogl::ShaderParam
+	class CGOGN_RENDERING_API ParamShadowed : public ogl::ShaderParam
 	{
 		public:
-			using Type = PostProcessing1;
+			using Type = Shadowed;
 
-			ParamPostProcessing1(PostProcessing1* sh);
+			ParamShadowed(Shadowed* sh);
 
-			void set_rgba_sampler(GLint value);
-			void set_blur_dimension(GLuint value);
-			void set_pixel_size(float32 value);
+			void set_shadowMap(GLint value);
+			void set_shadowMVP(float* value);
 
 			void set_uniforms(); 
 	};
 
-	class CGOGN_RENDERING_API PostProcessing1 : public ogl::ShaderProgram
+	class CGOGN_RENDERING_API Shadowed : public ogl::ShaderProgram
 	{
-		friend class ParamPostProcessing1;
+		friend class ParamShadowed;
 	
 		private:
-			static PostProcessing1* instance_;
-			PostProcessing1();
+			static Shadowed* instance_;
+			Shadowed();
 
-		protected:
-			static const char* vertex_shader_source_;
-			static const char* fragment_shader_source_;
+			ogl::Uniform unif_shadowMap_; 
+			ogl::Uniform unif_shadowMVP_;
 
-			// uniforms
-			ogl::Uniform unif_rgba_texture_sampler;
-			ogl::Uniform unif_blur_dimension; 
-			ogl::Uniform unif_pixel_size; 
-			
 		public: 
-			using Param = ParamPostProcessing1;
-			using Self = PostProcessing1;
-			CGOGN_NOT_COPYABLE_NOR_MOVABLE(PostProcessing1);
+			using Param = ParamShadowed;
+			using Self = Shadowed;
+			CGOGN_NOT_COPYABLE_NOR_MOVABLE(Shadowed);
 
 			static std::unique_ptr<Param> generate_param();
 	};

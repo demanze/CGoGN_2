@@ -14,10 +14,11 @@ set(HEADER_OPENGL
 	opengl/glew.h
 	opengl/glxew.h
 	opengl/shader_param.h
-	opengl/shader_program_.h
+	opengl/shader_program.h
 	opengl/shader_uniform.h
 	opengl/texture.h
 	opengl/vao.h
+	opengl/vbo.h
 	opengl/wglew.h
 	)
 
@@ -25,7 +26,7 @@ set(SOURCE_OPENGL
 	opengl/buffer.cpp
 	opengl/framebuffer.cpp
 	opengl/shader_param.cpp
-	opengl/shader_program_.cpp
+	opengl/shader_program.cpp
 	opengl/shader_uniform.cpp
 	opengl/texture.cpp
 	opengl/vao.cpp
@@ -57,8 +58,6 @@ else()
 endif()
 
 set(HEADER_SHADERS
-	shaders/vbo.h
-	shaders/shader_program.h
 	shaders/shader_simple_color.h
 	shaders/shader_color_per_vertex.h
 	shaders/shader_scalar_per_vertex.h
@@ -72,7 +71,8 @@ set(HEADER_SHADERS
 	shaders/shader_explode_volumes_line.h
 	shaders/shader_texture.h
 	shaders/shader_text.h
-	shaders/shader_postprocessing_1.h
+	shaders/shader_blur.h
+	shaders/shader_shadowed.h
 )
 
 set(HEADER_FILES
@@ -91,7 +91,6 @@ set(HEADER_FILES
 )
 
 set(SOURCE_SHADERS
-	shaders/shader_program.cpp
 	shaders/shader_simple_color.cpp
 	shaders/shader_color_per_vertex.cpp
 	shaders/shader_scalar_per_vertex.cpp
@@ -105,7 +104,8 @@ set(SOURCE_SHADERS
 	shaders/shader_explode_volumes_line.cpp
 	shaders/shader_texture.cpp
 	shaders/shader_text.cpp
-	shaders/shader_postprocessing_1.cpp
+	shaders/shader_blur.cpp
+	shaders/shader_shadowed.cpp
 )
 
 set(SOURCE_FILES

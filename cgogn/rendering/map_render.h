@@ -33,7 +33,7 @@
 #include <cgogn/geometry/algos/ear_triangulation.h>
 
 #include <cgogn/rendering/drawer.h>
-#include <cgogn/rendering/shaders/vbo.h>
+
 
 namespace cgogn
 {

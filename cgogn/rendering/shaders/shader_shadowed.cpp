@@ -21,13 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADERS_TEXT_H_
-#define CGOGN_RENDERING_SHADERS_TEXT_H_
+#include <iostream>
 
-#include <cgogn/rendering/opengl/all.h>
-
-
-#include <QOpenGLTexture>
+#include <cgogn/rendering/shaders/shader_shadowed.h>
 
 namespace cgogn
 {
@@ -35,62 +31,60 @@ namespace cgogn
 namespace rendering
 {
 
-class ShaderText;
-
-class CGOGN_RENDERING_API ShaderParamText : public ogl::ShaderParam
+namespace shaders
 {
-protected:
+		Shadowed* Shadowed::instance_ = nullptr;
 
-	void set_uniforms();
+		Shadowed::Shadowed()
+		{
+			addShaderFromFile(GL_VERTEX_SHADER, "shaders/shadowed_vert.glsl");
+			addShaderFromFile(GL_FRAGMENT_SHADER, "shaders/shadowed_frag.glsl");
+			
+			link();
 
-public:
-	using ShaderType = ShaderText;
+			bind();
 
-	std::unique_ptr<QOpenGLTexture>* texture_;
+			unif_shadowMap_ = "shadowMap";
+			unif_shadowMVP_ = "shadowMVP";
 
-	float32 italic_;
+			get_matrices_uniforms();
 
-	ShaderParamText(ShaderText* sh);
+			release(); 
+		}
 
-	void set_vbo(VBO* vbo_pos, VBO* vbo_str, VBO* vbo_colsize);
-};
+		std::unique_ptr< Shadowed::Param> Shadowed::generate_param()
+		{
+			if (!instance_)
+			{
+				instance_ = new Shadowed();
+				ShaderProgram::register_instance(instance_);
+			}
+			return cgogn::make_unique<Param>(instance_);
+		}
 
-class CGOGN_RENDERING_API ShaderText : public ogl::ShaderProgram
-{
-	static const char* vertex_shader_source_;
-	static const char* fragment_shader_source_;
-	ogl::Uniform unif_italic_;
+		void ParamShadowed::set_shadowMap(GLint value)
+		{
+			auto sh = static_cast<Shadowed*>(this->program);
+			sh->unif_shadowMap_.set(value);
+		}
 
-public:
+		void ParamShadowed::set_shadowMVP(float* value)
+		{
+			auto sh = static_cast<Shadowed*>(this->program);
+			sh->unif_shadowMVP_.set(Matrix4f(value));
+		}
 
-	enum
-	{
-		ATTRIB_POS = 0,
-		ATTRIB_CHAR,
-		ATTRIB_COLSZ
-	};
+		void ParamShadowed::set_uniforms()
+		{
 
-	using Param = ShaderParamText;
+		}
 
-	/**
-	 * @brief generate shader parameter object
-	 * @return pointer
-	 */
-	static std::unique_ptr<Param> generate_param();
+		ParamShadowed::ParamShadowed(Shadowed* sh) :
+			ogl::ShaderParam(sh)
+		{
+		}
+	}
 
-	/**
-	 * @brief set_italic
-	 * @param i %
-	 */
-	void set_italic(float32 i);
+} 
 
-protected:
-	ShaderText();
-	static ShaderText* instance_;
-};
-
-} // namespace rendering
-
-} // namespace cgogn
-
-#endif // CGOGN_RENDERING_SHADERS_TEXTURE_H_
+} 

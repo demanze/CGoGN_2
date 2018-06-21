@@ -58,8 +58,10 @@ namespace cgogn
 
 					void release();
 
-					void setImage2D_simple(int w, int h, GLenum internal_format, GLenum format, GLenum type);
+					void setImage2D_simple(int w, int h, GLenum format, GLenum type);
 
+					void setImage2D(const QImage& image);
+					
 					~Texture();
 			};
 		}

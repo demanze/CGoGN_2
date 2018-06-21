@@ -35,6 +35,8 @@
 #include <vector>
 #include <memory>
 
+#include <QImage>
+
 namespace cgogn
 {
 	typedef Eigen::Vector2f Vector2f;
@@ -78,7 +80,11 @@ namespace cgogn
 	extern CGOGN_RENDERING_API void Scale(Matrix4f& m1, cgogn::float32 value);
 	extern CGOGN_RENDERING_API void Scale(Matrix4f& m1, Vector3f value);
 	extern CGOGN_RENDERING_API Vector3f Map(Matrix4f m, Vector3f point);
-
+	
+	inline void* void_ptr(uint32 x)
+	{
+		return reinterpret_cast<void*>(uint64_t(x));
+	}
 }
 
 #endif 
