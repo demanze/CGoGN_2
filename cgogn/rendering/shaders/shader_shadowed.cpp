@@ -37,8 +37,8 @@ namespace shaders
 
 		Shadowed::Shadowed()
 		{
-			addShaderFromFile(GL_VERTEX_SHADER, "shaders/shadowed_vert.glsl");
-			addShaderFromFile(GL_FRAGMENT_SHADER, "shaders/shadowed_frag.glsl");
+			addShaderFromFile(GL_VERTEX_SHADER, "shadowed_vert.glsl");
+			addShaderFromFile(GL_FRAGMENT_SHADER, "shadowed_frag.glsl");
 			
 			link();
 
