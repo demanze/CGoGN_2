@@ -74,6 +74,8 @@ namespace cgogn
 
 			void ShaderProgram::addShaderFromFile(GLenum type, const char* filename)
 			{
+				cgogn_log_info("shader linking") << std::string(STRINGIFY(SHADERPATH)); 
+
 				std::ifstream file;
 				file.open(filename);
 				std::stringstream buffer;

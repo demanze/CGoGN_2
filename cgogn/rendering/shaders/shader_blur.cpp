@@ -37,6 +37,7 @@ namespace shaders
 
 		Blur::Blur()
 		{
+			
 			addShaderFromFile(GL_VERTEX_SHADER, "shaders/blur_vert.glsl");
 			addShaderFromFile(GL_FRAGMENT_SHADER, "shaders/blur_frag.glsl");
 			

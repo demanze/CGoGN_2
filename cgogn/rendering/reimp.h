@@ -24,6 +24,9 @@
 #ifndef CGOGN_RENDERING_REIMP_H_
 #define CGOGN_RENDERING_REIMP_H_
 
+#define STRINGIFY2(X) #X
+#define STRINGIFY(X) STRINGIFY2(X)
+
 #include "cgogn/rendering/dll.h"
 #include "cgogn/core/utils/logger.h"
 #include "cgogn/rendering/opengl/glew.h"
