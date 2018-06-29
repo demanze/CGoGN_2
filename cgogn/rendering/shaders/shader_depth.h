@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADER_SHADOWED_H_
-#define CGOGN_RENDERING_SHADER_SHADOWED_H_
+#ifndef CGOGN_RENDERING_SHADER_DEPTH_H_
+#define CGOGN_RENDERING_SHADER_DEPTH_H_
 
 #include <cgogn/rendering/opengl/all.h>
 
@@ -36,54 +36,48 @@ namespace shaders
 {
 
 	// forward
-	class ParamShadow;
+	class ParamDepth;
 
-	class CGOGN_RENDERING_API Shadow : public ogl::ShaderProgram
+	class CGOGN_RENDERING_API Depth : public ogl::ShaderProgram
 	{
-		friend class ParamShadow;
-
+		friend class ParamDepth;
+	
 		enum
 		{
 			ATTRIB_POS = 0
 		};
 
-	private:
-		static Shadow* instance_;
-		Shadow();
+		private:
+			static Depth* instance_;
+			Depth();
 
-		ogl::Uniform unif_shadowMap_;
-		ogl::Uniform unif_shadowMVP_;
+		public: 
+			using Param = ParamDepth;
+			using Self = Depth;
+			CGOGN_NOT_COPYABLE_NOR_MOVABLE(Depth);
 
-	public:
-		using Param = ParamShadow;
-		using Self = Shadow;
-		CGOGN_NOT_COPYABLE_NOR_MOVABLE(Shadow);
-
-		static std::unique_ptr<Param> generate_param();
+			static std::unique_ptr<Param> generate_param();
 	};
 
-
-	class CGOGN_RENDERING_API ParamShadow : public ogl::ShaderParam
+	class CGOGN_RENDERING_API ParamDepth : public ogl::ShaderParam
 	{
-		public:
-			using Type = Shadow;
+	public:
+		using Type = Depth;
 
-			ParamShadow(Shadow* sh);
+		ParamDepth(Depth* sh);
 
-			void set_shadowMap(GLint value);
-			void set_shadowMVP(float* value);
+		void set_uniforms();
 
-			void set_uniforms(); 
-
-			void set_position_vbo(VBO* vbo_pos)
-			{
-				bind();
-				vao_->bind();
-				vao_->attribPointer(Shadow::ATTRIB_POS, vbo_pos, GL_FLOAT);
-				vao_->release();
-				release();
-			}
+		void set_position_vbo(VBO* vbo_pos)
+		{
+			bind();
+			vao_->bind();
+			vao_->attribPointer(Depth::ATTRIB_POS, vbo_pos, GL_FLOAT);
+			vao_->release();
+			release();
+		}
 	};
+
 }
 
 } // namespace rendering

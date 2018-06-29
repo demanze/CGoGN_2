@@ -37,8 +37,7 @@ namespace shaders
 
 		Blur::Blur()
 		{
-			
-			addShaderFromFile(GL_VERTEX_SHADER, "blur_vert.glsl");
+			addShaderFromFile(GL_VERTEX_SHADER, "fullscreen_texture_vert.glsl");
 			addShaderFromFile(GL_FRAGMENT_SHADER, "blur_frag.glsl");
 			
 			link();
@@ -46,6 +45,7 @@ namespace shaders
 			bind();
 
 			unif_rgba_texture_sampler = "rgba_texture";
+			unif_depth_filter = "depth_filter"; 
 			unif_blur_dimension = "dimension";
 
 			release(); 
@@ -55,6 +55,12 @@ namespace shaders
 		{
 			Blur* sh = static_cast<Blur*>(this->program);
 			sh->unif_rgba_texture_sampler.set(value);
+		}
+
+		void ParamBlur::set_depth_filter(GLint value)
+		{
+			Blur* sh = static_cast<Blur*>(this->program);
+			sh->unif_depth_filter.set(value);
 		}
 
 		void ParamBlur::set_blur_dimension(GLuint value)

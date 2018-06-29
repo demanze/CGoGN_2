@@ -21,10 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADER_SHADOWED_H_
-#define CGOGN_RENDERING_SHADER_SHADOWED_H_
+#include <iostream>
 
-#include <cgogn/rendering/opengl/all.h>
+#include <cgogn/rendering/shaders/shader_depth.h>
 
 namespace cgogn
 {
@@ -34,60 +33,45 @@ namespace rendering
 
 namespace shaders
 {
+		Depth* Depth::instance_ = nullptr;
 
-	// forward
-	class ParamShadow;
-
-	class CGOGN_RENDERING_API Shadow : public ogl::ShaderProgram
-	{
-		friend class ParamShadow;
-
-		enum
+		Depth::Depth()
 		{
-			ATTRIB_POS = 0
-		};
+			addShaderFromFile(GL_VERTEX_SHADER, "depth_vert.glsl");
+			addShaderFromFile(GL_FRAGMENT_SHADER, "depth_frag.glsl");
+			
+			bindAttributeLocation("vertex_pos", ATTRIB_POS);
 
-	private:
-		static Shadow* instance_;
-		Shadow();
+			link();
 
-		ogl::Uniform unif_shadowMap_;
-		ogl::Uniform unif_shadowMVP_;
+			bind();
 
-	public:
-		using Param = ParamShadow;
-		using Self = Shadow;
-		CGOGN_NOT_COPYABLE_NOR_MOVABLE(Shadow);
+			get_matrices_uniforms();
 
-		static std::unique_ptr<Param> generate_param();
-	};
+			release(); 
+		}
 
-
-	class CGOGN_RENDERING_API ParamShadow : public ogl::ShaderParam
-	{
-		public:
-			using Type = Shadow;
-
-			ParamShadow(Shadow* sh);
-
-			void set_shadowMap(GLint value);
-			void set_shadowMVP(float* value);
-
-			void set_uniforms(); 
-
-			void set_position_vbo(VBO* vbo_pos)
+		std::unique_ptr< Depth::Param> Depth::generate_param()
+		{
+			if (!instance_)
 			{
-				bind();
-				vao_->bind();
-				vao_->attribPointer(Shadow::ATTRIB_POS, vbo_pos, GL_FLOAT);
-				vao_->release();
-				release();
+				instance_ = new Depth();
+				ShaderProgram::register_instance(instance_);
 			}
-	};
-}
+			return cgogn::make_unique<Param>(instance_);
+		}
 
-} // namespace rendering
+		void ParamDepth::set_uniforms()
+		{
 
-} // namespace cgogn
+		}
 
-#endif // CGOGN_RENDERING_SHADER_TRANSP_FLAT_H_
+		ParamDepth::ParamDepth(Depth* sh) :
+			ogl::ShaderParam(sh)
+		{
+		}
+	}
+
+} 
+
+} 

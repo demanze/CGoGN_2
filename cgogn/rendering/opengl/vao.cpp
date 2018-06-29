@@ -41,16 +41,16 @@ namespace cgogn
 
 			void VAO::attribPointer(GLuint index, VBO* vbo, GLenum type)
 			{
-				vbo->bind();
 				glEnableVertexAttribArray(index);
+				vbo->bind();
 				glVertexAttribPointer(index, vbo->vector_dimension(), type, GL_FALSE, 0, 0);
 				vbo->release();
 			}
 
 			void VAO::attribPointer(GLuint index, VBO* vbo, GLenum type, GLuint divisor)
 			{
-				vbo->bind();
 				glEnableVertexAttribArray(index);
+				vbo->bind();
 				glVertexAttribPointer(index, vbo->vector_dimension(), type, GL_FALSE, 0, 0);
 				glVertexAttribDivisor(index, divisor);
 				vbo->release();
@@ -58,8 +58,8 @@ namespace cgogn
 
 			void VAO::attribPointer(GLuint index, VBO* vbo, GLenum type, GLsizei stride, const void* pointer)
 			{
-				vbo->bind();
 				glEnableVertexAttribArray(index);
+				vbo->bind();
 				glVertexAttribPointer(index, vbo->vector_dimension(), type, GL_FALSE, stride, pointer);
 				vbo->release();
 			}

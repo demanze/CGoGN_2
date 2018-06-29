@@ -73,6 +73,8 @@ set(HEADER_SHADERS
 	shaders/shader_text.h
 	shaders/shader_blur.h
 	shaders/shader_shadowed.h
+	shaders/shader_depth.h
+	shaders/shader_fullscreen_texture.h
 )
 
 set(HEADER_FILES
@@ -106,6 +108,8 @@ set(SOURCE_SHADERS
 	shaders/shader_text.cpp
 	shaders/shader_blur.cpp
 	shaders/shader_shadowed.cpp
+	shaders/shader_depth.cpp
+	shaders/shader_fullscreen_texture.cpp
 )
 
 set(SOURCE_FILES

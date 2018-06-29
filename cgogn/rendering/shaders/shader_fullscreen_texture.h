@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADER_SHADOWED_H_
-#define CGOGN_RENDERING_SHADER_SHADOWED_H_
+#ifndef CGOGN_RENDERING_SHADER_FULLSCREEN_TEXTURE_H_
+#define CGOGN_RENDERING_SHADER_FULLSCREEN_TEXTURE_H_
 
 #include <cgogn/rendering/opengl/all.h>
 
@@ -36,54 +36,43 @@ namespace shaders
 {
 
 	// forward
-	class ParamShadow;
+	class ShadowBlend;
 
-	class CGOGN_RENDERING_API Shadow : public ogl::ShaderProgram
-	{
-		friend class ParamShadow;
-
-		enum
-		{
-			ATTRIB_POS = 0
-		};
-
-	private:
-		static Shadow* instance_;
-		Shadow();
-
-		ogl::Uniform unif_shadowMap_;
-		ogl::Uniform unif_shadowMVP_;
-
-	public:
-		using Param = ParamShadow;
-		using Self = Shadow;
-		CGOGN_NOT_COPYABLE_NOR_MOVABLE(Shadow);
-
-		static std::unique_ptr<Param> generate_param();
-	};
-
-
-	class CGOGN_RENDERING_API ParamShadow : public ogl::ShaderParam
+	class CGOGN_RENDERING_API ParamShadowBlend : public ogl::ShaderParam
 	{
 		public:
-			using Type = Shadow;
+			using Type = ShadowBlend;
 
-			ParamShadow(Shadow* sh);
+			ParamShadowBlend(ShadowBlend* sh);
 
-			void set_shadowMap(GLint value);
-			void set_shadowMVP(float* value);
+			void set_rgba_sampler1(GLint value);
+			void set_rgba_sampler2(GLint value);
 
 			void set_uniforms(); 
-
-			void set_position_vbo(VBO* vbo_pos)
-			{
-				bind();
-				vao_->bind();
-				vao_->attribPointer(Shadow::ATTRIB_POS, vbo_pos, GL_FLOAT);
-				vao_->release();
-				release();
-			}
 	};
+
+	class CGOGN_RENDERING_API ShadowBlend : public ogl::ShaderProgram
+	{
+		friend class ParamShadowBlend;
+	
+		private:
+			static ShadowBlend* instance_;
+			ShadowBlend();
+
+		protected:
+
+			// uniforms
+			ogl::Uniform unif_texture_sampler1;
+			ogl::Uniform unif_texture_sampler2;
+
+		public: 
+			using Param = ParamShadowBlend;
+			using Self = ShadowBlend;
+			CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShadowBlend);
+
+			static std::unique_ptr<Param> generate_param();
+	};
+
 }
 
 } // namespace rendering

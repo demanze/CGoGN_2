@@ -33,13 +33,15 @@ namespace rendering
 
 namespace shaders
 {
-		Shadowed* Shadowed::instance_ = nullptr;
+		Shadow* Shadow::instance_ = nullptr;
 
-		Shadowed::Shadowed()
+		Shadow::Shadow()
 		{
-			addShaderFromFile(GL_VERTEX_SHADER, "shadowed_vert.glsl");
-			addShaderFromFile(GL_FRAGMENT_SHADER, "shadowed_frag.glsl");
+			addShaderFromFile(GL_VERTEX_SHADER, "shadow_vert.glsl");
+			addShaderFromFile(GL_FRAGMENT_SHADER, "shadow_frag.glsl");
 			
+			bindAttributeLocation("vertex_pos", ATTRIB_POS);
+
 			link();
 
 			bind();
@@ -52,34 +54,34 @@ namespace shaders
 			release(); 
 		}
 
-		std::unique_ptr< Shadowed::Param> Shadowed::generate_param()
+		std::unique_ptr< Shadow::Param> Shadow::generate_param()
 		{
 			if (!instance_)
 			{
-				instance_ = new Shadowed();
+				instance_ = new Shadow();
 				ShaderProgram::register_instance(instance_);
 			}
 			return cgogn::make_unique<Param>(instance_);
 		}
 
-		void ParamShadowed::set_shadowMap(GLint value)
+		void ParamShadow::set_shadowMap(GLint value)
 		{
-			auto sh = static_cast<Shadowed*>(this->program);
+			auto sh = static_cast<Shadow*>(this->program);
 			sh->unif_shadowMap_.set(value);
 		}
 
-		void ParamShadowed::set_shadowMVP(float* value)
+		void ParamShadow::set_shadowMVP(float* value)
 		{
-			auto sh = static_cast<Shadowed*>(this->program);
+			auto sh = static_cast<Shadow*>(this->program);
 			sh->unif_shadowMVP_.set(Matrix4f(value));
 		}
 
-		void ParamShadowed::set_uniforms()
+		void ParamShadow::set_uniforms()
 		{
 
 		}
 
-		ParamShadowed::ParamShadowed(Shadowed* sh) :
+		ParamShadow::ParamShadow(Shadow* sh) :
 			ogl::ShaderParam(sh)
 		{
 		}

@@ -48,6 +48,7 @@ namespace shaders
 			ParamBlur(Blur* sh);
 
 			void set_rgba_sampler(GLint value);
+			void set_depth_filter(GLint value);
 			void set_blur_dimension(GLuint value);
 
 			void set_uniforms(); 
@@ -65,6 +66,7 @@ namespace shaders
 
 			// uniforms
 			ogl::Uniform unif_rgba_texture_sampler;
+			ogl::Uniform unif_depth_filter;
 			ogl::Uniform unif_blur_dimension; 
 			
 		public: 

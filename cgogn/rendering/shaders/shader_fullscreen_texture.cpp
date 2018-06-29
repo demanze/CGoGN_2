@@ -21,10 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADER_SHADOWED_H_
-#define CGOGN_RENDERING_SHADER_SHADOWED_H_
+#include <iostream>
 
-#include <cgogn/rendering/opengl/all.h>
+#include <cgogn/rendering/shaders/shader_fullscreen_texture.h>
 
 namespace cgogn
 {
@@ -34,60 +33,57 @@ namespace rendering
 
 namespace shaders
 {
+		ShadowBlend* ShadowBlend::instance_ = nullptr;
 
-	// forward
-	class ParamShadow;
-
-	class CGOGN_RENDERING_API Shadow : public ogl::ShaderProgram
-	{
-		friend class ParamShadow;
-
-		enum
+		ShadowBlend::ShadowBlend()
 		{
-			ATTRIB_POS = 0
-		};
+			
+			addShaderFromFile(GL_VERTEX_SHADER, "fullscreen_texture_vert.glsl");
+			addShaderFromFile(GL_FRAGMENT_SHADER, "shadow_blend_frag.glsl");
+			
+			link();
 
-	private:
-		static Shadow* instance_;
-		Shadow();
+			bind();
 
-		ogl::Uniform unif_shadowMap_;
-		ogl::Uniform unif_shadowMVP_;
+			unif_texture_sampler1 = "texture_sampler1";
+			unif_texture_sampler2 = "texture_sampler2";
 
-	public:
-		using Param = ParamShadow;
-		using Self = Shadow;
-		CGOGN_NOT_COPYABLE_NOR_MOVABLE(Shadow);
+			release(); 
+		}
 
-		static std::unique_ptr<Param> generate_param();
-	};
+		void ParamShadowBlend::set_rgba_sampler1(GLint value)
+		{
+			ShadowBlend* sh = static_cast<ShadowBlend*>(this->program);
+			sh->unif_texture_sampler1.set(value);
+		}
 
+		void ParamShadowBlend::set_rgba_sampler2(GLint value)
+		{
+			ShadowBlend* sh = static_cast<ShadowBlend*>(this->program);
+			sh->unif_texture_sampler2.set(value);
+		}
 
-	class CGOGN_RENDERING_API ParamShadow : public ogl::ShaderParam
-	{
-		public:
-			using Type = Shadow;
-
-			ParamShadow(Shadow* sh);
-
-			void set_shadowMap(GLint value);
-			void set_shadowMVP(float* value);
-
-			void set_uniforms(); 
-
-			void set_position_vbo(VBO* vbo_pos)
+		std::unique_ptr< ShadowBlend::Param> ShadowBlend::generate_param()
+		{
+			if (!instance_)
 			{
-				bind();
-				vao_->bind();
-				vao_->attribPointer(Shadow::ATTRIB_POS, vbo_pos, GL_FLOAT);
-				vao_->release();
-				release();
+				instance_ = new ShadowBlend();
+				ShaderProgram::register_instance(instance_);
 			}
-	};
-}
+			return cgogn::make_unique<Param>(instance_);
+		}
 
-} // namespace rendering
+		void ParamShadowBlend::set_uniforms()
+		{
 
-} // namespace cgogn
+		}
 
-#endif // CGOGN_RENDERING_SHADER_TRANSP_FLAT_H_
+		ParamShadowBlend::ParamShadowBlend(ShadowBlend* sh) :
+			ogl::ShaderParam(sh)
+		{
+		}
+	}
+
+} 
+
+} 

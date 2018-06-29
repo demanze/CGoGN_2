@@ -76,6 +76,10 @@ namespace cgogn
 			{
 				std::string name = std::string(STRINGIFY(SHADERPATH)) + std::string("/shaders/source/") + std::string(filename); 
 				std::ifstream file(name);
+				if (!file)
+				{
+					cgogn_log_info(std::string("couldn't open shader file ") + name);
+				}
 				std::stringstream buffer;
 				buffer << file.rdbuf();
 				addShader(type, buffer.str().c_str());
