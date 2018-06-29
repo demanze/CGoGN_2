@@ -23,7 +23,7 @@
 
 #include <iostream>
 
-#include <cgogn/rendering/shaders/shader_shadowed.h>
+#include <cgogn/rendering/shaders/shader_shadow.h>
 
 namespace cgogn
 {

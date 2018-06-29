@@ -54,9 +54,9 @@
 #include <cgogn/rendering/drawer.h>
 
 #include <cgogn/rendering/shaders/shader_blur.h>
-#include <cgogn/rendering/shaders/shader_shadowed.h>
+#include <cgogn/rendering/shaders/shader_shadow.h>
 #include <cgogn/rendering/shaders/shader_depth.h>
-#include <cgogn/rendering/shaders/shader_fullscreen_texture.h>
+#include <cgogn/rendering/shaders/shader_shadow_blend.h>
 
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)

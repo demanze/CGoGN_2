@@ -23,7 +23,7 @@
 
 #include <iostream>
 
-#include <cgogn/rendering/shaders/shader_fullscreen_texture.h>
+#include <cgogn/rendering/shaders/shader_shadow_blend.h>
 
 namespace cgogn
 {
