@@ -41,6 +41,7 @@ namespace shaders
 			addShaderFromFile(GL_FRAGMENT_SHADER, "shadow_frag.glsl");
 			
 			bindAttributeLocation("vertex_pos", ATTRIB_POS);
+			bindAttributeLocation("vertex_norm", ATTRIB_NORM);
 
 			link();
 
@@ -48,6 +49,7 @@ namespace shaders
 
 			unif_shadowMap_ = "shadowMap";
 			unif_shadowMVP_ = "shadowMVP";
+			unif_pixelSize_ = "pixelSize";
 
 			get_matrices_uniforms();
 
@@ -74,6 +76,12 @@ namespace shaders
 		{
 			auto sh = static_cast<Shadow*>(this->program);
 			sh->unif_shadowMVP_.set(Matrix4f(value));
+		}
+
+		void ParamShadow::set_pixelSize(float value)
+		{
+			auto sh = static_cast<Shadow*>(this->program);
+			sh->unif_pixelSize_.set(value);
 		}
 
 		void ParamShadow::set_uniforms()

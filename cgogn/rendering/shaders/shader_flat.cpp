@@ -38,11 +38,14 @@ const char* ShaderFlatGen::vertex_shader_source_ =
 "in vec3 vertex_pos;\n"
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
+"uniform vec3 lightPosition;\n"
 "out vec3 pos;\n"
+"out vec3 lightPos;\n"
 "void main()\n"
 "{\n"
 "	vec4 pos4 = model_view_matrix * vec4(vertex_pos,1.0);\n"
 "	pos = pos4.xyz;"
+"	lightPos = (model_view_matrix * vec4(lightPosition,1.0f)).xyz;"
 "   gl_Position = projection_matrix * pos4;\n"
 "}\n";
 
@@ -52,13 +55,14 @@ const char* ShaderFlatGen::fragment_shader_source_ =
 "uniform vec4 front_color;\n"
 "uniform vec4 back_color;\n"
 "uniform vec4 ambiant_color;\n"
-"uniform vec3 lightPosition;\n"
 "uniform bool cull_back_face;\n"
+"uniform bool enable_lighting;\n"
 "in vec3 pos;\n"
+"in vec3 lightPos;\n"
 "void main()\n"
 "{\n"
 "	vec3 N = normalize(cross(dFdx(pos),dFdy(pos)));\n"
-"	vec3 L = normalize(lightPosition-pos);\n"
+"	vec3 L = normalize(lightPos-pos);\n"
 "	float lambert = dot(N,L);\n"
 "	if (gl_FrontFacing)\n"
 "		fragColor = vec4(ambiant_color.rgb+lambert*front_color.rgb, front_color.a);\n"
@@ -66,7 +70,8 @@ const char* ShaderFlatGen::fragment_shader_source_ =
 "	else\n"
 "		if (cull_back_face) discard;\n"
 //"		else fragColor = ambiant_color+lambert*back_color;\n"
-"		else fragColor = vec4(ambiant_color.rgb+lambert*back_color.rgb, back_color.a);\n"
+//"		else fragColor = vec4(ambiant_color.rgb+lambert*back_color.rgb, back_color.a);\n"
+"	if (!enable_lighting) fragColor = vec4(front_color.rgb,1.0f);\n"
 "}\n";
 
 const char* ShaderFlatGen::vertex_shader_source2_ =
@@ -103,6 +108,7 @@ const char* ShaderFlatGen::fragment_shader_source2_ =
 "	else\n"
 "		if (cull_back_face) discard;\n"
 "		else fragColor = ambiant_color-vec4(lambert*col,1.0);\n"
+"	fragColor = vec4(front_color.rgb,1.0f);\n"
 "}\n";
 
 ShaderFlatGen::ShaderFlatGen(bool color_per_vertex)
@@ -136,6 +142,7 @@ ShaderFlatGen::ShaderFlatGen(bool color_per_vertex)
 	unif_ambiant_color_ = "ambiant_color";
 	unif_light_position_ = "lightPosition";
 	unif_bf_culling_ = "cull_back_face";
+	unif_enable_lighting_ = "enable_lighting"; 
 
 	release(); 
 }

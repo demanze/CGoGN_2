@@ -51,7 +51,7 @@ namespace shaders
 			release(); 
 		}
 
-		void ParamBlur::set_rgba_sampler(GLint value)
+		void ParamBlur::set_blurred(GLint value)
 		{
 			Blur* sh = static_cast<Blur*>(this->program);
 			sh->unif_rgba_texture_sampler.set(value);

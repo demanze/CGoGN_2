@@ -47,7 +47,7 @@ namespace shaders
 
 			ParamBlur(Blur* sh);
 
-			void set_rgba_sampler(GLint value);
+			void set_blurred(GLint value);
 			void set_depth_filter(GLint value);
 			void set_blur_dimension(GLuint value);
 

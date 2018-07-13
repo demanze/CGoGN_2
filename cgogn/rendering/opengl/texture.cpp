@@ -32,15 +32,15 @@ namespace cgogn
 			Texture::Texture()
 			{
 				glGenTextures(1, &handle);
-				target = GL_INVALID_ENUM;
+				target = ~0u;
 			}
 
-			GLuint Texture::id() const
+			GLuint Texture::id()
 			{
 				return handle;
 			}
 
-			GLuint Texture::slot() const
+			GLuint Texture::slot()
 			{
 				return target;
 			}
@@ -70,13 +70,13 @@ namespace cgogn
 				target = ~0u;
 			}
 
-			void Texture::setImage2D_simple(int w, int h, GLenum format, GLenum type)
+			void Texture::setImage2D_simple(int w, int h, GLenum internalFormat, GLenum format, GLenum type)
 			{
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-				glTexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format, type, nullptr);
+				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, w, h, 0, format, type, nullptr);
 			}
 
 			void Texture::setImage2D(const QImage& image)

@@ -46,6 +46,16 @@ namespace cgogn
 
 					void bind();
 
+					void drawBuffers(GLenum _0);
+
+					void drawBuffers(GLenum _0, GLenum _1);
+
+					void drawBuffers(GLenum _0, GLenum _1, GLenum _2);
+
+					void drawBuffers(GLenum _0, GLenum _1, GLenum _2, GLenum _3);
+
+					void drawBuffers(GLenum _0, GLenum _1, GLenum _2, GLenum _3, GLenum _4);
+
 					void release();
 
 					void attach(std::unique_ptr<Texture>& texture, GLenum attachmentPoint);

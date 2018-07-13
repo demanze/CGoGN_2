@@ -54,6 +54,8 @@ namespace cgogn
 
 					void set(Vector3f value);
 
+					void set(int count, Vector3f* value); 
+
 					void set(Vector4f value);
 
 					void set(Color value);

@@ -66,6 +66,11 @@ namespace cgogn
 				glUniform3f(location, value.x(), value.y(), value.z());
 			}
 
+			void Uniform::set(int count, Vector3f* value)
+			{
+				glUniform3fv(location, count, (GLfloat*)value); 
+			}
+
 			void Uniform::set(Vector4f value)
 			{
 				glUniform4f(location, value.x(), value.y(), value.z(), value.w());

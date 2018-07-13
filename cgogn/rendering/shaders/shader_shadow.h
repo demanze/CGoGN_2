@@ -44,7 +44,8 @@ namespace shaders
 
 		enum
 		{
-			ATTRIB_POS = 0
+			ATTRIB_POS = 0,
+			ATTRIB_NORM = 1,
 		};
 
 	private:
@@ -53,6 +54,7 @@ namespace shaders
 
 		ogl::Uniform unif_shadowMap_;
 		ogl::Uniform unif_shadowMVP_;
+		ogl::Uniform unif_pixelSize_;
 
 	public:
 		using Param = ParamShadow;
@@ -72,14 +74,16 @@ namespace shaders
 
 			void set_shadowMap(GLint value);
 			void set_shadowMVP(float* value);
+			void set_pixelSize(float value);
 
 			void set_uniforms(); 
 
-			void set_position_vbo(VBO* vbo_pos)
+			void set_position_vbo(VBO* vbo_pos, VBO* vbo_norm)
 			{
 				bind();
 				vao_->bind();
 				vao_->attribPointer(Shadow::ATTRIB_POS, vbo_pos, GL_FLOAT);
+				vao_->attribPointer(Shadow::ATTRIB_NORM, vbo_norm, GL_FLOAT);
 				vao_->release();
 				release();
 			}

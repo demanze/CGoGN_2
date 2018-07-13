@@ -35,7 +35,6 @@ namespace cgogn
 			class CGOGN_RENDERING_API Texture
 			{
 				private:
-					//The global id of the texture
 					GLuint handle;
 
 					//The texture slot to which the texture is currently bound (0 for GL_TEXTURE0, 1 for GL_TEXTURE1...) 
@@ -46,9 +45,9 @@ namespace cgogn
 
 					Texture();
 
-					GLuint id() const;
+					GLuint id();
 
-					GLuint slot() const;
+					GLuint slot();
 
 					void bind();
 
@@ -58,7 +57,7 @@ namespace cgogn
 
 					void release();
 
-					void setImage2D_simple(int w, int h, GLenum format, GLenum type);
+					void setImage2D_simple(int w, int h, GLenum internalFormat, GLenum format, GLenum type);
 
 					void setImage2D(const QImage& image);
 					

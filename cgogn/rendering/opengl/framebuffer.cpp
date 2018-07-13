@@ -41,6 +41,36 @@ namespace cgogn
 				glBindFramebuffer(GL_FRAMEBUFFER, handle);
 			}
 
+			void Framebuffer::drawBuffers(GLenum _0)
+			{
+				GLenum drawBuffers[1] = { _0 };
+				glDrawBuffers(1, drawBuffers);
+			}
+
+			void Framebuffer::drawBuffers(GLenum _0, GLenum _1)
+			{
+				GLenum drawBuffers[2] = { _0, _1 };
+				glDrawBuffers(2, drawBuffers);
+			}
+
+			void Framebuffer::drawBuffers(GLenum _0, GLenum _1, GLenum _2)
+			{
+				GLenum drawBuffers[3] = { _0, _1, _2 };
+				glDrawBuffers(3, drawBuffers);
+			}
+
+			void Framebuffer::drawBuffers(GLenum _0, GLenum _1, GLenum _2, GLenum _3)
+			{
+				GLenum drawBuffers[4] = { _0, _1, _2, _3 };
+				glDrawBuffers(4, drawBuffers);
+			}
+
+			void Framebuffer::drawBuffers(GLenum _0, GLenum _1, GLenum _2, GLenum _3, GLenum _4)
+			{
+				GLenum drawBuffers[5] = { _0, _1, _2, _3, _4 };
+				glDrawBuffers(5, drawBuffers);
+			}
+
 			void Framebuffer::release()
 			{
 				glBindFramebuffer(GL_FRAMEBUFFER, qtDefaultFramebuffer);

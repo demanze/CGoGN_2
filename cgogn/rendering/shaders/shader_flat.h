@@ -56,6 +56,7 @@ protected:
 	ogl::Uniform unif_ambiant_color_;
 	ogl::Uniform unif_light_position_;
 	ogl::Uniform unif_bf_culling_;
+	ogl::Uniform unif_enable_lighting_; 
 
 public:
 
@@ -139,7 +140,6 @@ protected:
 		sh->set_light_position(light_pos_);
 		sh->set_bf_culling(bf_culling_);
 	}
-
 public:
 
 	using ShaderType = ShaderFlatTpl<false>;
@@ -152,7 +152,7 @@ public:
 
 	ShaderParamFlat(ShaderFlatTpl<false>* sh) :
 		ogl::ShaderParam(sh),
-		front_color_(Color(250, 0, 0)),
+		front_color_(Color(160, 160, 160)),
 		back_color_(Color(0, 250, 0)),
 		ambiant_color_(Color(5, 5, 5)),
 		light_pos_(Vector3f(10, 100, 1000)),
@@ -166,6 +166,12 @@ public:
 		vao_->attribPointer(ShaderFlatGen::ATTRIB_POS, vbo_pos, GL_FLOAT);
 		vao_->release();
 		release();
+	}
+
+	void set_enable_lighting(bool value)
+	{
+		ShaderType* sh = static_cast<ShaderType*>(this->program);
+		sh->unif_enable_lighting_.set(value);
 	}
 };
 

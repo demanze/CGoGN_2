@@ -45,8 +45,16 @@ namespace shaders
 
 			ParamShadowBlend(ShadowBlend* sh);
 
-			void set_rgba_sampler1(GLint value);
-			void set_rgba_sampler2(GLint value);
+			void set_enable_shadow(bool value);
+			void set_enable_ssao(bool value);
+
+			void set_sampler_scene_color(GLint value);
+			void set_sampler_shadow(GLint value);
+			void set_sampler_scene_depth(GLint value);
+			void set_sampler_scene_position(GLint value);
+			void set_sampler_scene_normal(GLint value);
+
+			void set_projection_matrix(Matrix4f value);
 
 			void set_uniforms(); 
 	};
@@ -62,8 +70,17 @@ namespace shaders
 		protected:
 
 			// uniforms
-			ogl::Uniform unif_texture_sampler1;
-			ogl::Uniform unif_texture_sampler2;
+			ogl::Uniform unif_sampler_scene_color;
+			ogl::Uniform unif_sampler_shadow;
+			ogl::Uniform unif_sampler_scene_depth;
+			ogl::Uniform unif_sampler_scene_position;
+			ogl::Uniform unif_sampler_scene_normal;
+
+			ogl::Uniform unif_ssao_kernel;
+			ogl::Uniform unif_projection_matrix;
+
+			ogl::Uniform unif_enable_shadow;
+			ogl::Uniform unif_enable_ssao;
 
 		public: 
 			using Param = ParamShadowBlend;

@@ -22,6 +22,7 @@
 *******************************************************************************/
 
 #include <iostream>
+#include <random>
 
 #include <cgogn/rendering/shaders/shader_shadow_blend.h>
 
@@ -37,7 +38,6 @@ namespace shaders
 
 		ShadowBlend::ShadowBlend()
 		{
-			
 			addShaderFromFile(GL_VERTEX_SHADER, "fullscreen_texture_vert.glsl");
 			addShaderFromFile(GL_FRAGMENT_SHADER, "shadow_blend_frag.glsl");
 			
@@ -45,22 +45,78 @@ namespace shaders
 
 			bind();
 
-			unif_texture_sampler1 = "texture_sampler1";
-			unif_texture_sampler2 = "texture_sampler2";
+			unif_sampler_scene_color = "sampler_scene_color";
+			unif_sampler_shadow = "sampler_shadow";
+			unif_sampler_scene_depth = "sampler_scene_depth";
+			unif_sampler_scene_position = "sampler_scene_position";
+			unif_sampler_scene_normal = "sampler_scene_normal";
+
+			std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
+			std::default_random_engine generator;
+			std::vector<Vector3f> kernel;
+			for (unsigned int i = 0; i < 64; ++i)
+			{
+				Vector3f sample(randomFloats(generator), randomFloats(generator), randomFloats(generator));
+				sample = (sample / sample.norm()) * randomFloats(generator);
+				kernel.push_back(sample);
+			}
+			unif_ssao_kernel = "ssao_kernel";
+			unif_ssao_kernel.set(64, kernel.data());
+
+			unif_projection_matrix = "projection_matrix";
+
+			unif_enable_shadow = "enableShadow";
+			unif_enable_ssao = "enableSSAO";
 
 			release(); 
 		}
 
-		void ParamShadowBlend::set_rgba_sampler1(GLint value)
+		void ParamShadowBlend::set_enable_shadow(bool value)
 		{
 			ShadowBlend* sh = static_cast<ShadowBlend*>(this->program);
-			sh->unif_texture_sampler1.set(value);
+			sh->unif_enable_shadow.set(value);
 		}
 
-		void ParamShadowBlend::set_rgba_sampler2(GLint value)
+		void ParamShadowBlend::set_enable_ssao(bool value)
 		{
 			ShadowBlend* sh = static_cast<ShadowBlend*>(this->program);
-			sh->unif_texture_sampler2.set(value);
+			sh->unif_enable_ssao.set(value);
+		}
+
+		void ParamShadowBlend::set_sampler_scene_color(GLint value)
+		{
+			ShadowBlend* sh = static_cast<ShadowBlend*>(this->program);
+			sh->unif_sampler_scene_color.set(value);
+		}
+
+		void ParamShadowBlend::set_sampler_shadow(GLint value)
+		{
+			ShadowBlend* sh = static_cast<ShadowBlend*>(this->program);
+			sh->unif_sampler_shadow.set(value);
+		}
+
+		void ParamShadowBlend::set_sampler_scene_depth(GLint value)
+		{
+			ShadowBlend* sh = static_cast<ShadowBlend*>(this->program);
+			sh->unif_sampler_scene_depth.set(value);
+		}
+
+		void ParamShadowBlend::set_sampler_scene_position(GLint value)
+		{
+			ShadowBlend* sh = static_cast<ShadowBlend*>(this->program);
+			sh->unif_sampler_scene_position.set(value);
+		}
+
+		void ParamShadowBlend::set_sampler_scene_normal(GLint value)
+		{
+			ShadowBlend* sh = static_cast<ShadowBlend*>(this->program);
+			sh->unif_sampler_scene_normal.set(value);
+		}
+
+		void ParamShadowBlend::set_projection_matrix(Matrix4f value)
+		{
+			ShadowBlend* sh = static_cast<ShadowBlend*>(this->program);
+			sh->unif_projection_matrix.set(value);
 		}
 
 		std::unique_ptr< ShadowBlend::Param> ShadowBlend::generate_param()

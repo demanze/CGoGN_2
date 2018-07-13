@@ -48,7 +48,7 @@ const char* ShaderPhongGen::vertex_shader_source_ =
 "{\n"
 "	Normal = normal_matrix * vertex_normal;\n"
 "	vec3 Position = vec3 (model_view_matrix * vec4 (vertex_pos, 1.0));\n"
-"	LightDir = lightPosition - Position;\n"
+"	LightDir = vec3 (model_view_matrix * vec4 (vertex_pos, 1.0)) - Position;\n"
 "	EyeVector = -Position;"
 "	gl_Position = projection_matrix * model_view_matrix * vec4 (vertex_pos, 1.0);\n"
 "}\n";
@@ -104,7 +104,7 @@ const char* ShaderPhongGen::vertex_shader_source_2_ =
 "{\n"
 "	Normal = normal_matrix * vertex_normal;\n"
 "	vec3 Position = vec3 (model_view_matrix * vec4 (vertex_pos, 1.0));\n"
-"	LightDir = lightPosition - Position;\n"
+"	LightDir = vec3 (model_view_matrix * vec4 (lightPosition, 1.0)) - Position;\n"
 "	EyeVector = -Position;"
 "	front_color = vertex_color;"
 "	gl_Position = projection_matrix * model_view_matrix * vec4 (vertex_pos, 1.0);\n"

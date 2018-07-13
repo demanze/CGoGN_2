@@ -175,7 +175,7 @@ public:
 
 	ShaderParamPhong(ShaderPhongTpl<false>* sh) :
 		ogl::ShaderParam(sh),
-		light_position_(10.0f, 100.0f, 1000.0f),
+		light_position_(0.0f, 0.0f, 1000.0f),
 		front_color_(250, 0, 0),
 		back_color_(0, 250, 5),
 		ambiant_color_(5, 5, 5),
@@ -240,7 +240,7 @@ public:
 
 	ShaderParamPhong(ShaderPhongTpl<true>* sh) :
 		ogl::ShaderParam(sh),
-		light_position_(10.0f, 100.0f, 1000.0f),
+		light_position_(0.0f, 0.0f, 1000.0f),
 		ambiant_color_(5, 5, 5),
 		specular_color_(100, 100, 100),
 		specular_coef_(50.0f),
