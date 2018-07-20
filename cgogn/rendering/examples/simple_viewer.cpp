@@ -31,6 +31,7 @@
 #include <QCheckBox>
 #include <QGroupBox>
 #include <QRadioButton>
+#include <QSlider>
 
 #include <QOGLViewer/qoglviewer.h>
 
@@ -60,8 +61,9 @@
 
 #include <cgogn/rendering/shaders/shader_blur.h>
 #include <cgogn/rendering/shaders/shader_shadow.h>
+#include <cgogn/rendering/shaders/shader_scene_data.h>
 #include <cgogn/rendering/shaders/shader_depth.h>
-#include <cgogn/rendering/shaders/shader_shadow_blend.h>
+#include <cgogn/rendering/shaders/shader_light_blend.h>
 
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
@@ -70,7 +72,6 @@ using Map2 = cgogn::CMap2;
 //using Map2 = cgogn::CMap2Tri;
 //using Map2 = cgogn::CMap2Quad;
 
-
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
 
@@ -78,6 +79,7 @@ template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
 const int shadowMapResolution = 4096; 
+bool useGargoyle = true;
 
 class Viewer : public QOGLViewer
 {
@@ -86,7 +88,7 @@ public:
 	Viewer();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
-	void renderScene(QMatrix4x4 proj, QMatrix4x4 view, bool renderDepth, bool renderShadow, bool renderColor, QMatrix4x4 shadowMVP);
+	void renderScene(QMatrix4x4 proj, QMatrix4x4 view, bool renderDepth, bool renderShadow, bool renderPositionNormal, bool renderColor, QMatrix4x4 shadowMVP);
 	virtual void draw();
 	virtual void init();
 	virtual void resizeGL(int w, int h);
@@ -101,6 +103,11 @@ public:
 	QCheckBox* checkBoxFlatLighting;
 	QCheckBox* checkBoxShadowMapping;
 	QCheckBox* checkBoxSSAO;
+	QCheckBox* checkBoxBorder;
+	QCheckBox* checkBoxBlur;
+
+	QSlider* sliderRadiusSSAO;
+	QSlider* sliderRadiusBorder; 
 
 	QRadioButton* radioButtonShowColor;
 	QRadioButton* radioButtonShowNormal;
@@ -147,17 +154,20 @@ private:
 	std::unique_ptr<cgogn::rendering::shaders::Blur::Param> param_blur;
 	std::unique_ptr<cgogn::rendering::shaders::Depth::Param> param_depth;
 	std::unique_ptr<cgogn::rendering::shaders::Shadow::Param> param_shadow;
+	std::unique_ptr<cgogn::rendering::shaders::SceneData::Param> param_scene_data;
 	std::unique_ptr<cgogn::rendering::ShaderSimpleColor::Param> param_simplecolor;
-	std::unique_ptr<cgogn::rendering::shaders::ShadowBlend::Param> param_shadow_blend;
+	std::unique_ptr<cgogn::rendering::shaders::LightBlend::Param> param_light_blend;
 
-	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_shadow_light_depth;
-	std::unique_ptr<cgogn::rendering::ogl::Framebuffer> fbo_shadow_light_depth;
+	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_shadow_map;
+	std::unique_ptr<cgogn::rendering::ogl::Framebuffer> fbo_shadow_map;
 
 	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_position;
 	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_normal;
-	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_shadow;
-	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_shadow_depth;
+	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_light;
+	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_depth_temp;
+
 	std::unique_ptr<cgogn::rendering::ogl::Framebuffer> fbo_shadow;
+	std::unique_ptr<cgogn::rendering::ogl::Framebuffer> fbo_scene_data;
 
 	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_color_preblend;
 	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_depth_preblend;
@@ -170,6 +180,9 @@ private:
 
 	std::unique_ptr<cgogn::rendering::ogl::Texture> texture_blur1;
 	std::unique_ptr<cgogn::rendering::ogl::Framebuffer> fbo_blur1;
+
+	std::unique_ptr<cgogn::rendering::ogl::Texture> ssao_noiseTexture;
+	static const int noiseSize = 64; 
 };
 
 
@@ -214,12 +227,28 @@ void Viewer::addWidgets()
 	checkBoxFlatLighting = new QCheckBox(tr("Flat lighting"));
 	checkBoxShadowMapping = new QCheckBox(tr("Shadow mapping"));
 	checkBoxSSAO = new QCheckBox(tr("SSAO"));
+	checkBoxBorder = new QCheckBox(tr("Border"));
+	checkBoxBlur = new QCheckBox(tr("Blur"));
 
 	QVBoxLayout* checkBoxes = new QVBoxLayout;
 	checkBoxes->addWidget(checkBoxFlatLighting);
 	checkBoxes->addWidget(checkBoxShadowMapping);
 	checkBoxes->addWidget(checkBoxSSAO);
+	checkBoxes->addWidget(checkBoxBorder);
+	checkBoxes->addWidget(checkBoxBlur);
 	checkBoxes->addStretch(1);
+
+	sliderRadiusSSAO = new QSlider();
+	sliderRadiusSSAO->setMinimum(1);
+	sliderRadiusSSAO->setMaximum(1000); 
+	sliderRadiusSSAO->setValue(300);
+	checkBoxes->addWidget(sliderRadiusSSAO);
+
+	sliderRadiusBorder = new QSlider();
+	sliderRadiusBorder->setMinimum(1);
+	sliderRadiusBorder->setMaximum(100);
+	sliderRadiusBorder->setValue(5);
+	checkBoxes->addWidget(sliderRadiusBorder);
 
 	radioButtonShowColor = new QRadioButton(tr("Color"));
 	radioButtonShowNormal = new QRadioButton(tr("Normal"));
@@ -313,8 +342,31 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 	update();
 }
 
-void Viewer::renderScene(QMatrix4x4 proj, QMatrix4x4 view, bool renderDepth, bool renderShadow, bool renderColor, QMatrix4x4 shadowMVP)
+void Viewer::renderScene(QMatrix4x4 proj, QMatrix4x4 view, bool renderDepth, bool renderShadow, bool renderPositionNormal, bool renderColor, QMatrix4x4 shadowMVP)
 {
+	if (renderShadow)
+	{
+		texture_shadow_map->bindAt(0); 
+		texture_position->bindAt(1);
+		texture_normal->bindAt(2);
+		ssao_noiseTexture->bindAt(3);
+
+		param_shadow->bind(); 
+		param_shadow->set_enable_shadow(checkBoxShadowMapping->isChecked());
+		param_shadow->set_enable_ssao(checkBoxSSAO->isChecked());
+		param_shadow->set_enable_border(checkBoxBorder->isChecked());
+		param_shadow->set_shadowMap(texture_shadow_map->slot());
+		param_shadow->set_shadowMVP(shadowMVP.data());
+		param_shadow->set_pixelSize(1.0f / float(shadowMapResolution));
+		param_shadow->set_radius_ssao(float(sliderRadiusSSAO->value())*0.1f);
+		param_shadow->set_radius_border(float(sliderRadiusBorder->value())*0.01f);
+		param_shadow->set_sampler_scene_position(texture_position->slot());
+		param_shadow->set_sampler_scene_normal(texture_normal->slot());
+		param_shadow->set_sampler_noise(ssao_noiseTexture->slot());
+		param_shadow->set_noise_scale(cgogn::Vector2f(1.0f / float(noiseSize), 1.0f / float(noiseSize)));
+		param_shadow->release(); 
+	}
+	
 	if (renderDepth)
 	{
 		param_depth->set_position_vbo(vbo_surface_pos_.get());
@@ -326,16 +378,21 @@ void Viewer::renderScene(QMatrix4x4 proj, QMatrix4x4 view, bool renderDepth, boo
 	}
 	else if (renderShadow)
 	{
-		texture_shadow_light_depth->bindAt(1);
-		param_shadow->set_position_vbo(vbo_surface_pos_.get(), vbo_surface_norm_.get());
+		param_shadow->set_vbos(vbo_surface_pos_.get(), vbo_surface_norm_.get());
 		param_shadow->bind(proj.data(), view.data());
-		param_shadow->set_shadowMap(texture_shadow_light_depth->slot());
-		param_shadow->set_shadowMVP(shadowMVP.data());
-		param_shadow->set_pixelSize(1.0f / float(shadowMapResolution));
 		buffer_surface_indices_->bind();
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);;
 		buffer_surface_indices_->release();
 		param_shadow->release();
+	}
+	else if (renderPositionNormal)
+	{
+		param_scene_data->set_position_vbo(vbo_surface_pos_.get(), vbo_surface_norm_.get());
+		param_scene_data->bind(proj.data(), view.data());
+		buffer_surface_indices_->bind();
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);;
+		buffer_surface_indices_->release();
+		param_scene_data->release();
 	}
 	else if (renderColor)
 	{
@@ -350,103 +407,161 @@ void Viewer::renderScene(QMatrix4x4 proj, QMatrix4x4 view, bool renderDepth, boo
 	float offset = 35.0f;
 	QMatrix4x4 m = QMatrix4x4();
 	
-	m.setToIdentity();
-	m.translate(-5.0f*offset, -5.0f*offset, 0.0f);
-	for (int x = 0; x < 11; x++)
+	if (useGargoyle)
 	{
-		for (int y = 0; y < 11; y++)
+		m.setToIdentity();
+		m.rotate(90.0f, QVector3D(1, 0, 0)); 
+		m.translate(0.0f, 10.0f, 90.0f);
+		m.scale(5.0f);
+		auto mv = view * m;
+		auto smv = shadowMVP * m;
+		if (renderDepth)
 		{
-			auto mv = view * m; 
-			auto smv = shadowMVP * m;
-			if (renderDepth)
-			{
-				param_depth->set_position_vbo(vbo_pos_.get());
-				param_depth->bind(proj.data(), mv.data());
-				render_->draw(cgogn::rendering::TRIANGLES);
-				param_depth->release();
-			}
-			else if (renderShadow)
-			{
-				texture_shadow_light_depth->bindAt(1);
-				param_shadow->set_position_vbo(vbo_pos_.get(), vbo_norm_.get());
-				param_shadow->bind(proj.data(), mv.data());
-				param_shadow->set_shadowMap(texture_shadow_light_depth->slot());
-				param_shadow->set_shadowMVP(smv.data());
-				param_shadow->set_pixelSize(1.0f / float(shadowMapResolution));
-				render_->draw(cgogn::rendering::TRIANGLES);
-				param_shadow->release();
-			}
-			else if (renderColor)
-			{
-				glEnable(GL_POLYGON_OFFSET_FILL);
-				glPolygonOffset(1.0f, 2.0f);
-				if (flat_rendering_)
-				{
-					param_flat_->bind(proj.data(), mv.data());
-					param_flat_->set_enable_lighting(checkBoxFlatLighting->isChecked()); 
-					render_->draw(cgogn::rendering::TRIANGLES);
-					param_flat_->release();
-				}
-
-				if (phong_rendering_)
-				{
-					param_phong_->bind(proj.data(), mv.data());
-					render_->draw(cgogn::rendering::TRIANGLES);
-					param_phong_->release();
-				}
-				glDisable(GL_POLYGON_OFFSET_FILL);
-			}
-			m.translate(0.0f, offset, 0.0f);
-		}
-		m.translate(offset, -11.0f*offset, 0.0f);
-	}
-
-	m.setToIdentity();
-	//m.rotate(90.0f, QVector3D(1, 0, 0)); 
-
-	m.translate(0.0f, 0.0f, 90.0f);
-	m.scale(5.0f); 
-	auto mv = view * m;
-	auto smv = shadowMVP * m; 
-	if (renderDepth)
-	{
-		param_depth->set_position_vbo(vbo_pos_.get());
-		param_depth->bind(proj.data(), mv.data());
-		render_->draw(cgogn::rendering::TRIANGLES);
-		param_depth->release();
-	}
-	else if (renderShadow)
-	{
-		texture_shadow_light_depth->bindAt(1);
-		param_shadow->set_position_vbo(vbo_pos_.get(), vbo_norm_.get());
-		param_shadow->bind(proj.data(), mv.data());
-		param_shadow->set_shadowMap(texture_shadow_light_depth->slot());
-		param_shadow->set_shadowMVP(smv.data());
-		param_shadow->set_pixelSize(1.0f / float(shadowMapResolution)); 
-		render_->draw(cgogn::rendering::TRIANGLES);
-		param_shadow->release();
-	}
-	else if (renderColor)
-	{
-		glEnable(GL_POLYGON_OFFSET_FILL);
-		glPolygonOffset(1.0f, 2.0f);
-		if (flat_rendering_)
-		{
-			param_flat_->bind(proj.data(), mv.data());
-			param_flat_->set_enable_lighting(checkBoxFlatLighting->isChecked());
+			param_depth->set_position_vbo(vbo_pos_.get());
+			param_depth->bind(proj.data(), mv.data());
 			render_->draw(cgogn::rendering::TRIANGLES);
-			param_flat_->release();
+			param_depth->release();
 		}
-
-		if (phong_rendering_)
+		else if (renderShadow)
 		{
-			param_phong_->bind(proj.data(), mv.data());
+			param_shadow->set_vbos(vbo_pos_.get(), vbo_norm_.get());
+			param_shadow->bind(proj.data(), mv.data());
 			render_->draw(cgogn::rendering::TRIANGLES);
-			param_phong_->release();
+			param_shadow->release();
 		}
-		glDisable(GL_POLYGON_OFFSET_FILL);
-	}
+		else if (renderPositionNormal)
+		{
+			param_scene_data->set_position_vbo(vbo_pos_.get(), vbo_norm_.get());
+			param_scene_data->bind(proj.data(), mv.data());
+			render_->draw(cgogn::rendering::TRIANGLES);
+			param_scene_data->release();
+		}
+		else if (renderColor)
+		{
+			glEnable(GL_POLYGON_OFFSET_FILL);
+			glPolygonOffset(1.0f, 2.0f);
+			if (flat_rendering_)
+			{
+				param_flat_->bind(proj.data(), mv.data());
+				param_flat_->set_enable_lighting(checkBoxFlatLighting->isChecked());
+				render_->draw(cgogn::rendering::TRIANGLES);
+				param_flat_->release();
+			}
 
+			if (phong_rendering_)
+			{
+				param_phong_->bind(proj.data(), mv.data());
+				render_->draw(cgogn::rendering::TRIANGLES);
+				param_phong_->release();
+			}
+			glDisable(GL_POLYGON_OFFSET_FILL);
+		}
+	}
+	else
+	{
+		m.setToIdentity();
+		m.translate(-5.0f*offset, -5.0f*offset, 0.0f);
+		for (int x = 0; x < 11; x++)
+		{
+			for (int y = 0; y < 11; y++)
+			{
+				auto mv = view * m;
+				auto smv = shadowMVP * m;
+				if (renderDepth)
+				{
+					param_depth->set_position_vbo(vbo_pos_.get());
+					param_depth->bind(proj.data(), mv.data());
+					render_->draw(cgogn::rendering::TRIANGLES);
+					param_depth->release();
+				}
+				else if (renderShadow)
+				{
+					param_shadow->set_vbos(vbo_pos_.get(), vbo_norm_.get());
+					param_shadow->bind(proj.data(), mv.data());
+					render_->draw(cgogn::rendering::TRIANGLES);
+					param_shadow->release();
+				}
+				else if (renderPositionNormal)
+				{
+					param_scene_data->set_position_vbo(vbo_pos_.get(), vbo_norm_.get());
+					param_scene_data->bind(proj.data(), mv.data());
+					render_->draw(cgogn::rendering::TRIANGLES);
+					param_scene_data->release();
+				}
+				else if (renderColor)
+				{
+					glEnable(GL_POLYGON_OFFSET_FILL);
+					glPolygonOffset(1.0f, 2.0f);
+					if (flat_rendering_)
+					{
+						param_flat_->bind(proj.data(), mv.data());
+						param_flat_->set_enable_lighting(checkBoxFlatLighting->isChecked());
+						render_->draw(cgogn::rendering::TRIANGLES);
+						param_flat_->release();
+					}
+
+					if (phong_rendering_)
+					{
+						param_phong_->bind(proj.data(), mv.data());
+						render_->draw(cgogn::rendering::TRIANGLES);
+						param_phong_->release();
+					}
+					glDisable(GL_POLYGON_OFFSET_FILL);
+				}
+				m.translate(0.0f, offset, 0.0f);
+			}
+			m.translate(offset, -11.0f*offset, 0.0f);
+		}
+
+		m.setToIdentity();
+		//m.rotate(90.0f, QVector3D(1, 0, 0)); 
+
+		m.translate(0.0f, 0.0f, 90.0f);
+		m.scale(5.0f);
+		auto mv = view * m;
+		auto smv = shadowMVP * m;
+		if (renderDepth)
+		{
+			param_depth->set_position_vbo(vbo_pos_.get());
+			param_depth->bind(proj.data(), mv.data());
+			render_->draw(cgogn::rendering::TRIANGLES);
+			param_depth->release();
+		}
+		else if (renderShadow)
+		{
+			param_shadow->set_vbos(vbo_pos_.get(), vbo_norm_.get());
+			param_shadow->bind(proj.data(), mv.data());
+			render_->draw(cgogn::rendering::TRIANGLES);
+			param_shadow->release();
+		}
+		else if (renderPositionNormal)
+		{
+			param_scene_data->set_position_vbo(vbo_pos_.get(), vbo_norm_.get());
+			param_scene_data->bind(proj.data(), mv.data());
+			render_->draw(cgogn::rendering::TRIANGLES);
+			param_scene_data->release();
+		}
+		else if (renderColor)
+		{
+			glEnable(GL_POLYGON_OFFSET_FILL);
+			glPolygonOffset(1.0f, 2.0f);
+			if (flat_rendering_)
+			{
+				param_flat_->bind(proj.data(), mv.data());
+				param_flat_->set_enable_lighting(checkBoxFlatLighting->isChecked());
+				render_->draw(cgogn::rendering::TRIANGLES);
+				param_flat_->release();
+			}
+
+			if (phong_rendering_)
+			{
+				param_phong_->bind(proj.data(), mv.data());
+				render_->draw(cgogn::rendering::TRIANGLES);
+				param_phong_->release();
+			}
+			glDisable(GL_POLYGON_OFFSET_FILL);
+		}
+	}
 
 	/*
 	if (vertices_rendering_)
@@ -497,37 +612,46 @@ void Viewer::draw()
 		0.0f, 0.0f, 0.5f, 0.5f,
 		0.0f, 0.0f, 0.0f, 1.0f) * lightProj * lightView;
 
-	fbo_shadow_light_depth->bind();
+	fbo_shadow_map->bind();
 	glViewport(0, 0, shadowMapResolution, shadowMapResolution);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderScene(lightProj, lightView, true, false, false, QMatrix4x4());
-	fbo_shadow_light_depth->release();
+	renderScene(lightProj, lightView, true, false, false, false, QMatrix4x4());
+	fbo_shadow_map->release();
+
+	fbo_scene_data->bind();
+	fbo_scene_data->drawBuffers(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1);
+	glViewport(0, 0, width_, height_);
+	glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	renderScene(proj, view, false, false, true, false, QMatrix4x4());
+	fbo_scene_data->release();
 
 	fbo_shadow->bind();
-	fbo_shadow->drawBuffers(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2);
+	fbo_shadow->drawBuffers(GL_COLOR_ATTACHMENT0);
 	glViewport(0, 0, width_, height_);
-	glClearColor(1.0f,0.0f,0.0f, 0.0f);
+	glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderScene(proj, view, false, true, false, lightVPbiased);
+	renderScene(proj, view, false, true, false, false, lightVPbiased);
 	fbo_shadow->release();
 
 	fbo_preblend->bind();
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderScene(proj, view, false, false, true, QMatrix4x4());
+	renderScene(proj, view, false, false, false, true, QMatrix4x4());
 	fbo_preblend->release();
 
-	if (pp_blur_)
+	if (checkBoxBlur->isChecked())
 	{
 		//Pass blur 1
 		fbo_blur1->bind();
 
-		texture_shadow->bindAt(0);
-		texture_depth_preblend->bindAt(1);
+		texture_light->bindAt(0);
+		texture_position->bindAt(1);
 
 		param_blur->bind();
-		param_blur->set_blurred(texture_shadow->slot());
-		param_blur->set_depth_filter(texture_depth_preblend->slot());
+		param_blur->set_blurred(texture_light->slot());
+		param_blur->set_position_texture(texture_position->slot());
+		param_blur->set_radius(float(sliderRadiusSSAO->value())*0.1f);
 		param_blur->set_blur_dimension(0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		param_blur->release();
@@ -538,11 +662,12 @@ void Viewer::draw()
 		fbo_blur2->bind();
 
 		texture_blur1->bindAt(0);
-		texture_depth_preblend->bindAt(1); 
+		texture_position->bindAt(1);
 
 		param_blur->bind();
 		param_blur->set_blurred(texture_blur1->slot());
-		param_blur->set_depth_filter(texture_depth_preblend->slot());
+		param_blur->set_position_texture(texture_position->slot());
+		param_blur->set_radius(float(sliderRadiusSSAO->value())*0.1f);
 		param_blur->set_blur_dimension(1);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		param_blur->release();
@@ -556,23 +681,13 @@ void Viewer::draw()
 	else if (radioButtonShowNormal->isChecked())
 		texture_normal->bindAt(0);
 
-	texture_shadow->bindAt(1);
-	texture_depth_preblend->bindAt(2); 
-	texture_position->bindAt(3); 
+	texture_light->bindAt(1); 
 
-	param_shadow_blend->bind();
-	param_shadow_blend->set_enable_shadow(checkBoxShadowMapping->isChecked()); 
-	param_shadow_blend->set_enable_ssao(checkBoxSSAO->isChecked());
-	param_shadow_blend->set_sampler_scene_color(0);
-	param_shadow_blend->set_sampler_shadow(texture_shadow->slot());
-	param_shadow_blend->set_sampler_scene_depth(texture_depth_preblend->slot());
-	param_shadow_blend->set_sampler_scene_position(texture_position->slot());
-	param_shadow_blend->set_sampler_scene_normal(texture_normal->slot());
-	param_shadow_blend->set_projection_matrix(cgogn::Matrix4f(proj.data()));
+	param_light_blend->bind();
+	param_light_blend->set_sampler_scene_color(0);
+	param_light_blend->set_sampler_shadow(texture_light->slot());
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	param_shadow_blend->release();
-
-
+	param_light_blend->release();
 }
 
 void Viewer::init()
@@ -627,14 +742,14 @@ void Viewer::init()
 	vbo_surface_norm_->allocate(8, 3);
 	cgogn::Vector3f normals[8] =
 	{
-		cgogn::Vector3f(-1.0f,-1.0f,1.0f),
-		cgogn::Vector3f(1.0f,-1.0f,1.0f),
-		cgogn::Vector3f(1.0f,1.0f,1.0f),
-		cgogn::Vector3f(-1.0f,1.0f,1.0f),
-		cgogn::Vector3f(-1.0f,-1.0f,-1.0f),
-		cgogn::Vector3f(1.0f,-1.0f,-1.0f),
-		cgogn::Vector3f(1.0f,1.0f,-1.0f),
-		cgogn::Vector3f(-1.0f,1.0f,-1.0f),
+		cgogn::Vector3f(0.0f,0.0f,1.0f),
+		cgogn::Vector3f(0.0f,0.0f,1.0f),
+		cgogn::Vector3f(0.0f,0.0f,1.0f),
+		cgogn::Vector3f(0.0f,0.0f,1.0f),
+		cgogn::Vector3f(0.0f,0.0f,-1.0f),
+		cgogn::Vector3f(0.0f,0.0f,-1.0f),
+		cgogn::Vector3f(0.0f,0.0f,-1.0f),
+		cgogn::Vector3f(0.0f,0.0f,-1.0f),
 	};
 	vbo_surface_norm_->bind();
 	vbo_surface_norm_->copy_data(0, 8 * sizeof(cgogn::Vector3f), normals);
@@ -670,17 +785,19 @@ void Viewer::init()
 	param_point_sprite_->set_all_vbos(vbo_pos_.get(), vbo_color_.get(), vbo_sphere_sz_.get());
 	// set uniforms data
 
-	param_blur = cgogn::rendering::shaders::Blur::generate_param();
-	param_shadow = cgogn::rendering::shaders::Shadow::generate_param();
-	param_depth = cgogn::rendering::shaders::Depth::generate_param();
-	param_simplecolor = cgogn::rendering::ShaderSimpleColor::generate_param();
-	param_simplecolor->color_ = cgogn::Color(128, 128, 128); 
-	param_shadow_blend = cgogn::rendering::shaders::ShadowBlend::generate_param();
+	param_blur = cgogn::rendering::shaders::Blur::Param::generate();
+	param_shadow = cgogn::rendering::shaders::Shadow::Param::generate();
+	param_scene_data = cgogn::rendering::shaders::SceneData::generate_param();
+	param_depth = cgogn::rendering::shaders::Depth::Param::generate();
+	param_light_blend = cgogn::rendering::shaders::LightBlend::Param::generate();
 
 	param_edge_ = cgogn::rendering::ShaderBoldLine::generate_param();
 	param_edge_->set_position_vbo(vbo_pos_.get());
 	param_edge_->color_ = cgogn::Color(255,255,0);
 	param_edge_->width_= 2.5f;
+
+	param_simplecolor = cgogn::rendering::ShaderSimpleColor::generate_param();
+	param_simplecolor->color_ = cgogn::Color(128, 128, 128);
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
@@ -734,18 +851,18 @@ void Viewer::resizeGL(int w, int h)
 	
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &cgogn::rendering::ogl::Framebuffer::qtDefaultFramebuffer);
 
-	texture_shadow_light_depth = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
-	texture_shadow_light_depth->bind();
-	texture_shadow_light_depth->setImage2D_simple(shadowMapResolution, shadowMapResolution, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
+	texture_shadow_map = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
+	texture_shadow_map->bind();
+	texture_shadow_map->setImage2D_simple(shadowMapResolution, shadowMapResolution, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
-	texture_shadow_light_depth->release();
+	texture_shadow_map->release();
 
-	fbo_shadow_light_depth = cgogn::make_unique<cgogn::rendering::ogl::Framebuffer>();
-	fbo_shadow_light_depth->bind();
-	fbo_shadow_light_depth->attach(texture_shadow_light_depth, GL_DEPTH_ATTACHMENT);
-	fbo_shadow_light_depth->check();
-	fbo_shadow_light_depth->release();
+	fbo_shadow_map = cgogn::make_unique<cgogn::rendering::ogl::Framebuffer>();
+	fbo_shadow_map->bind();
+	fbo_shadow_map->attach(texture_shadow_map, GL_DEPTH_ATTACHMENT);
+	fbo_shadow_map->check();
+	fbo_shadow_map->release();
 
 	texture_position = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
 	texture_position->bind();
@@ -757,24 +874,30 @@ void Viewer::resizeGL(int w, int h)
 	texture_normal->setImage2D_simple(w, h, GL_RGB32F, GL_RGB, GL_FLOAT);
 	texture_normal->release();
 
-	texture_shadow = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
-	texture_shadow->bind();
-	texture_shadow->setImage2D_simple(w, h, GL_RED, GL_RED, GL_FLOAT);
-	texture_shadow->release();
+	texture_light = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
+	texture_light->bind();
+	texture_light->setImage2D_simple(w, h, GL_RED, GL_RED, GL_FLOAT);
+	texture_light->release();
 
-	texture_shadow_depth = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
-	texture_shadow_depth->bind();
-	texture_shadow_depth->setImage2D_simple(w, h, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
-	texture_shadow_depth->release();
+	texture_depth_temp = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
+	texture_depth_temp->bind();
+	texture_depth_temp->setImage2D_simple(w, h, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
+	texture_depth_temp->release();
 
 	fbo_shadow = cgogn::make_unique<cgogn::rendering::ogl::Framebuffer>();
 	fbo_shadow->bind();
-	fbo_shadow->attach(texture_shadow_depth, GL_DEPTH_ATTACHMENT);
-	fbo_shadow->attach(texture_position, GL_COLOR_ATTACHMENT0);
-	fbo_shadow->attach(texture_normal, GL_COLOR_ATTACHMENT1);
-	fbo_shadow->attach(texture_shadow, GL_COLOR_ATTACHMENT2);
+	fbo_shadow->attach(texture_depth_temp, GL_DEPTH_ATTACHMENT);
+	fbo_shadow->attach(texture_light, GL_COLOR_ATTACHMENT0);
 	fbo_shadow->check();
 	fbo_shadow->release();
+
+	fbo_scene_data = cgogn::make_unique<cgogn::rendering::ogl::Framebuffer>();
+	fbo_scene_data->bind();
+	fbo_scene_data->attach(texture_depth_temp, GL_DEPTH_ATTACHMENT);
+	fbo_scene_data->attach(texture_position, GL_COLOR_ATTACHMENT0);
+	fbo_scene_data->attach(texture_normal, GL_COLOR_ATTACHMENT1);
+	fbo_scene_data->check();
+	fbo_scene_data->release();
 
 	texture_color_preblend = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
 	texture_color_preblend->bind();
@@ -816,9 +939,23 @@ void Viewer::resizeGL(int w, int h)
 
 	fbo_blur2 = cgogn::make_unique<cgogn::rendering::ogl::Framebuffer>();
 	fbo_blur2->bind();
-	fbo_blur2->attach(texture_blur2, GL_COLOR_ATTACHMENT0);
+	fbo_blur2->attach(texture_light, GL_COLOR_ATTACHMENT0);
 	fbo_blur2->check();
 	fbo_blur2->release();
+
+	std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
+	std::default_random_engine generator;
+	std::vector<cgogn::Vector3f> ssaoNoise;
+	for (unsigned int i = 0; i < (noiseSize*noiseSize); i++)
+	{
+		cgogn::Vector3f noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, 0.0f);
+		ssaoNoise.push_back(noise);
+	}
+
+	ssao_noiseTexture = cgogn::make_unique<cgogn::rendering::ogl::Texture>();
+	ssao_noiseTexture->bind();
+	ssao_noiseTexture->setImage2D_repeat(noiseSize, noiseSize, GL_RGB16F, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+	ssao_noiseTexture->release();
 
 	QOGLViewer::resizeGL(w, h);
 }
@@ -829,7 +966,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		cgogn_log_info("simple_viewer") << "USAGE: " << argv[0] << " [filename]";
-		surface_mesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
+		surface_mesh = std::string(DEFAULT_MESH_PATH) + std::string(useGargoyle ? "off/gargoyle.off" : "off/aneurysm_3D.off");
 		cgogn_log_info("simple_viewer") << "Using default mesh \"" << surface_mesh << "\".";
 	}
 	else

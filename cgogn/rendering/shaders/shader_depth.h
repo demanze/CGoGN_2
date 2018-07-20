@@ -34,54 +34,52 @@ namespace rendering
 
 namespace shaders
 {
-
-	// forward
-	class ParamDepth;
-
-	class CGOGN_RENDERING_API Depth : public ogl::ShaderProgram
+	namespace Depth
 	{
-		friend class ParamDepth;
-	
-		enum
+		class CGOGN_RENDERING_API Shader : public ogl::ShaderProgram
 		{
-			ATTRIB_POS = 0
+			friend class Param;
+
+			enum
+			{
+				ATTRIB_POS = 0
+			};
+
+			private:
+				static Shader* instance_;
+				Shader();
 		};
 
-		private:
-			static Depth* instance_;
-			Depth();
 
-		public: 
-			using Param = ParamDepth;
-			using Self = Depth;
-			CGOGN_NOT_COPYABLE_NOR_MOVABLE(Depth);
-
-			static std::unique_ptr<Param> generate_param();
-	};
-
-	class CGOGN_RENDERING_API ParamDepth : public ogl::ShaderParam
-	{
-	public:
-		using Type = Depth;
-
-		ParamDepth(Depth* sh);
-
-		void set_uniforms();
-
-		void set_position_vbo(VBO* vbo_pos)
+		class CGOGN_RENDERING_API Param : public ogl::ShaderParam
 		{
-			bind();
-			vao_->bind();
-			vao_->attribPointer(Depth::ATTRIB_POS, vbo_pos, GL_FLOAT);
-			vao_->release();
-			release();
-		}
-	};
+		public:
+			Param(Shader* sh) : ShaderParam(sh) {}
+			auto shader() { return static_cast<Shader*>(this->program); };
 
+			void set_blurred(GLint value);
+			void set_position_texture(GLint value);
+			void set_blur_dimension(GLuint value);
+			void set_radius(GLfloat value);
+
+			void set_uniforms();
+
+			void set_position_vbo(VBO* vbo_pos)
+			{
+				bind();
+				vao_->bind();
+				vao_->attribPointer(Shader::ATTRIB_POS, vbo_pos, GL_FLOAT);
+				vao_->release();
+				release();
+			}
+
+			static std::unique_ptr<Param> generate();
+		};
+	}
 }
 
-} // namespace rendering
+} 
 
-} // namespace cgogn
+} 
 
-#endif // CGOGN_RENDERING_SHADER_TRANSP_FLAT_H_
+#endif 

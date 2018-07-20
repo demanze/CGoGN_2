@@ -31,46 +31,44 @@ namespace cgogn
 namespace rendering
 {
 
-namespace shaders
-{
-		Depth* Depth::instance_ = nullptr;
-
-		Depth::Depth()
+	namespace shaders
+	{
+		namespace Depth
 		{
-			addShaderFromFile(GL_VERTEX_SHADER, "depth_vert.glsl");
-			addShaderFromFile(GL_FRAGMENT_SHADER, "depth_frag.glsl");
-			
-			bindAttributeLocation("vertex_pos", ATTRIB_POS);
+			Shader* Shader::instance_ = nullptr;
 
-			link();
-
-			bind();
-
-			get_matrices_uniforms();
-
-			release(); 
-		}
-
-		std::unique_ptr< Depth::Param> Depth::generate_param()
-		{
-			if (!instance_)
+			Shader::Shader()
 			{
-				instance_ = new Depth();
-				ShaderProgram::register_instance(instance_);
+				addShaderFromFile(GL_VERTEX_SHADER, "depth_vert.glsl");
+				addShaderFromFile(GL_FRAGMENT_SHADER, "depth_frag.glsl");
+
+				bindAttributeLocation("vertex_pos", ATTRIB_POS);
+
+				link();
+
+				bind();
+
+				get_matrices_uniforms();
+
+				release();
 			}
-			return cgogn::make_unique<Param>(instance_);
-		}
 
-		void ParamDepth::set_uniforms()
-		{
+			void Param::set_uniforms()
+			{
 
-		}
+			}
 
-		ParamDepth::ParamDepth(Depth* sh) :
-			ogl::ShaderParam(sh)
-		{
+			std::unique_ptr<Param> Param::generate()
+			{
+				if (!Shader::instance_)
+				{
+					Shader::instance_ = new Shader();
+					Shader::ShaderProgram::register_instance(Shader::instance_);
+				}
+				return cgogn::make_unique<Param>(Shader::instance_);
+			}
 		}
-	}
+}
 
 } 
 

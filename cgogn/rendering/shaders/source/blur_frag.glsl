@@ -6,12 +6,13 @@ const float kernel[11] = float[11](0.084264, 0.088139, 0.091276, 0.093585, 0.094
 
 const int kernelSize = 11;
 uniform sampler2D rgba_texture;
-uniform sampler2D depth_filter;
+uniform sampler2D position_texture;
+uniform float radius; 
 uniform uint dimension;
 
 void main()
 {
-	float centerDepth = texelFetch(depth_filter, ivec2(gl_FragCoord.xy), 0).r;
+	float centerDepth = texelFetch(position_texture, ivec2(gl_FragCoord.xy), 0).z;
 	
 	vec3 sum = vec3(0.0f,0.0f,0.0f);
 	
@@ -20,8 +21,8 @@ void main()
 	{
 		ivec2 offset = ivec2(gl_FragCoord.xy);
 		offset[dimension] += i - (kernelSize / 2);
-		float depth = texelFetch(depth_filter, offset, 0).r; 
-		if (abs(depth - centerDepth) < 0.0001f)
+		float depth = texelFetch(position_texture, offset, 0).z; 
+		if (abs(depth - centerDepth) < radius)
 		{
 			sum += texelFetch(rgba_texture, offset, 0).rgb*kernel[i];
 			totalKernelUsed += kernel[i]; 

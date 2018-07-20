@@ -21,16 +21,69 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <random>
-#include "glew.h"
+#ifndef CGOGN_RENDERING_SHADER_SCENEDATA_H_
+#define CGOGN_RENDERING_SHADER_SCENEDATA_H_
 
-#include "cgogn/rendering/reimp.h"
+#include <cgogn/rendering/opengl/all.h>
 
-#include "buffer.h"
-#include "texture.h"
-#include "framebuffer.h"
-#include "vao.h"
-#include "shader_program.h"
-#include "shader_uniform.h"
-#include "shader_param.h"
-#include "vbo.h"
+namespace cgogn
+{
+
+namespace rendering
+{
+
+namespace shaders
+{
+
+	// forward
+	class ParamSceneData;
+
+	class CGOGN_RENDERING_API SceneData : public ogl::ShaderProgram
+	{
+		friend class ParamSceneData;
+
+		enum
+		{
+			ATTRIB_POS = 0,
+			ATTRIB_NORM = 1,
+		};
+
+	private:
+		static SceneData* instance_;
+		SceneData();
+
+	public:
+		using Param = ParamSceneData;
+		using Self = SceneData;
+		CGOGN_NOT_COPYABLE_NOR_MOVABLE(SceneData);
+
+		static std::unique_ptr<Param> generate_param();
+	};
+
+
+	class CGOGN_RENDERING_API ParamSceneData : public ogl::ShaderParam
+	{
+		public:
+			using Type = SceneData;
+
+			ParamSceneData(SceneData* sh);
+
+			void set_uniforms(); 
+
+			void set_position_vbo(VBO* vbo_pos, VBO* vbo_norm)
+			{
+				bind();
+				vao_->bind();
+				vao_->attribPointer(SceneData::ATTRIB_POS, vbo_pos, GL_FLOAT);
+				vao_->attribPointer(SceneData::ATTRIB_NORM, vbo_norm, GL_FLOAT);
+				vao_->release();
+				release();
+			}
+	};
+}
+
+} // namespace rendering
+
+} // namespace cgogn
+
+#endif // CGOGN_RENDERING_SHADER_TRANSP_FLAT_H_

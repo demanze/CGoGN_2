@@ -79,6 +79,15 @@ namespace cgogn
 				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, w, h, 0, format, type, nullptr);
 			}
 
+			void Texture::setImage2D_repeat(int w, int h, GLenum internalFormat, GLenum format, GLenum type, void* data)
+			{
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, w, h, 0, format, type, data);
+			}
+
 			void Texture::setImage2D(const QImage& image)
 			{
 				QImage glImage = image.convertToFormat(QImage::Format_Grayscale8, Qt::NoOpaqueDetection);

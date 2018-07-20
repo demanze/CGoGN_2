@@ -71,10 +71,14 @@ set(HEADER_SHADERS
 	shaders/shader_explode_volumes_line.h
 	shaders/shader_texture.h
 	shaders/shader_text.h
+)
+
+set(HEADER_SHADERS_2
 	shaders/shader_blur.h
 	shaders/shader_shadow.h
+	shaders/shader_scene_data.h
 	shaders/shader_depth.h
-	shaders/shader_shadow_blend.h
+	shaders/shader_light_blend.h
 )
 
 set(HEADER_FILES
@@ -88,6 +92,7 @@ set(HEADER_FILES
 	text_drawer.h
 	reimp.h
 	${HEADER_SHADERS}
+	${HEADER_SHADERS_2}
 	${HEADER_TRANSP_SHADER}
 	${HEADER_OPENGL}
 )
@@ -106,10 +111,14 @@ set(SOURCE_SHADERS
 	shaders/shader_explode_volumes_line.cpp
 	shaders/shader_texture.cpp
 	shaders/shader_text.cpp
+)
+
+set(SOURCE_SHADERS_2
 	shaders/shader_blur.cpp
 	shaders/shader_shadow.cpp
+	shaders/shader_scene_data.cpp
 	shaders/shader_depth.cpp
-	shaders/shader_shadow_blend.cpp
+	shaders/shader_light_blend.cpp
 )
 
 set(SOURCE_FILES
@@ -122,6 +131,7 @@ set(SOURCE_FILES
 	text_drawer.cpp
 	reimp.cpp
 	${SOURCE_SHADERS}
+	${SOURCE_SHADERS_2}
 	${SOURCE_TRANSP_SHADER}
 	${SOURCE_OPENGL}
 )
@@ -155,6 +165,7 @@ cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "includ
 
 # VisualStudio nice source organisation
 source_group("SHADERS" FILES ${HEADER_SHADERS} ${SOURCE_SHADERS})
+source_group("SHADERS_2" FILES ${HEADER_SHADERS_2} ${SOURCE_SHADERS_2})
 source_group("OPENGL" FILES ${HEADER_OPENGL} ${SOURCE_OPENGL})
 source_group("SHADERS_TRANSPARENT" FILES ${HEADER_TRANSP_SHADER} ${SOURCE_TRANSP_SHADER})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

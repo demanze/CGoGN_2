@@ -21,16 +21,65 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <random>
-#include "glew.h"
+#include <iostream>
 
-#include "cgogn/rendering/reimp.h"
+#include <cgogn/rendering/shaders/shader_light_blend.h>
 
-#include "buffer.h"
-#include "texture.h"
-#include "framebuffer.h"
-#include "vao.h"
-#include "shader_program.h"
-#include "shader_uniform.h"
-#include "shader_param.h"
-#include "vbo.h"
+namespace cgogn
+{
+
+namespace rendering
+{
+
+namespace shaders
+{
+	namespace LightBlend
+	{
+		Shader* Shader::instance_ = nullptr;
+
+		Shader::Shader()
+		{
+			addShaderFromFile(GL_VERTEX_SHADER, "fullscreen_texture_vert.glsl");
+			addShaderFromFile(GL_FRAGMENT_SHADER, "light_blend_frag.glsl");
+
+			link();
+
+			bind();
+
+			unif_sampler_scene_color = "sampler_scene_color";
+			unif_sampler_shadow = "sampler_shadow";
+
+			release();
+		}
+
+		void Param::set_sampler_scene_color(GLint value)
+		{
+			shader()->unif_sampler_scene_color.set(value);
+		}
+
+		void Param::set_sampler_shadow(GLint value)
+		{
+			shader()->unif_sampler_shadow.set(value);
+		}
+
+
+		void Param::set_uniforms()
+		{
+
+		}
+
+		std::unique_ptr<Param> Param::generate()
+		{
+			if (!Shader::instance_)
+			{
+				Shader::instance_ = new Shader();
+				Shader::ShaderProgram::register_instance(Shader::instance_);
+			}
+			return cgogn::make_unique<Param>(Shader::instance_);
+		}
+	}
+}
+
+} 
+
+} 

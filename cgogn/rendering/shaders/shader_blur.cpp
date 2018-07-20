@@ -33,62 +33,63 @@ namespace rendering
 
 namespace shaders
 {
-		Blur* Blur::instance_ = nullptr;
+	namespace Blur
+	{
+		Shader* Shader::instance_ = nullptr;
 
-		Blur::Blur()
+		Shader::Shader()
 		{
 			addShaderFromFile(GL_VERTEX_SHADER, "fullscreen_texture_vert.glsl");
 			addShaderFromFile(GL_FRAGMENT_SHADER, "blur_frag.glsl");
-			
+
 			link();
 
 			bind();
 
 			unif_rgba_texture_sampler = "rgba_texture";
-			unif_depth_filter = "depth_filter"; 
+			unif_position_texture = "position_texture";
 			unif_blur_dimension = "dimension";
+			unif_radius = "radius";
 
-			release(); 
+			release();
 		}
 
-		void ParamBlur::set_blurred(GLint value)
+		void Param::set_blurred(GLint value)
 		{
-			Blur* sh = static_cast<Blur*>(this->program);
-			sh->unif_rgba_texture_sampler.set(value);
+			shader()->unif_rgba_texture_sampler.set(value);
 		}
 
-		void ParamBlur::set_depth_filter(GLint value)
+		void Param::set_position_texture(GLint value)
 		{
-			Blur* sh = static_cast<Blur*>(this->program);
-			sh->unif_depth_filter.set(value);
+			shader()->unif_position_texture.set(value);
 		}
 
-		void ParamBlur::set_blur_dimension(GLuint value)
+		void Param::set_blur_dimension(GLuint value)
 		{
-			Blur* sh = static_cast<Blur*>(this->program);
-			sh->unif_blur_dimension.set(value);  
+			shader()->unif_blur_dimension.set(value);
 		}
 
-		std::unique_ptr< Blur::Param> Blur::generate_param()
+		void Param::set_radius(GLfloat value)
 		{
-			if (!instance_)
+			shader()->unif_radius.set(value);
+		}
+
+		void Param::set_uniforms()
+		{
+
+		}
+
+		std::unique_ptr<Param> Param::generate()
+		{
+			if (!Shader::instance_)
 			{
-				instance_ = new Blur();
-				ShaderProgram::register_instance(instance_);
+				Shader::instance_ = new Shader();
+				Shader::ShaderProgram::register_instance(Shader::instance_);
 			}
-			return cgogn::make_unique<Param>(instance_);
-		}
-
-		void ParamBlur::set_uniforms()
-		{
-
-		}
-
-		ParamBlur::ParamBlur(Blur* sh) :
-			ogl::ShaderParam(sh)
-		{
+			return cgogn::make_unique<Param>(Shader::instance_);
 		}
 	}
+}
 
 } 
 

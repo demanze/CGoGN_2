@@ -1,14 +1,12 @@
 #version 330 core
 
-layout(location = 0) out vec3 position_out;
-layout(location = 1) out vec3 normal_out;
-layout(location = 2) out float shadow_out;
+layout(location = 0) out float shadow_out;
 
 uniform sampler2DShadow shadowMap; 
+uniform sampler2D sampler_scene_position;
+uniform sampler2D sampler_scene_normal;
 uniform float pixelSize;
 
-in vec3 modelViewPosition; 
-in vec3 modelViewNormal; 
 in vec4 shadowPos;
 
 const int samples = 64;
@@ -79,21 +77,95 @@ vec2(0.789239, -0.419965),
 vec2(-0.545396, 0.538133),
 vec2(-0.178564, -0.596057));
 
+uniform sampler2D sampler_noise;
+uniform vec2 noiseScale;
+
+const int ssaoSamples = 64; 
+
+uniform mat4 projection_matrix; 
+uniform vec3 ssao_kernel[ssaoSamples];
+
+uniform float radiusSSAO; 
+uniform float radiusBorder;
+
+uniform bool enableShadow;
+uniform bool enableSSAO; 
+uniform bool enableBorder; 
+
 void main()
 {
+	float lighting = 1.0f; 
 	float bias = 0.001f; 
 	
-	float shadow = 0.0f; 
-	for (int i=0;i<samples;i++) 
+	if (enableShadow) 
 	{
-		shadow += 1.0f - texture(shadowMap, vec3(shadowPos.xy + poissonDisk[i]*vec2(pixelSize, pixelSize), (shadowPos.z - bias) / shadowPos.w))*0.5f;
+		float shadow = 0.0f; 
+		for (int i=0;i<samples;i++) 
+		{
+			shadow += 1.0f - texture(shadowMap, vec3(shadowPos.xy + poissonDisk[i]*vec2(pixelSize, pixelSize), (shadowPos.z - bias) / shadowPos.w))*0.5f;
+		}
+		shadow /= float(samples); 
+		lighting *= 1.0f - texture(shadowMap, vec3(shadowPos.xy, (shadowPos.z - bias) / shadowPos.w))*0.65f;
 	}
-	shadow /= float(samples); 
 	
-	shadow = 1.0f - texture(shadowMap, vec3(shadowPos.xy, (shadowPos.z - bias) / shadowPos.w))*0.65f;
+	if (enableSSAO || enableBorder) 
+	{
+		vec3 positionModelView = texelFetch(sampler_scene_position, ivec2(gl_FragCoord.xy), 0).xyz; 
+		vec3 normalModelView = texelFetch(sampler_scene_normal, ivec2(gl_FragCoord.xy), 0).xyz; 
+		vec3 randomVec = texture(sampler_noise, vec2(gl_FragCoord.xy) * noiseScale, 0).xyz;  
+		
+		vec3 tangent   = normalize(randomVec - normalModelView * dot(randomVec, normalModelView));
+		vec3 bitangent = cross(normalModelView, tangent);
+		mat3 TBN       = mat3(tangent, bitangent, normalModelView);  
 
-	shadow_out = shadow; 
-	position_out = modelViewPosition;
-	normal_out = normalize(modelViewNormal); 
+		vec4 positionProjection = projection_matrix * vec4(positionModelView, 1.0f); 
+		
+		positionProjection /= positionProjection.w; 
+		positionProjection = (positionProjection * 0.5f) + 0.5f; 
+			
+		float bias = 0.0001f;
+	
+		float border = 0.0f; 
+		float occlusion = 0.0f; 
+		for (int i=0;i<ssaoSamples;i++) 
+		{
+			 if (enableSSAO)
+			 {
+				 vec3 sampleModelView = positionModelView +  (TBN * (ssao_kernel[i] * radiusSSAO)); 
+				 
+				 vec4 sampleProjection = projection_matrix * vec4(sampleModelView, 1.0f);
+				 sampleProjection /= sampleProjection.w; 
+				 sampleProjection = (sampleProjection * 0.5f) + 0.5f; 
+				 
+				 float sampleDepth = texture(sampler_scene_position, sampleProjection.xy).z; 
+				 
+				 float dif = sampleDepth -  sampleModelView.z;
+				 occlusion += ((0.0f <= dif) && (dif < radiusSSAO)) ? (1.0f / float(ssaoSamples)) : 0.0f; 
+			 }
+			 
+			 if (enableBorder)
+			 {
+				 vec3 sampleModelView = positionModelView +  (TBN * (ssao_kernel[i] * radiusBorder)); 
+				 
+				 vec4 sampleProjection = projection_matrix * vec4(sampleModelView, 1.0f);
+				 sampleProjection /= sampleProjection.w; 
+				 sampleProjection = (sampleProjection * 0.5f) + 0.5f; 
+				 
+				 float sampleDepth = texture(sampler_scene_position, sampleProjection.xy).z; 
+		
+				 float difCenter = abs(sampleDepth -  positionModelView.z);
+				 border += ((0.0f <= difCenter) && (difCenter < radiusBorder)) ? (1.0f / float(ssaoSamples)) : 0.0f;
+			 }
+		}
+		
+		if (enableSSAO) lighting *= (1.0f - occlusion); 
+		if (enableBorder) 
+		{
+			float darkness = border; 
+			lighting *= (0.5f < darkness) ? 1.0f : (1.0f + (darkness - 0.5f));
+		}			
+	}
+	
+	shadow_out = lighting; 
 }
 

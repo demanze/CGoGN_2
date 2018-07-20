@@ -21,10 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADER_FULLSCREEN_TEXTURE_H_
-#define CGOGN_RENDERING_SHADER_FULLSCREEN_TEXTURE_H_
+#include <iostream>
 
-#include <cgogn/rendering/opengl/all.h>
+#include <cgogn/rendering/shaders/shader_scene_data.h>
 
 namespace cgogn
 {
@@ -34,66 +33,46 @@ namespace rendering
 
 namespace shaders
 {
+		SceneData* SceneData::instance_ = nullptr;
 
-	// forward
-	class ShadowBlend;
+		SceneData::SceneData()
+		{
+			addShaderFromFile(GL_VERTEX_SHADER, "scene_data_vert.glsl");
+			addShaderFromFile(GL_FRAGMENT_SHADER, "scene_data_frag.glsl");
+			
+			bindAttributeLocation("vertex_pos", ATTRIB_POS);
+			bindAttributeLocation("vertex_norm", ATTRIB_NORM);
 
-	class CGOGN_RENDERING_API ParamShadowBlend : public ogl::ShaderParam
-	{
-		public:
-			using Type = ShadowBlend;
+			link();
 
-			ParamShadowBlend(ShadowBlend* sh);
+			bind();
 
-			void set_enable_shadow(bool value);
-			void set_enable_ssao(bool value);
+			get_matrices_uniforms();
 
-			void set_sampler_scene_color(GLint value);
-			void set_sampler_shadow(GLint value);
-			void set_sampler_scene_depth(GLint value);
-			void set_sampler_scene_position(GLint value);
-			void set_sampler_scene_normal(GLint value);
+			release(); 
+		}
 
-			void set_projection_matrix(Matrix4f value);
+		std::unique_ptr< SceneData::Param> SceneData::generate_param()
+		{
+			if (!instance_)
+			{
+				instance_ = new SceneData();
+				ShaderProgram::register_instance(instance_);
+			}
+			return cgogn::make_unique<Param>(instance_);
+		}
 
-			void set_uniforms(); 
-	};
+		void ParamSceneData::set_uniforms()
+		{
 
-	class CGOGN_RENDERING_API ShadowBlend : public ogl::ShaderProgram
-	{
-		friend class ParamShadowBlend;
-	
-		private:
-			static ShadowBlend* instance_;
-			ShadowBlend();
+		}
 
-		protected:
+		ParamSceneData::ParamSceneData(SceneData* sh) :
+			ogl::ShaderParam(sh)
+		{
+		}
+	}
 
-			// uniforms
-			ogl::Uniform unif_sampler_scene_color;
-			ogl::Uniform unif_sampler_shadow;
-			ogl::Uniform unif_sampler_scene_depth;
-			ogl::Uniform unif_sampler_scene_position;
-			ogl::Uniform unif_sampler_scene_normal;
+} 
 
-			ogl::Uniform unif_ssao_kernel;
-			ogl::Uniform unif_projection_matrix;
-
-			ogl::Uniform unif_enable_shadow;
-			ogl::Uniform unif_enable_ssao;
-
-		public: 
-			using Param = ParamShadowBlend;
-			using Self = ShadowBlend;
-			CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShadowBlend);
-
-			static std::unique_ptr<Param> generate_param();
-	};
-
-}
-
-} // namespace rendering
-
-} // namespace cgogn
-
-#endif // CGOGN_RENDERING_SHADER_TRANSP_FLAT_H_
+} 

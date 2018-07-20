@@ -33,13 +33,15 @@ namespace rendering
 
 namespace shaders
 {
-		Shadow* Shadow::instance_ = nullptr;
+	namespace Shadow
+	{
+		Shader* Shader::instance_ = nullptr;
 
-		Shadow::Shadow()
+		Shader::Shader()
 		{
 			addShaderFromFile(GL_VERTEX_SHADER, "shadow_vert.glsl");
 			addShaderFromFile(GL_FRAGMENT_SHADER, "shadow_frag.glsl");
-			
+
 			bindAttributeLocation("vertex_pos", ATTRIB_POS);
 			bindAttributeLocation("vertex_norm", ATTRIB_NORM);
 
@@ -51,49 +53,114 @@ namespace shaders
 			unif_shadowMVP_ = "shadowMVP";
 			unif_pixelSize_ = "pixelSize";
 
+			unif_sampler_scene_position = "sampler_scene_position";
+			unif_sampler_scene_normal = "sampler_scene_normal";
+			unif_sampler_noise = "sampler_noise";
+
+			std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
+			std::default_random_engine generator;
+			std::vector<Vector3f> kernel;
+
+			for (unsigned int i = 0; i < 64; ++i)
+			{
+				Vector3f sample(randomFloats(generator)* 2.0 - 1.0, randomFloats(generator)* 2.0 - 1.0, randomFloats(generator));
+				sample = (sample / sample.norm()) * randomFloats(generator);
+				kernel.push_back(sample);
+			}
+
+			unif_ssao_kernel = "ssao_kernel";
+			unif_ssao_kernel.set(256, kernel.data());
+			unif_noise_scale = "noiseScale";
+
+			unif_enable_shadow = "enableShadow";
+			unif_enable_ssao = "enableSSAO";
+			unif_enable_border = "enableBorder";
+
+			unif_radius_ssao = "radiusSSAO";
+			unif_radius_border = "radiusBorder";
+
 			get_matrices_uniforms();
 
-			release(); 
+			release();
 		}
 
-		std::unique_ptr< Shadow::Param> Shadow::generate_param()
+		void Param::set_shadowMap(GLint value)
 		{
-			if (!instance_)
+			shader()->unif_shadowMap_.set(value);
+		}
+
+		void Param::set_shadowMVP(float* value)
+		{
+			shader()->unif_shadowMVP_.set(Matrix4f(value));
+		}
+
+		void Param::set_pixelSize(float value)
+		{
+			shader()->unif_pixelSize_.set(value);
+		}
+
+		void Param::set_enable_shadow(bool value)
+		{
+			shader()->unif_enable_shadow.set(value);
+		}
+
+		void Param::set_enable_ssao(bool value)
+		{
+			shader()->unif_enable_ssao.set(value);
+		}
+
+		void Param::set_enable_border(bool value)
+		{
+			shader()->unif_enable_border.set(value);
+		}
+
+		void Param::set_radius_ssao(float value)
+		{
+			shader()->unif_radius_ssao.set(value);
+		}
+
+		void Param::set_radius_border(float value)
+		{;
+			shader()->unif_radius_border.set(value);
+		}
+
+		void Param::set_sampler_scene_position(GLint value)
+		{
+			shader()->unif_sampler_scene_position.set(value);
+		}
+
+		void Param::set_sampler_scene_normal(GLint value)
+		{
+			shader()->unif_sampler_scene_normal.set(value);
+		}
+
+		void Param::set_sampler_noise(GLint value)
+		{
+			shader()->unif_sampler_noise.set(value);
+		}
+
+		void Param::set_noise_scale(Vector2f value)
+		{
+			shader()->unif_noise_scale.set(value);
+		}
+
+		void Param::set_uniforms()
+		{
+
+		}
+
+		std::unique_ptr<Param> Param::generate()
+		{
+			if (!Shader::instance_)
 			{
-				instance_ = new Shadow();
-				ShaderProgram::register_instance(instance_);
+				Shader::instance_ = new Shader();
+				Shader::ShaderProgram::register_instance(Shader::instance_);
 			}
-			return cgogn::make_unique<Param>(instance_);
-		}
-
-		void ParamShadow::set_shadowMap(GLint value)
-		{
-			auto sh = static_cast<Shadow*>(this->program);
-			sh->unif_shadowMap_.set(value);
-		}
-
-		void ParamShadow::set_shadowMVP(float* value)
-		{
-			auto sh = static_cast<Shadow*>(this->program);
-			sh->unif_shadowMVP_.set(Matrix4f(value));
-		}
-
-		void ParamShadow::set_pixelSize(float value)
-		{
-			auto sh = static_cast<Shadow*>(this->program);
-			sh->unif_pixelSize_.set(value);
-		}
-
-		void ParamShadow::set_uniforms()
-		{
-
-		}
-
-		ParamShadow::ParamShadow(Shadow* sh) :
-			ogl::ShaderParam(sh)
-		{
+			return cgogn::make_unique<Param>(Shader::instance_);
 		}
 	}
+
+}
 
 } 
 

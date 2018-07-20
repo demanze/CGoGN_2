@@ -26,8 +26,6 @@
 
 #include <cgogn/rendering/opengl/all.h>
 
-
-
 namespace cgogn
 {
 
@@ -36,47 +34,40 @@ namespace rendering
 
 namespace shaders
 {
-
-	// forward
-	class Blur;
-
-	class CGOGN_RENDERING_API ParamBlur : public ogl::ShaderParam
+	namespace Blur
 	{
-		public:
-			using Type = Blur;
+		class CGOGN_RENDERING_API Shader : public ogl::ShaderProgram
+		{
+			friend class Param;
 
-			ParamBlur(Blur* sh);
+			private:
+				static Shader* instance_;
+				Shader();
 
-			void set_blurred(GLint value);
-			void set_depth_filter(GLint value);
-			void set_blur_dimension(GLuint value);
+			protected:
+				ogl::Uniform unif_rgba_texture_sampler;
+				ogl::Uniform unif_position_texture;
+				ogl::Uniform unif_blur_dimension;
+				ogl::Uniform unif_radius;
+		};
 
-			void set_uniforms(); 
-	};
 
-	class CGOGN_RENDERING_API Blur : public ogl::ShaderProgram
-	{
-		friend class ParamBlur;
-	
-		private:
-			static Blur* instance_;
-			Blur();
+		class CGOGN_RENDERING_API Param : public ogl::ShaderParam
+		{
+			public:
+				Param(Shader* sh) : ShaderParam(sh) {}
+				auto shader() { return static_cast<Shader*>(this->program); };
 
-		protected:
+				void set_blurred(GLint value);
+				void set_position_texture(GLint value);
+				void set_blur_dimension(GLuint value);
+				void set_radius(GLfloat value);
 
-			// uniforms
-			ogl::Uniform unif_rgba_texture_sampler;
-			ogl::Uniform unif_depth_filter;
-			ogl::Uniform unif_blur_dimension; 
-			
-		public: 
-			using Param = ParamBlur;
-			using Self = Blur;
-			CGOGN_NOT_COPYABLE_NOR_MOVABLE(Blur);
+				void set_uniforms();
 
-			static std::unique_ptr<Param> generate_param();
-	};
-
+				static std::unique_ptr<Param> generate();
+		};
+	}
 }
 
 } // namespace rendering

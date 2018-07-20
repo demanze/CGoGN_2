@@ -29,69 +29,85 @@
 namespace cgogn
 {
 
-namespace rendering
-{
-
-namespace shaders
-{
-
-	// forward
-	class ParamShadow;
-
-	class CGOGN_RENDERING_API Shadow : public ogl::ShaderProgram
+	namespace rendering
 	{
-		friend class ParamShadow;
 
-		enum
+		namespace shaders
 		{
-			ATTRIB_POS = 0,
-			ATTRIB_NORM = 1,
-		};
-
-	private:
-		static Shadow* instance_;
-		Shadow();
-
-		ogl::Uniform unif_shadowMap_;
-		ogl::Uniform unif_shadowMVP_;
-		ogl::Uniform unif_pixelSize_;
-
-	public:
-		using Param = ParamShadow;
-		using Self = Shadow;
-		CGOGN_NOT_COPYABLE_NOR_MOVABLE(Shadow);
-
-		static std::unique_ptr<Param> generate_param();
-	};
-
-
-	class CGOGN_RENDERING_API ParamShadow : public ogl::ShaderParam
-	{
-		public:
-			using Type = Shadow;
-
-			ParamShadow(Shadow* sh);
-
-			void set_shadowMap(GLint value);
-			void set_shadowMVP(float* value);
-			void set_pixelSize(float value);
-
-			void set_uniforms(); 
-
-			void set_position_vbo(VBO* vbo_pos, VBO* vbo_norm)
+			namespace Shadow
 			{
-				bind();
-				vao_->bind();
-				vao_->attribPointer(Shadow::ATTRIB_POS, vbo_pos, GL_FLOAT);
-				vao_->attribPointer(Shadow::ATTRIB_NORM, vbo_norm, GL_FLOAT);
-				vao_->release();
-				release();
+				class CGOGN_RENDERING_API Shader : public ogl::ShaderProgram
+				{
+					friend class Param;
+
+					enum
+					{
+						ATTRIB_POS = 0,
+						ATTRIB_NORM = 1,
+					};
+
+				private:
+					static Shader* instance_;
+					Shader();
+
+				protected:
+
+					ogl::Uniform unif_shadowMap_;
+					ogl::Uniform unif_shadowMVP_;
+					ogl::Uniform unif_pixelSize_;
+
+					ogl::Uniform unif_sampler_scene_position;
+					ogl::Uniform unif_sampler_scene_normal;
+					ogl::Uniform unif_sampler_noise;
+
+					ogl::Uniform unif_ssao_kernel;
+					ogl::Uniform unif_noise_scale;
+
+					ogl::Uniform unif_enable_shadow;
+					ogl::Uniform unif_enable_ssao;
+					ogl::Uniform unif_enable_border;
+
+					ogl::Uniform unif_radius_ssao;
+					ogl::Uniform unif_radius_border;
+				};
+
+
+				class CGOGN_RENDERING_API Param : public ogl::ShaderParam
+				{
+				public:
+					Param(Shader* sh) : ShaderParam(sh) {}
+					auto shader() { return static_cast<Shader*>(this->program); };
+
+					void set_shadowMap(GLint value);
+					void set_shadowMVP(float* value);
+					void set_pixelSize(float value);
+					void set_enable_shadow(bool value);
+					void set_enable_ssao(bool value);
+					void set_enable_border(bool value);
+					void set_radius_ssao(float value);
+					void set_radius_border(float value);
+					void set_sampler_scene_position(GLint value);
+					void set_sampler_scene_normal(GLint value);
+					void set_sampler_noise(GLint value);
+					void set_noise_scale(Vector2f value);
+					void set_uniforms();
+
+					void set_vbos(VBO* vbo_pos, VBO* vbo_norm)
+					{
+						bind();
+						vao_->bind();
+						vao_->attribPointer(Shader::ATTRIB_POS, vbo_pos, GL_FLOAT);
+						vao_->attribPointer(Shader::ATTRIB_NORM, vbo_norm, GL_FLOAT);
+						vao_->release();
+						release();
+					}
+
+					static std::unique_ptr<Param> generate();
+				};
 			}
-	};
 }
 
-} // namespace rendering
+} 
 
-} // namespace cgogn
-
-#endif // CGOGN_RENDERING_SHADER_TRANSP_FLAT_H_
+} 
+#endif 
