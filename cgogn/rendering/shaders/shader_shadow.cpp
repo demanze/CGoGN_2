@@ -43,7 +43,6 @@ namespace shaders
 			addShaderFromFile(GL_FRAGMENT_SHADER, "shadow_frag.glsl");
 
 			bindAttributeLocation("vertex_pos", ATTRIB_POS);
-			bindAttributeLocation("vertex_norm", ATTRIB_NORM);
 
 			link();
 
@@ -69,15 +68,13 @@ namespace shaders
 			}
 
 			unif_ssao_kernel = "ssao_kernel";
-			unif_ssao_kernel.set(256, kernel.data());
+			unif_ssao_kernel.set(64, kernel.data());
 			unif_noise_scale = "noiseScale";
 
 			unif_enable_shadow = "enableShadow";
 			unif_enable_ssao = "enableSSAO";
-			unif_enable_border = "enableBorder";
 
 			unif_radius_ssao = "radiusSSAO";
-			unif_radius_border = "radiusBorder";
 
 			get_matrices_uniforms();
 
@@ -109,19 +106,9 @@ namespace shaders
 			shader()->unif_enable_ssao.set(value);
 		}
 
-		void Param::set_enable_border(bool value)
-		{
-			shader()->unif_enable_border.set(value);
-		}
-
 		void Param::set_radius_ssao(float value)
 		{
 			shader()->unif_radius_ssao.set(value);
-		}
-
-		void Param::set_radius_border(float value)
-		{;
-			shader()->unif_radius_border.set(value);
 		}
 
 		void Param::set_sampler_scene_position(GLint value)

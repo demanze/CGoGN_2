@@ -33,45 +33,43 @@ namespace rendering
 
 namespace shaders
 {
-		SceneData* SceneData::instance_ = nullptr;
+	namespace SceneData
+	{
+		Shader* Shader::instance_ = nullptr;
 
-		SceneData::SceneData()
+		Shader::Shader()
 		{
 			addShaderFromFile(GL_VERTEX_SHADER, "scene_data_vert.glsl");
 			addShaderFromFile(GL_FRAGMENT_SHADER, "scene_data_frag.glsl");
-			
+
 			bindAttributeLocation("vertex_pos", ATTRIB_POS);
 			bindAttributeLocation("vertex_norm", ATTRIB_NORM);
-
 			link();
 
 			bind();
 
 			get_matrices_uniforms();
 
-			release(); 
+			release();
 		}
 
-		std::unique_ptr< SceneData::Param> SceneData::generate_param()
+		void Param::set_uniforms()
 		{
-			if (!instance_)
+
+		}
+
+		std::unique_ptr<Param> Param::generate()
+		{
+			if (!Shader::instance_)
 			{
-				instance_ = new SceneData();
-				ShaderProgram::register_instance(instance_);
+				Shader::instance_ = new Shader();
+				Shader::ShaderProgram::register_instance(Shader::instance_);
 			}
-			return cgogn::make_unique<Param>(instance_);
-		}
-
-		void ParamSceneData::set_uniforms()
-		{
-
-		}
-
-		ParamSceneData::ParamSceneData(SceneData* sh) :
-			ogl::ShaderParam(sh)
-		{
+			return cgogn::make_unique<Param>(Shader::instance_);
 		}
 	}
+
+}
 
 } 
 

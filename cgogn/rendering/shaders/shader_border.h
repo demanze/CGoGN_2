@@ -21,64 +21,75 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADER_SCENEDATA_H_
-#define CGOGN_RENDERING_SHADER_SCENEDATA_H_
+#ifndef CGOGN_RENDERING_SHADER_BORDER_H_
+#define CGOGN_RENDERING_SHADER_BORDER_H_
 
 #include <cgogn/rendering/opengl/all.h>
 
 namespace cgogn
 {
 
-namespace rendering
-{
-
-namespace shaders
-{
-
-	namespace SceneData
+	namespace rendering
 	{
-		class CGOGN_RENDERING_API Shader : public ogl::ShaderProgram
+
+		namespace shaders
 		{
-			friend class Param;
-
-			enum
+			namespace Border
 			{
-				ATTRIB_POS = 0,
-				ATTRIB_NORM = 1,
-			};
+				class CGOGN_RENDERING_API Shader : public ogl::ShaderProgram
+				{
+					friend class Param;
 
-		private:
-			static Shader* instance_;
-			Shader();
+					enum
+					{
+						ATTRIB_POS = 0,
+					};
 
-		};
+				private:
+					static Shader* instance_;
+					Shader();
+
+				protected:
+
+					ogl::Uniform unif_sampler_scene_position;
+					ogl::Uniform unif_sampler_scene_normal;
+					ogl::Uniform unif_sampler_noise;
+
+					ogl::Uniform unif_ssao_kernel;
+					ogl::Uniform unif_noise_scale;
+
+					ogl::Uniform unif_radius;
+				};
 
 
-		class CGOGN_RENDERING_API Param : public ogl::ShaderParam
-		{
-		public:
-			Param(Shader* sh) : ShaderParam(sh) {}
-			auto shader() { return static_cast<Shader*>(this->program); };
+				class CGOGN_RENDERING_API Param : public ogl::ShaderParam
+				{
+				public:
+					Param(Shader* sh) : ShaderParam(sh) {}
+					auto shader() { return static_cast<Shader*>(this->program); };
 
-			void set_uniforms();
+					void set_radius(float value);
+					void set_sampler_scene_position(GLint value);
+					void set_sampler_scene_normal(GLint value);
+					void set_sampler_noise(GLint value);
+					void set_noise_scale(Vector2f value);
+					void set_uniforms();
 
-			void set_vbos(VBO* vbo_pos, VBO* vbo_norm)
-			{
-				bind();
-				vao_->bind();
-				vao_->attribPointer(Shader::ATTRIB_POS, vbo_pos, GL_FLOAT);
-				vao_->attribPointer(Shader::ATTRIB_NORM, vbo_norm, GL_FLOAT);
-				vao_->release();
-				release();
+					void set_vbo(VBO* vbo_pos)
+					{
+						bind();
+						vao_->bind();
+						vao_->attribPointer(Shader::ATTRIB_POS, vbo_pos, GL_FLOAT);
+						vao_->release();
+						release();
+					}
+
+					static std::unique_ptr<Param> generate();
+				};
 			}
-
-			static std::unique_ptr<Param> generate();
-		};
-	}
 }
 
-} // namespace rendering
+} 
 
-} // namespace cgogn
-
-#endif // CGOGN_RENDERING_SHADER_TRANSP_FLAT_H_
+} 
+#endif 

@@ -46,8 +46,9 @@ namespace shaders
 			Shader();
 
 		protected:
-			ogl::Uniform unif_sampler_scene_color;
-			ogl::Uniform unif_sampler_shadow;
+			ogl::Uniform unif_sampler_color;
+			ogl::Uniform unif_sampler_lighting;
+			ogl::Uniform unif_sampler_border;
 		};
 
 
@@ -57,8 +58,9 @@ namespace shaders
 			Param(Shader* sh) : ShaderParam(sh) {}
 			auto shader() { return static_cast<Shader*>(this->program); };
 
-			void set_sampler_scene_color(GLint value);
-			void set_sampler_shadow(GLint value);
+			void set_sampler_color(GLint value);
+			void set_sampler_light(GLint value);
+			void set_sampler_border(GLint value);
 
 			void set_uniforms();
 

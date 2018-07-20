@@ -86,11 +86,9 @@ uniform mat4 projection_matrix;
 uniform vec3 ssao_kernel[ssaoSamples];
 
 uniform float radiusSSAO; 
-uniform float radiusBorder;
 
 uniform bool enableShadow;
 uniform bool enableSSAO; 
-uniform bool enableBorder; 
 
 void main()
 {
@@ -108,7 +106,7 @@ void main()
 		lighting *= 1.0f - texture(shadowMap, vec3(shadowPos.xy, (shadowPos.z - bias) / shadowPos.w))*0.65f;
 	}
 	
-	if (enableSSAO || enableBorder) 
+	if (enableSSAO) 
 	{
 		vec3 positionModelView = texelFetch(sampler_scene_position, ivec2(gl_FragCoord.xy), 0).xyz; 
 		vec3 normalModelView = texelFetch(sampler_scene_normal, ivec2(gl_FragCoord.xy), 0).xyz; 
@@ -125,45 +123,23 @@ void main()
 			
 		float bias = 0.0001f;
 	
-		float border = 0.0f; 
+		float occlusionBorder = 0.0f; 
 		float occlusion = 0.0f; 
 		for (int i=0;i<ssaoSamples;i++) 
 		{
-			 if (enableSSAO)
-			 {
-				 vec3 sampleModelView = positionModelView +  (TBN * (ssao_kernel[i] * radiusSSAO)); 
-				 
-				 vec4 sampleProjection = projection_matrix * vec4(sampleModelView, 1.0f);
-				 sampleProjection /= sampleProjection.w; 
-				 sampleProjection = (sampleProjection * 0.5f) + 0.5f; 
-				 
-				 float sampleDepth = texture(sampler_scene_position, sampleProjection.xy).z; 
-				 
-				 float dif = sampleDepth -  sampleModelView.z;
-				 occlusion += ((0.0f <= dif) && (dif < radiusSSAO)) ? (1.0f / float(ssaoSamples)) : 0.0f; 
-			 }
+			 vec3 sampleModelView = positionModelView +  (TBN * (ssao_kernel[i] * radiusSSAO)); 
 			 
-			 if (enableBorder)
-			 {
-				 vec3 sampleModelView = positionModelView +  (TBN * (ssao_kernel[i] * radiusBorder)); 
-				 
-				 vec4 sampleProjection = projection_matrix * vec4(sampleModelView, 1.0f);
-				 sampleProjection /= sampleProjection.w; 
-				 sampleProjection = (sampleProjection * 0.5f) + 0.5f; 
-				 
-				 float sampleDepth = texture(sampler_scene_position, sampleProjection.xy).z; 
-		
-				 float difCenter = abs(sampleDepth -  positionModelView.z);
-				 border += ((0.0f <= difCenter) && (difCenter < radiusBorder)) ? (1.0f / float(ssaoSamples)) : 0.0f;
-			 }
+			 vec4 sampleProjection = projection_matrix * vec4(sampleModelView, 1.0f);
+			 sampleProjection /= sampleProjection.w; 
+			 sampleProjection = (sampleProjection * 0.5f) + 0.5f; 
+			 
+			 float sampleDepth = texture(sampler_scene_position, sampleProjection.xy).z; 
+			 
+			 float dif = sampleDepth -  sampleModelView.z;
+			 occlusion += ((0.0f <= dif) && (dif < radiusSSAO)) ? (1.0f / float(ssaoSamples)) : 0.0f; 
 		}
 		
-		if (enableSSAO) lighting *= (1.0f - occlusion); 
-		if (enableBorder) 
-		{
-			float darkness = border; 
-			lighting *= (0.5f < darkness) ? 1.0f : (1.0f + (darkness - 0.5f));
-		}			
+		if (enableSSAO) lighting *= (1.0f - occlusion); 		
 	}
 	
 	shadow_out = lighting; 

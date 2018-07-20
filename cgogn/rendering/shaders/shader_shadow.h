@@ -43,7 +43,6 @@ namespace cgogn
 					enum
 					{
 						ATTRIB_POS = 0,
-						ATTRIB_NORM = 1,
 					};
 
 				private:
@@ -65,10 +64,8 @@ namespace cgogn
 
 					ogl::Uniform unif_enable_shadow;
 					ogl::Uniform unif_enable_ssao;
-					ogl::Uniform unif_enable_border;
 
 					ogl::Uniform unif_radius_ssao;
-					ogl::Uniform unif_radius_border;
 				};
 
 
@@ -83,21 +80,18 @@ namespace cgogn
 					void set_pixelSize(float value);
 					void set_enable_shadow(bool value);
 					void set_enable_ssao(bool value);
-					void set_enable_border(bool value);
 					void set_radius_ssao(float value);
-					void set_radius_border(float value);
 					void set_sampler_scene_position(GLint value);
 					void set_sampler_scene_normal(GLint value);
 					void set_sampler_noise(GLint value);
 					void set_noise_scale(Vector2f value);
 					void set_uniforms();
 
-					void set_vbos(VBO* vbo_pos, VBO* vbo_norm)
+					void set_vbo(VBO* vbo_pos)
 					{
 						bind();
 						vao_->bind();
 						vao_->attribPointer(Shader::ATTRIB_POS, vbo_pos, GL_FLOAT);
-						vao_->attribPointer(Shader::ATTRIB_NORM, vbo_norm, GL_FLOAT);
 						vao_->release();
 						release();
 					}

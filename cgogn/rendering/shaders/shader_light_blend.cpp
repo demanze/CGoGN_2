@@ -46,22 +46,27 @@ namespace shaders
 
 			bind();
 
-			unif_sampler_scene_color = "sampler_scene_color";
-			unif_sampler_shadow = "sampler_shadow";
+			unif_sampler_color = "sampler_color";
+			unif_sampler_lighting = "sampler_lighting";
+			unif_sampler_border = "sampler_border";
 
 			release();
 		}
 
-		void Param::set_sampler_scene_color(GLint value)
+		void Param::set_sampler_color(GLint value)
 		{
-			shader()->unif_sampler_scene_color.set(value);
+			shader()->unif_sampler_color.set(value);
 		}
 
-		void Param::set_sampler_shadow(GLint value)
+		void Param::set_sampler_light(GLint value)
 		{
-			shader()->unif_sampler_shadow.set(value);
+			shader()->unif_sampler_lighting.set(value);
 		}
 
+		void Param::set_sampler_border(GLint value)
+		{
+			shader()->unif_sampler_border.set(value);
+		}
 
 		void Param::set_uniforms()
 		{

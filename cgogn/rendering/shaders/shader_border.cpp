@@ -21,10 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADER_SCENEDATA_H_
-#define CGOGN_RENDERING_SHADER_SCENEDATA_H_
+#include <iostream>
 
-#include <cgogn/rendering/opengl/all.h>
+#include <cgogn/rendering/shaders/shader_border.h>
 
 namespace cgogn
 {
@@ -34,51 +33,90 @@ namespace rendering
 
 namespace shaders
 {
-
-	namespace SceneData
+	namespace Border
 	{
-		class CGOGN_RENDERING_API Shader : public ogl::ShaderProgram
+		Shader* Shader::instance_ = nullptr;
+
+		Shader::Shader()
 		{
-			friend class Param;
+			addShaderFromFile(GL_VERTEX_SHADER, "border_vert.glsl");
+			addShaderFromFile(GL_FRAGMENT_SHADER, "border_frag.glsl");
 
-			enum
+			bindAttributeLocation("vertex_pos", ATTRIB_POS);
+
+			link();
+
+			bind();
+
+			unif_sampler_scene_position = "sampler_scene_position";
+			unif_sampler_scene_normal = "sampler_scene_normal";
+			unif_sampler_noise = "sampler_noise";
+
+			std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
+			std::default_random_engine generator;
+			std::vector<Vector3f> kernel;
+
+			for (unsigned int i = 0; i < 64; ++i)
 			{
-				ATTRIB_POS = 0,
-				ATTRIB_NORM = 1,
-			};
-
-		private:
-			static Shader* instance_;
-			Shader();
-
-		};
-
-
-		class CGOGN_RENDERING_API Param : public ogl::ShaderParam
-		{
-		public:
-			Param(Shader* sh) : ShaderParam(sh) {}
-			auto shader() { return static_cast<Shader*>(this->program); };
-
-			void set_uniforms();
-
-			void set_vbos(VBO* vbo_pos, VBO* vbo_norm)
-			{
-				bind();
-				vao_->bind();
-				vao_->attribPointer(Shader::ATTRIB_POS, vbo_pos, GL_FLOAT);
-				vao_->attribPointer(Shader::ATTRIB_NORM, vbo_norm, GL_FLOAT);
-				vao_->release();
-				release();
+				Vector3f sample(randomFloats(generator)* 2.0 - 1.0, randomFloats(generator)* 2.0 - 1.0, randomFloats(generator));
+				sample = (sample / sample.norm()) * randomFloats(generator);
+				kernel.push_back(sample);
 			}
 
-			static std::unique_ptr<Param> generate();
-		};
+			unif_ssao_kernel = "ssao_kernel";
+			unif_ssao_kernel.set(64, kernel.data());
+			unif_noise_scale = "noiseScale";
+
+			unif_radius = "radius";
+
+			get_matrices_uniforms();
+
+			release();
+		}
+
+		void Param::set_radius(float value)
+		{
+			shader()->unif_radius.set(value);
+		}
+
+		void Param::set_sampler_scene_position(GLint value)
+		{
+			shader()->unif_sampler_scene_position.set(value);
+		}
+
+		void Param::set_sampler_scene_normal(GLint value)
+		{
+			shader()->unif_sampler_scene_normal.set(value);
+		}
+
+		void Param::set_sampler_noise(GLint value)
+		{
+			shader()->unif_sampler_noise.set(value);
+		}
+
+		void Param::set_noise_scale(Vector2f value)
+		{
+			shader()->unif_noise_scale.set(value);
+		}
+
+		void Param::set_uniforms()
+		{
+
+		}
+
+		std::unique_ptr<Param> Param::generate()
+		{
+			if (!Shader::instance_)
+			{
+				Shader::instance_ = new Shader();
+				Shader::ShaderProgram::register_instance(Shader::instance_);
+			}
+			return cgogn::make_unique<Param>(Shader::instance_);
+		}
 	}
+
 }
 
-} // namespace rendering
+} 
 
-} // namespace cgogn
-
-#endif // CGOGN_RENDERING_SHADER_TRANSP_FLAT_H_
+} 

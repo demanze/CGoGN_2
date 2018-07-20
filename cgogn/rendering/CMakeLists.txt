@@ -75,8 +75,9 @@ set(HEADER_SHADERS
 
 set(HEADER_SHADERS_2
 	shaders/shader_blur.h
-	shaders/shader_shadow.h
 	shaders/shader_scene_data.h
+	shaders/shader_shadow.h
+	shaders/shader_border.h
 	shaders/shader_depth.h
 	shaders/shader_light_blend.h
 )
@@ -115,8 +116,9 @@ set(SOURCE_SHADERS
 
 set(SOURCE_SHADERS_2
 	shaders/shader_blur.cpp
-	shaders/shader_shadow.cpp
 	shaders/shader_scene_data.cpp
+	shaders/shader_shadow.cpp
+	shaders/shader_border.cpp
 	shaders/shader_depth.cpp
 	shaders/shader_light_blend.cpp
 )
