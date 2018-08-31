@@ -23,7 +23,7 @@
 
 #include <iostream>
 
-#include <cgogn/rendering/shaders/shader_light_blend.h>
+#include <cgogn/rendering/shaders/shader_ssao.h>
 
 namespace cgogn
 {
@@ -33,45 +33,72 @@ namespace rendering
 
 namespace shaders
 {
-	namespace LightBlend
+	namespace Ssao
 	{
 		Shader* Shader::instance_ = nullptr;
 
 		Shader::Shader()
 		{
-			addShaderFromFile(GL_VERTEX_SHADER, "fullscreen_texture_vert.glsl");
-			addShaderFromFile(GL_FRAGMENT_SHADER, "light_blend_frag.glsl");
+			addShaderFromFile(GL_VERTEX_SHADER, "ssao_vert.glsl");
+			addShaderFromFile(GL_FRAGMENT_SHADER, "ssao_frag.glsl");
+
+			bindAttributeLocation("vertex_pos", ATTRIB_POS);
 
 			link();
 
 			bind();
 
-			unif_sampler_color = "sampler_color";
-			unif_sampler_lighting = "sampler_lighting";
-			unif_enable_border = "enable_border"; 
-			unif_sampler_border = "sampler_border";
+			unif_sampler_scene_position = "sampler_scene_position";
+			unif_sampler_scene_normal = "sampler_scene_normal";
+			unif_sampler_noise = "sampler_noise";
+
+			std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
+			std::default_random_engine generator;
+			std::vector<Vector3f> kernel;
+
+			int samples = 64; 
+
+			for (unsigned int i = 0; i < samples; ++i)
+			{
+				Vector3f sample(randomFloats(generator)* 2.0 - 1.0, randomFloats(generator)* 2.0 - 1.0, randomFloats(generator));
+				sample = (sample / sample.norm()) * randomFloats(generator);
+				kernel.push_back(sample);
+			}
+
+			unif_ssao_kernel = "ssao_kernel";
+			unif_ssao_kernel.set(samples, kernel.data());
+			unif_noise_scale = "noiseScale";
+
+			unif_radius_ssao = "radiusSSAO";
+
+			get_matrices_uniforms();
 
 			release();
 		}
 
-		void Param::set_sampler_color(GLint value)
+		void Param::set_radius_ssao(float value)
 		{
-			shader()->unif_sampler_color.set(value);
+			shader()->unif_radius_ssao.set(value);
 		}
 
-		void Param::set_sampler_light(GLint value)
+		void Param::set_sampler_scene_position(GLint value)
 		{
-			shader()->unif_sampler_lighting.set(value);
+			shader()->unif_sampler_scene_position.set(value);
 		}
 
-		void Param::set_enable_border(bool value)
+		void Param::set_sampler_scene_normal(GLint value)
 		{
-			shader()->unif_enable_border.set(value);
+			shader()->unif_sampler_scene_normal.set(value);
 		}
 
-		void Param::set_sampler_border(GLint value)
+		void Param::set_sampler_noise(GLint value)
 		{
-			shader()->unif_sampler_border.set(value);
+			shader()->unif_sampler_noise.set(value);
+		}
+
+		void Param::set_noise_scale(Vector2f value)
+		{
+			shader()->unif_noise_scale.set(value);
 		}
 
 		void Param::set_uniforms()
@@ -89,6 +116,7 @@ namespace shaders
 			return cgogn::make_unique<Param>(Shader::instance_);
 		}
 	}
+
 }
 
 } 

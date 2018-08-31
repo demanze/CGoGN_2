@@ -80,7 +80,7 @@ vec2(-0.178564, -0.596057));
 uniform sampler2D sampler_noise;
 uniform vec2 noiseScale;
 
-const int ssaoSamples = 64; 
+const int ssaoSamples = 32; 
 
 uniform mat4 projection_matrix; 
 uniform vec3 ssao_kernel[ssaoSamples];

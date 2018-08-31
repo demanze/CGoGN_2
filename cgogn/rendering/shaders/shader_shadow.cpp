@@ -60,7 +60,9 @@ namespace shaders
 			std::default_random_engine generator;
 			std::vector<Vector3f> kernel;
 
-			for (unsigned int i = 0; i < 64; ++i)
+			int samples = 64; 
+
+			for (unsigned int i = 0; i < samples; ++i)
 			{
 				Vector3f sample(randomFloats(generator)* 2.0 - 1.0, randomFloats(generator)* 2.0 - 1.0, randomFloats(generator));
 				sample = (sample / sample.norm()) * randomFloats(generator);
@@ -68,7 +70,7 @@ namespace shaders
 			}
 
 			unif_ssao_kernel = "ssao_kernel";
-			unif_ssao_kernel.set(64, kernel.data());
+			unif_ssao_kernel.set(samples, kernel.data());
 			unif_noise_scale = "noiseScale";
 
 			unif_enable_shadow = "enableShadow";

@@ -4,6 +4,7 @@ layout(location = 0) out vec4 color_out;
 
 uniform sampler2D sampler_color;
 uniform sampler2D sampler_lighting;
+uniform bool enable_border; 
 uniform sampler2D sampler_border;
 
 void main()
@@ -14,11 +15,12 @@ void main()
 	
 	if (notBackground)
 	{
-		float shadowMask = texelFetch(sampler_lighting, ivec2(gl_FragCoord.xy), 0).r; 
-		color *= shadowMask;
+		color *= texelFetch(sampler_lighting, ivec2(gl_FragCoord.xy), 0).r;
 		
-		float border = texelFetch(sampler_border, ivec2(gl_FragCoord.xy), 0).r; 
-		color *= border;
+		if (enable_border) 
+		{
+			color *= texelFetch(sampler_border, ivec2(gl_FragCoord.xy), 0).r;
+		}
 	}
 	
 	

@@ -21,76 +21,75 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <iostream>
+#ifndef CGOGN_RENDERING_SHADER_SSAO_H_
+#define CGOGN_RENDERING_SHADER_SSAO_H_
 
-#include <cgogn/rendering/shaders/shader_light_blend.h>
+#include <cgogn/rendering/opengl/all.h>
 
 namespace cgogn
 {
 
-namespace rendering
-{
-
-namespace shaders
-{
-	namespace LightBlend
+	namespace rendering
 	{
-		Shader* Shader::instance_ = nullptr;
 
-		Shader::Shader()
+		namespace shaders
 		{
-			addShaderFromFile(GL_VERTEX_SHADER, "fullscreen_texture_vert.glsl");
-			addShaderFromFile(GL_FRAGMENT_SHADER, "light_blend_frag.glsl");
-
-			link();
-
-			bind();
-
-			unif_sampler_color = "sampler_color";
-			unif_sampler_lighting = "sampler_lighting";
-			unif_enable_border = "enable_border"; 
-			unif_sampler_border = "sampler_border";
-
-			release();
-		}
-
-		void Param::set_sampler_color(GLint value)
-		{
-			shader()->unif_sampler_color.set(value);
-		}
-
-		void Param::set_sampler_light(GLint value)
-		{
-			shader()->unif_sampler_lighting.set(value);
-		}
-
-		void Param::set_enable_border(bool value)
-		{
-			shader()->unif_enable_border.set(value);
-		}
-
-		void Param::set_sampler_border(GLint value)
-		{
-			shader()->unif_sampler_border.set(value);
-		}
-
-		void Param::set_uniforms()
-		{
-
-		}
-
-		std::unique_ptr<Param> Param::generate()
-		{
-			if (!Shader::instance_)
+			namespace Ssao
 			{
-				Shader::instance_ = new Shader();
-				Shader::ShaderProgram::register_instance(Shader::instance_);
+				class CGOGN_RENDERING_API Shader : public ogl::ShaderProgram
+				{
+					friend class Param;
+
+					enum
+					{
+						ATTRIB_POS = 0,
+					};
+
+				private:
+					static Shader* instance_;
+					Shader();
+
+				protected:
+
+					ogl::Uniform unif_sampler_scene_position;
+					ogl::Uniform unif_sampler_scene_normal;
+					ogl::Uniform unif_sampler_noise;
+
+					ogl::Uniform unif_ssao_kernel;
+					ogl::Uniform unif_noise_scale;
+
+					ogl::Uniform unif_radius_ssao;
+				};
+
+
+				class CGOGN_RENDERING_API Param : public ogl::ShaderParam
+				{
+				public:
+					Param(Shader* sh) : ShaderParam(sh) {}
+					auto shader() { return static_cast<Shader*>(this->program); };
+
+					void set_radius_ssao(float value);
+					void set_sampler_scene_position(GLint value);
+					void set_sampler_scene_normal(GLint value);
+					void set_sampler_noise(GLint value);
+					void set_noise_scale(Vector2f value);
+					void set_uniforms();
+
+					void set_vbo(VBO* vbo_pos)
+					{
+						bind();
+						vao_->bind();
+						vao_->attribPointer(Shader::ATTRIB_POS, vbo_pos, GL_FLOAT);
+						vao_->release();
+						release();
+					}
+
+					static std::unique_ptr<Param> generate();
+				};
 			}
-			return cgogn::make_unique<Param>(Shader::instance_);
-		}
-	}
 }
 
 } 
 
 } 
+#endif 

@@ -48,6 +48,7 @@ namespace shaders
 		protected:
 			ogl::Uniform unif_sampler_color;
 			ogl::Uniform unif_sampler_lighting;
+			ogl::Uniform unif_enable_border;
 			ogl::Uniform unif_sampler_border;
 		};
 
@@ -60,6 +61,7 @@ namespace shaders
 
 			void set_sampler_color(GLint value);
 			void set_sampler_light(GLint value);
+			void set_enable_border(bool value);
 			void set_sampler_border(GLint value);
 
 			void set_uniforms();
